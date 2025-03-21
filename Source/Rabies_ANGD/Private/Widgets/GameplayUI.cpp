@@ -9,6 +9,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -37,6 +38,15 @@ void UGameplayUI::NativeConstruct()
 	float playerMaxHealth = GetAttributeValue(URAttributeSet::GetMaxHealthAttribute());
 
 	PlayerHealth->SetHealth(playerHealth, playerMaxHealth);
+
+	//GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+	//GetWorld()->GetFirstPlayerController()->bEnableClickEvents = true;
+}
+
+void UGameplayUI::SetCrosshairState(bool state)
+{
+	Crosshair->SetVisibility((state) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	crosshairState = state;
 }
 
 void UGameplayUI::HealthUpdated(const FOnAttributeChangeData& ChangeData)
@@ -66,11 +76,11 @@ float UGameplayUI::GetAttributeValue(const FGameplayAttribute& Attribute) const
 	return -1;
 }
 
-void UGameplayUI::Quit()
-{
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (PlayerController)
-	{
-		UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
-	}
-}
+//void UGameplayUI::Quit()
+//{
+//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+//	if (PlayerController)
+//	{
+//		UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
+//	}
+//}

@@ -11,6 +11,7 @@ enum class EAbilityInputID : uint8
 	Confirm                              UMETA(DisplayName = "Confirm"),
 	Cancel								   UMETA(DisplayName = "Cancel"),
 	BasicAttack                         UMETA(DisplayName = "Basic Attack"),
+	Scoping                         UMETA(DisplayName = "Scoping"),
 	SpecialAttack                          UMETA(DisplayName = "Special Attack"),
 	UltimateAttack						   UMETA(DisplayName = "Ultimate Attack")
 };

@@ -66,3 +66,9 @@ void ARPlayerController::CreateGameplayUI()
 		GameplayUI->AddToViewport();
 	}
 }
+
+void ARPlayerController::ChangeCrosshairState(bool state)
+{
+	GameplayUI->SetCrosshairState(state);
+
+}

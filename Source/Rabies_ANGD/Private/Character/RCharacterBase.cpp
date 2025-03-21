@@ -7,6 +7,8 @@
 
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Framework/RGameMode.h"
+
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
@@ -37,6 +39,7 @@ ARCharacterBase::ARCharacterBase()
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &ARCharacterBase::HealthUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &ARCharacterBase::MaxHealthUpdated);
+	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &ARCharacterBase::ScopingTagChanged);
 
 	HealthBarWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
 	HealthBarWidgetComp->SetupAttachment(GetRootComponent());
@@ -120,6 +123,12 @@ UAbilitySystemComponent* ARCharacterBase::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
+void ARCharacterBase::ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bIsScoping = !bIsScoping;
+	ScopingTagChanged(bIsScoping);
+}
+
 void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 {
 	if (HealthBar)
@@ -139,6 +148,8 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 
 	if (ChangeData.NewValue <= 0)
 	{
+		ARGameMode* GameMode = GetWorld()->GetAuthGameMode<ARGameMode>();
+		GameMode->GameOver();
 		// die
 	}
 }

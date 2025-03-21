@@ -22,6 +22,9 @@ public:
 	//this is the begin play or start
 	virtual void NativeConstruct() override;
 
+	UFUNCTION()
+	void SetCrosshairState(bool state);
+
 private:
 	//************************//
 	//        Health         //
@@ -29,6 +32,11 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UHealthBar* PlayerHealth;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Crosshair;
+
+	bool crosshairState;
 
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
@@ -42,9 +50,9 @@ private:
 	//     Test n' Online      //
 	//************************//
 
-	UPROPERTY(meta = (BindWidget))
-	class UButton* quitButton;
+	//UPROPERTY(meta = (BindWidget))
+	//class UButton* quitButton;
 
-	UFUNCTION()
-	void Quit();
+	//UFUNCTION()
+	//void Quit();
 };

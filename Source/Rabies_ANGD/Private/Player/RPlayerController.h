@@ -21,6 +21,9 @@ public:
 	//this function calls on both the listening server, and the client.
 	virtual void AcknowledgePossession(APawn* NewPawn) override;
 
+	UFUNCTION()
+	void ChangeCrosshairState(bool state);
+
 private:
 	void PostPossessionSetup(APawn* NewPawn);
 

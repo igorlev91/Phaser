@@ -49,7 +49,14 @@ public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+public:
+	FORCEINLINE bool IsScoping() const { return bIsScoping; }
+
 private:
+
+	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	virtual void ScopingTagChanged(bool bNewIsAiming) {/*empty in base*/ };
+	bool bIsScoping;
 
 	UPROPERTY(VisibleAnywhere, Category = "Gameplay Ability")
 	URAbilitySystemComponent* AbilitySystemComponent;

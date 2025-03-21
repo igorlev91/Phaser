@@ -6,7 +6,7 @@
 #include "Character/RCharacterBase.h"
 #include "RPlayerBase.generated.h"
 
-class USpringArmComponent;
+class USceneComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
@@ -22,16 +22,28 @@ class ARPlayerBase : public ARCharacterBase
 public:
 	ARPlayerBase();
 
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void BeginPlay() override;
+
 private:
 
-	UPROPERTY(visibleAnywhere, Category = "View")
-	USpringArmComponent* cameraBoom;
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	class ARPlayerController* playerController;
+
+	UPROPERTY(VisibleAnywhere, Category = "View")
+	USceneComponent* viewPivot;
 
 	UPROPERTY(visibleAnywhere, Category = "View")
 	UCameraComponent* viewCamera;
 
 	UPROPERTY(EditDefaultsOnly, Category = "View")
 	FVector AimCameraLocalOffset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "View")
+	FVector DefaultCameraLocal;
 
 	UPROPERTY(EditDefaultsOnly, Category = "View")
 	float AimCameraLerpingSpeed = 5;
@@ -58,6 +70,9 @@ private:
 	UInputAction* scopeInputAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* scrollInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* basicAttackAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -72,6 +87,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* AbilityCancelAction;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* QuitOutAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* InteractInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* PausingInputAction;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
@@ -81,7 +105,19 @@ private:
 	void Look(const FInputActionValue& InputValue);
 
 	UFUNCTION()
+	void QuitOut();
+
+	UFUNCTION()
 	void DoBasicAttack();
+
+	UFUNCTION()
+	void EnableScoping();
+
+	UFUNCTION()
+	void DisableScoping();
+
+	UFUNCTION()
+	void Scroll(const FInputActionValue& InputActionVal);
 
 	UFUNCTION()
 	void TryActivateSpecialAttack();
@@ -95,6 +131,41 @@ private:
 	UFUNCTION()
 	void CancelActionTriggered();
 
+	UFUNCTION()
+	void Interact();
+
+	UFUNCTION()
+	void Pause();
+
 	FVector GetMoveFwdDir() const;
 	FVector GetMoveRightDir() const;
+
+	virtual void ScopingTagChanged(bool bNewIsAiming) override;
+
+	void LerpCameraToLocalOffset(const FVector& LocalOffset);
+	void TickCameraLocalOffset(FVector Goal);
+	FTimerHandle CameraLerpHandle;
+
+	float cameraClampMin;
+	float cameraClampMax;
+	bool bIsScoping;
+
+	/////////////////////////////////
+	/*          Interact           */
+	////////////////////////////////
+
+	bool canInteract;
+
+	public:
+	void SetInteraction(bool setInteract);
+
+	/////////////////////////////////
+	/*          Pause	           */
+	////////////////////////////////
+
+	bool isPaused;
+
+	public:
+	void SetPausetoFalse();
+
 };
