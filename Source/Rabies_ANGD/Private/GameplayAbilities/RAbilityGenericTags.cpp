@@ -3,6 +3,11 @@
 
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+FGameplayTag URAbilityGenericTags::GetGenericTargetAquiredTag()
+{
+	return FGameplayTag::RequestGameplayTag("targeting.aquired");
+}
+
 FGameplayTag URAbilityGenericTags::GetFullHealthTag()
 {
 	return FGameplayTag::RequestGameplayTag("stat.fullHealth");

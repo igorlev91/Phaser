@@ -32,5 +32,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Init")
 	TSubclassOf<UGameplayEffect> FullStatEffect;
 
-	// Include Generic Abilities and Regular Abilities
+	UPROPERTY(EditDefaultsOnly, Category = "Init")
+	TMap<EAbilityInputID, TSubclassOf<class UGA_AbilityBase>> Abilities;
 };

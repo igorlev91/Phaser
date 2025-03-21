@@ -8,6 +8,10 @@
 
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
+#include "Components/Button.h"
+
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "GameplayAbilitySpec.h"
 
@@ -17,6 +21,8 @@
 void UGameplayUI::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	//quitButton->OnClicked.AddDynamic(this, &UGameplayUI::Quit);
 
 	UAbilitySystemComponent* OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwningPlayerPawn());
 	if (OwnerASC)
@@ -58,4 +64,13 @@ float UGameplayUI::GetAttributeValue(const FGameplayAttribute& Attribute) const
 	UE_LOG(LogTemp, Warning, TEXT("%s Can't find attribute: %s "), *GetName(), *Attribute.AttributeName);
 
 	return -1;
+}
+
+void UGameplayUI::Quit()
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController)
+	{
+		UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
+	}
 }

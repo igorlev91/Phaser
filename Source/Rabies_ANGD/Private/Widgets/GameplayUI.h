@@ -23,6 +23,10 @@ public:
 	virtual void NativeConstruct() override;
 
 private:
+	//************************//
+	//        Health         //
+	//************************//
+
 	UPROPERTY(meta = (BindWidget))
 	class UHealthBar* PlayerHealth;
 
@@ -33,4 +37,14 @@ private:
 
 	UPROPERTY()
 	const class UAbilitySystemComponent* OwnerAbilitySystemComponent;
+
+	//************************//
+	//     Test n' Online      //
+	//************************//
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* quitButton;
+
+	UFUNCTION()
+	void Quit();
 };

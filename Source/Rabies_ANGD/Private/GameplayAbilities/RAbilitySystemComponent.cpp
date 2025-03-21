@@ -2,6 +2,7 @@
 
 
 #include "GameplayAbilities/RAbilitySystemComponent.h"
+#include "GameplayAbilities/GA_AbilityBase.h"
 
 void URAbilitySystemComponent::ApplyGameplayEffect_Implementation(TSubclassOf<UGameplayEffect> EffectToApply, int Level)
 {
@@ -24,16 +25,10 @@ void URAbilitySystemComponent::ApplyInitialEffects()
 
 void URAbilitySystemComponent::GrantInitialAbilities()
 {
-	/*
-	for (const TPair<EAbilityInputID, TSubclassOf<UGA_AbilityBase>>& AbilityPair : GenericAbilities)
-	{
-		GiveAbility(FGameplayAbilitySpec{ AbilityPair.Value, 1, (int)AbilityPair.Key, GetOwner() });
-	}
-
 	for (const TPair<EAbilityInputID, TSubclassOf<UGA_AbilityBase>>& AbilityPair : Abilities)
 	{
 		GiveAbility(FGameplayAbilitySpec{ AbilityPair.Value, 1, (int)AbilityPair.Key, GetOwner() });
-	}*/
+	}
 }
 
 void URAbilitySystemComponent::ApplyFullStat()
@@ -46,11 +41,11 @@ TArray<const FGameplayAbilitySpec*> URAbilitySystemComponent::GetGrantedNonGener
 {
 	TArray<const FGameplayAbilitySpec*> GrantedAbilitySpecs;
 
-	/*for (const TPair<EAbilityInputID, TSubclassOf<UGA_AbilityBase>>& AbilityPair : Abilities)
+	for (const TPair<EAbilityInputID, TSubclassOf<UGA_AbilityBase>>& AbilityPair : Abilities)
 	{
 		const FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromClass(AbilityPair.Value);
 		GrantedAbilitySpecs.Add(AbilitySpec);
-	}*/
+	}
 
 	return GrantedAbilitySpecs;
 }

@@ -16,6 +16,7 @@ class URAbilityGenericTags : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 	
 public:
+	static FGameplayTag GetGenericTargetAquiredTag();
 	static FGameplayTag GetFullHealthTag();
 	static FGameplayTag GetDeadTag();
 	static FGameplayTag GetBasicAttackActivationTag();
