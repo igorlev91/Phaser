@@ -3,3 +3,9 @@
 
 #include "Widgets/CharacterSelect.h"
 
+void UCharacterSelect::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+
+}

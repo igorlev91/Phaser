@@ -14,4 +14,11 @@ class UCharacterSelect : public UUserWidget
 {
 	GENERATED_BODY()
 	
+
+private:
+	UPROPERTY(meta = (BindWidget))
+	class ULobbyDisplay* LobbyDisplay;
+
+protected:
+	virtual void NativeConstruct() override;
 };
