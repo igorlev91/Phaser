@@ -24,7 +24,7 @@ public:
 
 private:
 	UPROPERTY(meta = (BindWidget))
-	class UHealthBar* PlayerHealthBar;
+	class UHealthBar* PlayerHealth;
 
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);

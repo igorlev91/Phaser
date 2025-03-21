@@ -6,6 +6,19 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 
+#include "GameplayAbilities/RAbilitySystemComponent.h"
+#include "GameplayAbilities/RAttributeSet.h"
+#include "GameplayAbilities/RAbilityGenericTags.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
+#include "GameplayAbilities/RAbilityGenericTags.h"
+#include "Animation/AnimInstance.h"
+#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+#include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
+
+#include "Net/UnrealNetwork.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -73,7 +86,7 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 
 void ARPlayerBase::DoBasicAttack()
 {
-
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
 }
 
 void ARPlayerBase::TryActivateSpecialAttack()

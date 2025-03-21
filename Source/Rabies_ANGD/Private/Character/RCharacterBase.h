@@ -20,7 +20,7 @@ class UGameplayEffect;
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDeadStatusChanged, bool /*bIsDead*/);
 
 UCLASS()
-class ARCharacterBase : public ACharacter//, public IAbilitySystemInterface, public IRGameplayCueInterface, public IGenericTeamAgentInterface
+class ARCharacterBase : public ACharacter, public IAbilitySystemInterface, /*public IRGameplayCueInterface,*/ public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -29,5 +29,48 @@ public:
 
 	// Sets default values for this character's properties
 	ARCharacterBase();
+
+	void SetupAbilitySystemComponent();
+	void InitAttributes();
+	void InitAbilities();
+	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+
+protected:
+
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	void InitStatusHUD();
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+private:
+
+	UPROPERTY(VisibleAnywhere, Category = "Gameplay Ability")
+	URAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY()
+	URAttributeSet* AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	class UWidgetComponent* HealthBarWidgetComp;
+
+	UPROPERTY()
+	class UHealthBar* HealthBar;
+
+	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
+	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
+
+private:
+
+	UPROPERTY(Replicated)
+	FGenericTeamId TeamId;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; // need this when doing Replicated things
 
 };

@@ -21,6 +21,7 @@ void UHealthBar::SetHealth(float NewHealth, float MaxHealth)
 
 	float Percent = NewHealth / MaxHealth;
 	ProgressBar->SetPercent(Percent);
+	ShaderBar->SetPercent(Percent);
 
 	FText Text = FText::Format(FText::FromString("{0}/{1}"), FText::AsNumber((int)NewHealth), FText::AsNumber((int)MaxHealth));
 	DisplayText->SetText(Text);

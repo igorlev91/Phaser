@@ -29,25 +29,128 @@ ARCharacterBase::ARCharacterBase()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//AbilitySystemComponent = CreateDefaultSubobject<URAbilitySystemComponent>("Ability System Component");
-	//AbilitySystemComponent->SetIsReplicated(true); // replicate means it is synced with the server.
-	//AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	AbilitySystemComponent = CreateDefaultSubobject<URAbilitySystemComponent>("Ability System Component");
+	AbilitySystemComponent->SetIsReplicated(true); // replicate means it is synced with the server.
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	//AttributeSet = CreateDefaultSubobject<URAttributeSet>("Attribute Set");
+	AttributeSet = CreateDefaultSubobject<URAttributeSet>("Attribute Set");
 
-	//AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &ARCharacterBase::HealthUpdated);
-	//AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &ARCharacterBase::MaxHealthUpdated);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &ARCharacterBase::HealthUpdated);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &ARCharacterBase::MaxHealthUpdated);
 
-	//AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetDeadTag()).AddUObject(this, &ARCharacterBase::DeathTagChanged);
-	//AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &ARCharacterBase::ScopingTagChanged);
+	HealthBarWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
+	HealthBarWidgetComp->SetupAttachment(GetRootComponent());
+}
 
-	//StatusWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
-	//StatusWidgetComp->SetupAttachment(GetRootComponent());
+void ARCharacterBase::SetupAbilitySystemComponent()
+{
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+}
 
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	//GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ARCharacterBase::HitDetected);
+void ARCharacterBase::InitAttributes()
+{
+	AbilitySystemComponent->ApplyInitialEffects();
+}
 
-	//AIPerceptionSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("AI Perception Source Comp");
-	//AIPerceptionSourceComp->RegisterForSense(UAISense_Sight::StaticClass());
+void ARCharacterBase::InitAbilities()
+{
+	AbilitySystemComponent->GrantInitialAbilities();
+}
+
+void ARCharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+	InitStatusHUD();
+}
+
+// Called every frame
+void ARCharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+void ARCharacterBase::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	SetupAbilitySystemComponent();
+	InitAttributes();
+	InitAbilities();
+
+	if (NewController && !NewController->IsPlayerController())
+	{
+		SetupAbilitySystemComponent();
+		InitAttributes();
+		InitAbilities();
+	}
+
+	if (HasAuthority() && Controller && Controller->IsPlayerController())
+	{
+		APlayerController* OwningPlayerController = Cast<APlayerController>(Controller);
+		// Find the ID
+
+		TeamId = FGenericTeamId(1);
+	}
+}
+
+void ARCharacterBase::InitStatusHUD()
+{
+	HealthBar = Cast<UHealthBar>(HealthBarWidgetComp->GetUserWidgetObject());
+	if (!HealthBar)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s can't spawn health has the wrong widget setup"), *GetName());
+		return;
+	}
+
+	HealthBar->SetRenderScale(FVector2D{ 0.5f });
+
+	UE_LOG(LogTemp, Error, TEXT("health is: %d / %d"), AttributeSet->GetHealth(), AttributeSet->GetMaxHealth());
+	HealthBar->SetHealth(AttributeSet->GetHealth(), AttributeSet->GetMaxHealth());
+
+	if (IsLocallyControlled())
+	{
+		if (GetController() && GetController()->IsPlayerController())
+			HealthBar->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+UAbilitySystemComponent* ARCharacterBase::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+
+void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	if (HealthBar)
+		HealthBar->SetHealth(ChangeData.NewValue, AttributeSet->GetMaxHealth());
+
+	if (HasAuthority())
+	{
+		if (ChangeData.NewValue >= AttributeSet->GetMaxHealth())
+		{
+			AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetFullHealthTag());
+		}
+		else
+		{
+			AbilitySystemComponent->RemoveLooseGameplayTag(URAbilityGenericTags::GetFullHealthTag());
+		}
+	}
+
+	if (ChangeData.NewValue <= 0)
+	{
+		// die
+	}
+}
+
+void ARCharacterBase::MaxHealthUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	if (HealthBar)
+		HealthBar->SetHealth(AttributeSet->GetHealth(), ChangeData.NewValue);
+}
+
+void ARCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(ARCharacterBase, TeamId, COND_None);
 }

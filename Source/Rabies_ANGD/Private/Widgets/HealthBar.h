@@ -27,5 +27,8 @@ private:
 	class UProgressBar* ProgressBar;
 
 	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
+	class UProgressBar* ShaderBar;
+
+	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
 	class UTextBlock* DisplayText;
 };
