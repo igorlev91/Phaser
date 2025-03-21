@@ -6,8 +6,13 @@
 #include "Framework/EOSGameState.h"
 #include "Engine/World.h"
 #include "Components/ListView.h"
+#include "Framework/RCharacterDefination.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/TileView.h"
+#include "Engine/Engine.h"
+#include "Player/RCharacterSelectController.h"
 #include "GameFramework/PlayerState.h"
+#include "Widgets/CharacterEntry.h"
 
 void ULobbyDisplay::NativeConstruct()
 {
@@ -23,11 +28,16 @@ void ULobbyDisplay::NativeConstruct()
 		GameState->OnSessionNameReplicated.AddDynamic(this, &ULobbyDisplay::SessionNameReplicated);
 	
 		LobbyPlayerList->SetListItems(GameState->PlayerArray);
+		CharacterListIcon->SetListItems(GameState->PlayerArray);
+
+		FString displayNumText = FString(LobbyPlayerList->GetNumItems() + "/4");
+		LobbyPlayerNumber->SetText(FText::FromString(displayNumText));
 
 		GetWorld()->GetTimerManager().SetTimer(PlayerListUpdateHandle, this, &ULobbyDisplay::RefreshPlayerList, 1, true);
+
+
+		GameState->OnCharacterSelectionReplicated.AddDynamic(this, &ULobbyDisplay::CharacterSelectionReplicated);
 	}
-
-
 }
 
 void ULobbyDisplay::SessionNameReplicated(const FName& newSessionName)
@@ -40,8 +50,28 @@ void ULobbyDisplay::RefreshPlayerList()
 	if (GameState)
 	{
 		LobbyPlayerList->SetListItems(GameState->PlayerArray);
+		CharacterListIcon->SetListItems(GameState->PlayerArray);
 
 		FString displayNumText = FString(LobbyPlayerList->GetNumItems() + "/4");
 		LobbyPlayerNumber->SetText(FText::FromString(displayNumText));
+	}
+}
+
+void ULobbyDisplay::CharacterSelectionReplicated(const URCharacterDefination* selected, const URCharacterDefination* deselcted)
+{
+	ARCharacterSelectController* playerSelectControler = Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController());
+
+	if (selected != nullptr && playerSelectControler != nullptr)
+	{
+		UCharacterEntry* characterEntry = Cast<UCharacterEntry>(CharacterListIcon->GetDisplayedEntryWidgets()[playerSelectControler->GetPlayerID()]);
+		if (characterEntry)
+		{
+			characterEntry->SetCharacterIcon(selected);
+		}
+	}
+	
+	if (deselcted != nullptr)
+	{
+		// keeping this in here for when we need to repicate the cages and look of the game
 	}
 }

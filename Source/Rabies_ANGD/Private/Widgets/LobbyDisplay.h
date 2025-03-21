@@ -24,6 +24,9 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UListView* LobbyPlayerList;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTileView* CharacterListIcon;
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -37,6 +40,9 @@ private:
 
 	UFUNCTION()
 	void RefreshPlayerList();
+
+	UFUNCTION()
+	void CharacterSelectionReplicated(const class URCharacterDefination* selected, const class URCharacterDefination* deselcted);
 
 	FTimerHandle PlayerListUpdateHandle;
 };

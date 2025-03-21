@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "RCharacterSelectController.generated.h"
 
+class AEOSPlayerState;
 /**
  * 
  */
@@ -13,6 +14,12 @@ UCLASS()
 class ARCharacterSelectController : public APlayerController
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void OnRep_PlayerState() override;
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnRep_PlayerState"))
+	void BP_OnRep_PlayerState();
 
 public:
 	//this function calls only on the server
@@ -23,6 +30,11 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void ConfirmCharacterChoice();
+
+	int GetPlayerID();
+
 private:
 	void PostPossessionSetup(APawn* NewPawn);
 
@@ -30,6 +42,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<class UCharacterSelect> CharacterSelectUIClass;
+
+	UPROPERTY()
+	class URCharacterDefination* CurrentlyHoveredCharacter;
+
+	UPROPERTY()
+	class AEOSGameState* GameState;
 
 	UPROPERTY()
 	UCharacterSelect* CharacterSelectUI;

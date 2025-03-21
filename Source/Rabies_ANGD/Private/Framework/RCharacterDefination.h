@@ -18,6 +18,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	FName CharacterName;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	UTexture* CharacterIcon;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Character Piece")
 	TSubclassOf<class UAnimInstance> CharacterAnimationInstance;
 
