@@ -4,26 +4,39 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
-#include "GA_Scoping.generated.h"
+#include "GA_Attack.generated.h"
 
 /**
- *
+ * 
  */
 UCLASS()
-class UGA_Scoping : public UGA_AbilityBase
+class UGA_Attack : public UGA_AbilityBase
 {
-	
+
 public:
-	UGA_Scoping();
+	UGA_Attack();
 
 private:
 	GENERATED_BODY()
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	TSubclassOf<class UGameplayEffect> ScopeSlowdownClass;
+	UFUNCTION()
+	void HandleDamage(FGameplayEventData Payload);
 
 	UFUNCTION()
-	void StopScoping(FGameplayEventData Payload);
+	void TryCommitAttack(FGameplayEventData Payload);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> DamageTest;
+
+	UFUNCTION()
+	void AbilityInputPressed(float TimeWaited);
+
+	bool bAttackCommitted;
+
+	void SetupWaitInputTask();
+
+	UFUNCTION()
+	void StopAttacking(FGameplayEventData Payload);
 };

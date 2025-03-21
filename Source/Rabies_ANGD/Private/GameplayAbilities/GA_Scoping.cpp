@@ -2,8 +2,15 @@
 
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+#include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
+
+#include "GameplayAbilities/RAbilitySystemComponent.h"
+
+#include "Player/RPlayerBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UGA_Scoping::UGA_Scoping()
 {
@@ -12,21 +19,43 @@ UGA_Scoping::UGA_Scoping()
 
 void UGA_Scoping::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-
-	UAbilityTask_WaitCancel* WaitCancel = UAbilityTask_WaitCancel::WaitCancel(this);
-	WaitCancel->OnCancel.AddDynamic(this, &UGA_Scoping::StopScoping); // Use a WaitEvent instead of waitCancel, WaitCancel is a generic keyword used a lot
-	WaitCancel->ReadyForActivation();
-
 	if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Ending scope no authority"));
 		K2_EndAbility();
 		return;
 	}
+
+	//UAbilityTask_WaitCancel* WaitCancel = UAbilityTask_WaitCancel::WaitCancel(this);
+	//WaitCancel->OnCancel.AddDynamic(this, &UGA_Scoping::StopScoping); // Use a WaitEvent instead of waitCancel, WaitCancel is a generic keyword used a lot
+	//WaitCancel->ReadyForActivation();
+
+	UAbilityTask_WaitGameplayEvent* WaitStopEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetEndScopingTag());
+	WaitStopEvent->EventReceived.AddDynamic(this, &UGA_Scoping::StopScoping);
+	WaitStopEvent->ReadyForActivation();
+
+	if (K2_HasAuthority())
+	{
+		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(ScopeSlowdownClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
+		//ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
+	}
 }
 
-void UGA_Scoping::StopScoping()
+void UGA_Scoping::StopScoping(FGameplayEventData Payload)
 {
-	UE_LOG(LogTemp, Error, TEXT("Target scoping cancelled"));
+	URAbilitySystemComponent* AbilitySystem = Cast<URAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
+	if (AbilitySystem)
+	{
+		FGameplayEffectQuery Query;
+		Query.EffectDefinition = ScopeSlowdownClass;
+
+		const TArray<FActiveGameplayEffectHandle>& ActiveEffects = AbilitySystem->GetActiveEffects(Query);
+		if (ActiveEffects.Num() > 0)
+		{
+			AbilitySystem->RemoveActiveGameplayEffect(ActiveEffects[0]);
+		}
+	}
+
 	K2_EndAbility();
 }

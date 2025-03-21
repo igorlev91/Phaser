@@ -23,5 +23,8 @@ public:
 	static FGameplayTag GetSpecialAttackActivationTag();
 	static FGameplayTag GetUltimateAttackActivationTag();
 	static FGameplayTag GetScopingTag();
+	static FGameplayTag GetEndScopingTag();
+	static FGameplayTag GetAttackingTag();
+	static FGameplayTag GetEndAttackTag();
 
 };

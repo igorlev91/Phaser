@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/GameStateBase.h"
 #include "Widgets/CharacterSelect.h"
 #include "Framework/RCharacterDefination.h"
 
@@ -19,6 +20,7 @@ void ARCharacterSelectController::OnRep_PlayerState()
 	
 	if (IsLocalPlayerController()) //maybe also check if they have authority?
 	{
+		myPlayerID = GetPlayerID();
 		CreateCharacterSelectUI();
 	}
 }
@@ -73,13 +75,16 @@ void ARCharacterSelectController::ConfirmCharacterChoice()
 
 int ARCharacterSelectController::GetPlayerID()
 {
-	AEOSPlayerState* playerState = Cast<AEOSPlayerState>(PlayerState);
-	if (playerState != nullptr)
+	for (int i = 0; i < GameState->PlayerArray.Num(); i++)
 	{
-		//return playerState->; do some logic to make this work based on the player that it is
+		//AEOSPlayerState* currentPlayer = Cast<AEOSPlayerState>(GameState->PlayerArray[i]);
+		//if (myPlayerID == GameState->PlayerArray[i].)
+		//{
+		//	return i;
+		//}
 	}
 
-	return 0;
+	return 1;
 }
 
 void ARCharacterSelectController::PostPossessionSetup(APawn* NewPawn)

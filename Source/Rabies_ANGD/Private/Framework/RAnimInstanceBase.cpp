@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 
 #include "GameFramework/Character.h"
+#include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
@@ -26,7 +27,8 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 		UAbilitySystemComponent* OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TryGetPawnOwner());
 		if (OwnerASC)
 		{
-			//OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAimingTag()).AddUObject(this, &URAnimInstanceBase::AimingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &URAnimInstanceBase::ScopingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAttackingTag()).AddUObject(this, &URAnimInstanceBase::AttackingTagChanged);
 		}
 	}
 
@@ -67,4 +69,9 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 void URAnimInstanceBase::ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
 	bIsScoping = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bAttacking = NewStackCount != 0;
 }

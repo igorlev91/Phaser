@@ -28,6 +28,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	bool bRangedAttacking;
+
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Input")
@@ -109,6 +111,10 @@ private:
 
 	UFUNCTION()
 	void DoBasicAttack();
+
+	UFUNCTION()
+	void StopBasicAttack();
+
 
 	UFUNCTION()
 	void EnableScoping();

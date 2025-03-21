@@ -51,4 +51,6 @@ private:
 
 	UPROPERTY()
 	UCharacterSelect* CharacterSelectUI;
+
+	int myPlayerID;
 };

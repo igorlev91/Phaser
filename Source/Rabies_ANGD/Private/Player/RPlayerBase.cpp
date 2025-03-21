@@ -29,6 +29,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SceneComponent.h"
 
+#define ECC_RangedAttack ECC_GameTraceChannel2
+
 ARPlayerBase::ARPlayerBase()
 {
 	viewPivot = CreateDefaultSubobject<USceneComponent>("Camera Pivot");
@@ -59,13 +61,16 @@ void ARPlayerBase::Tick(float DeltaTime)
 	{
 		FRotator playerRot = viewPivot->GetRelativeRotation();
 		playerRot.Roll = 0;
-		SetActorRotation(playerRot);
+		SetActorRotation(playerRot); // replciate this movement as well as Movement Component
 	}
 }
 
 void ARPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//SetReplicates(true);
+	//SetReplicateMovement(true);
 
 	playerController = Cast<ARPlayerController>(GetController());
 }
@@ -94,8 +99,9 @@ void ARPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		enhancedInputComp->BindAction(jumpInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Jump);
 		enhancedInputComp->BindAction(QuitOutAction, ETriggerEvent::Triggered, this, &ARPlayerBase::QuitOut);
 		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::DoBasicAttack);
+		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Completed, this, &ARPlayerBase::StopBasicAttack);
 		enhancedInputComp->BindAction(scopeInputAction, ETriggerEvent::Started, this, &ARPlayerBase::EnableScoping);
-		enhancedInputComp->BindAction(scopeInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::DisableScoping);
+		enhancedInputComp->BindAction(scopeInputAction, ETriggerEvent::Completed, this, &ARPlayerBase::DisableScoping);
 		enhancedInputComp->BindAction(scrollInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Scroll);
 		enhancedInputComp->BindAction(specialAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::TryActivateSpecialAttack);
 		enhancedInputComp->BindAction(ultimateAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::TryActivateUltimateAttack);
@@ -141,6 +147,12 @@ void ARPlayerBase::DoBasicAttack()
 	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
 }
 
+void ARPlayerBase::StopBasicAttack()
+{
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndAttackTag(), eventData);
+}
+
 void ARPlayerBase::EnableScoping()
 {
 	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Scoping);
@@ -148,7 +160,8 @@ void ARPlayerBase::EnableScoping()
 
 void ARPlayerBase::DisableScoping()
 {
-	GetAbilitySystemComponent()->InputCancel();
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndScopingTag(), eventData);
 }
 
 void ARPlayerBase::Scroll(const FInputActionValue& InputActionVal)
@@ -204,7 +217,7 @@ void ARPlayerBase::Interact()
 
 void ARPlayerBase::Pause()
 {
-	ARGameMode* GameMode = GetWorld()->GetAuthGameMode<ARGameMode>();
+	/*ARGameMode* GameMode = GetWorld()->GetAuthGameMode<ARGameMode>();
 	isPaused = !isPaused;
 
 	if (isPaused)
@@ -216,7 +229,7 @@ void ARPlayerBase::Pause()
 	{
 		GameMode->PausingGame(isPaused);
 		//Return all controls to the characters when they are unpaused.
-	}
+	}*/
 }
 
 FVector ARPlayerBase::GetMoveFwdDir() const

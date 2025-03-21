@@ -72,6 +72,8 @@ private:
 
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
+	void MovementSpeedUpdated(const FOnAttributeChangeData& ChangeData);
+
 
 private:
 
