@@ -10,7 +10,7 @@
 
 #include "EOSGameInstance.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnSessionSearchCompleted, TArray<class FOnlineSessionSearchResult> /* Seach results */);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnSessionSearchCompleted, const TArray<class FOnlineSessionSearchResult>& /* Seach results */);
 /**
  * 
  */
@@ -21,6 +21,8 @@ class UEOSGameInstance : public UGameInstance
 	
 public:
 	FOnSessionSearchCompleted SearchCompleted;
+
+	void JoinLobbyBySearchIndex(int index);
 
 	UFUNCTION(BlueprintCallable)
 	void Login();
@@ -36,11 +38,16 @@ public:
 	void JoinSessionWithSearchResultIndex(int SearchResultIndex);
 
 	FString GetSessionName(const FOnlineSessionSearchResult& SearchResult) const;
+	FORCEINLINE FName GetCurrentSessionName() const { return CurrentLobbyName; }
+
+	void SetMenuController(class ARMainMenuController* menuController);
 
 protected:
 	virtual void Init() override;
 
 private:
+	class ARMainMenuController* MenuController;
+
 	class IOnlineSubsystem* onlineSubsystem;
 	IOnlineIdentityPtr identityPtr;
 	IOnlineSessionPtr sessionPtr;
@@ -54,5 +61,12 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> GameLevel;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> CharacterSelctLevel;
+
 	FName SessionNameKey{ "SessionName" };
+
+	void LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad);
+
+	FName CurrentLobbyName;
 };

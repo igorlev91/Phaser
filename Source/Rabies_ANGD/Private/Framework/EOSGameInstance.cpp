@@ -6,18 +6,60 @@
 #include "Online/OnlineSessionNames.h"
 #include "OnlineSessionSettings.h"
 
+#include "Engine/World.h"
+
+#include "Player/RMainMenuController.h"
 
 #include "Kismet/GameplayStatics.h"
 
 void UEOSGameInstance::Login()
 {
+
 	if (identityPtr)
 	{
-		FOnlineAccountCredentials onlineAccountCredentials;
-		onlineAccountCredentials.Type = "accountportal";
-		onlineAccountCredentials.Id = "";
-		onlineAccountCredentials.Token = "";
-		identityPtr->Login(0, onlineAccountCredentials);
+		int32 loginStatus = identityPtr->GetLoginStatus(0);
+
+		if (loginStatus == 2) //player is already logged in
+		{
+			if (MenuController)
+			{
+				MenuController->ChangeMainMenuState(false);
+				MenuController->ChangeOnlineMenuState(true);
+				UE_LOG(LogTemp, Warning, TEXT("Already Logged in"));
+			}
+		}
+		else
+		{
+			FOnlineAccountCredentials onlineAccountCredentials;
+			onlineAccountCredentials.Type = "accountportal";
+			onlineAccountCredentials.Id = "";
+			onlineAccountCredentials.Token = "";
+			identityPtr->Login(0, onlineAccountCredentials);
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Login Status: %d"), loginStatus);
+	}
+}
+
+void UEOSGameInstance::LoginCompleted(int numOfPlayers, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error)
+{
+	if (bWasSuccessful)
+	{
+		if (MenuController)
+		{
+			MenuController->ChangeMainMenuState(false);
+			MenuController->ChangeOnlineMenuState(true);
+			UE_LOG(LogTemp, Warning, TEXT("Logged in"));
+		}
+	}
+	else
+	{
+		if (MenuController)
+		{
+			MenuController->ChangeMainMenuState(true);
+			MenuController->ChangeOnlineMenuState(false);
+			UE_LOG(LogTemp, Warning, TEXT("Failed to Login"));
+		}
 	}
 }
 
@@ -36,9 +78,11 @@ void UEOSGameInstance::CreateSession(const FName& SessionName)
 		SessionSettings.bAllowJoinViaPresence = true;
 		SessionSettings.bUseLobbiesIfAvailable = true;
 		SessionSettings.bUsesPresence= true;
-		SessionSettings.NumPublicConnections = 10;
+		SessionSettings.NumPublicConnections = 4;
 
 		SessionSettings.Set(GetSessionNameKey(), SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+		CurrentLobbyName = SessionName;
 
 		sessionPtr->CreateSession(0, SessionName, SessionSettings);
 	}
@@ -71,11 +115,32 @@ void UEOSGameInstance::JoinSessionWithSearchResultIndex(int SearchResultIndex)
 	sessionPtr->JoinSession(0, FName{ SessionName }, SearchResult);
 }
 
+void UEOSGameInstance::JoinLobbyBySearchIndex(int index)
+{
+	if (index < 0 || index >= sessionSearch->SearchResults.Num())
+	{
+		return;
+	}
+
+	const auto& searchResult = sessionSearch->SearchResults[index];
+	FString sessionName = GetSessionName(searchResult);
+
+	if (sessionPtr)
+	{
+		sessionPtr->JoinSession(0, FName(sessionName), searchResult);
+	}
+}
+
 FString UEOSGameInstance::GetSessionName(const FOnlineSessionSearchResult& SearchResult) const
 {
 	FString searchResultValue = "Name None";
 	SearchResult.Session.SessionSettings.Get(GetSessionNameKey(), searchResultValue);
 	return searchResultValue;
+}
+
+void UEOSGameInstance::SetMenuController(ARMainMenuController* menuController)
+{
+	MenuController = menuController;
 }
 
 void UEOSGameInstance::Init()
@@ -94,38 +159,13 @@ void UEOSGameInstance::Init()
 	sessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::JoinSessionCompleted);
 }
 
-void UEOSGameInstance::LoginCompleted(int numOfPlayers, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error)
-{
-	if (bWasSuccessful)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Logged in"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to Login"));
-	}
-
-
-}
-
 void UEOSGameInstance::CreateSessionCompleted(FName SessionName, bool bWasSuccessful)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Creating Session completed"));
 
 	if (bWasSuccessful)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Logged into session"));
-
-		if (!GameLevel.IsValid())
-		{
-			GameLevel.LoadSynchronous();
-		}
-
-		if (GameLevel.IsValid())
-		{
-			const FName levelName = FName(*FPackageName::ObjectPathToPackageName(GameLevel.ToString()));
-			GetWorld()->ServerTravel(levelName.ToString() + "?listen");
-		}
+		LoadMapAndListen(CharacterSelctLevel);
 	}
 }
 
@@ -144,7 +184,7 @@ void UEOSGameInstance::FindSessionsCompleted(bool bWasSuccessful)
 
 		SearchCompleted.Broadcast(sessionSearch->SearchResults);
 
-		JoinSessionWithSearchResultIndex(0);
+		//JoinSessionWithSearchResultIndex(0);
 	}
 }
 
@@ -156,6 +196,20 @@ void UEOSGameInstance::JoinSessionCompleted(FName sessionName, EOnJoinSessionCom
 		FString TravelURL;
 		sessionPtr->GetResolvedConnectString(sessionName, TravelURL);
 		GetFirstLocalPlayerController(GetWorld())->ClientTravel(TravelURL, TRAVEL_Absolute);
+	}
+}
+
+void UEOSGameInstance::LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad)
+{
+	if (!levelToLoad.IsValid())
+	{
+		levelToLoad.LoadSynchronous();
+	}
+
+	if (levelToLoad.IsValid())
+	{
+		const FName levelName = FName(*FPackageName::ObjectPathToPackageName(levelToLoad.ToString()));
+		GetWorld()->ServerTravel(levelName.ToString() + "?listen");
 	}
 }
 

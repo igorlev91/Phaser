@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+
+#include "Interfaces/OnlineIdentityInterface.h"
+#include "Interfaces/OnlineSessionInterface.h"
+
 #include "ConnectOnlineMenu.generated.h"
 
 /**
@@ -20,27 +24,47 @@ protected:
 	class UEOSGameInstance* GameInst;
 
 private:
-	UPROPERTY(meta = (BindWidget))
-	class UButton* LoginButton;
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* CreateSessionButton;
+	class URButton* ReturnBtn;
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* FindSessionsButton;
+	class URButton* CreateSessionBtn;
+
+	UPROPERTY(meta = (BindWidget))
+	class URButton* FindSessionsBtn;
+
+	UPROPERTY(meta = (BindWidget))
+	class URButton* JoinLobbyBtn;
 
 	UPROPERTY(meta = (BindWidget))
 	class UEditableText* SessionNameText;
 
-	UFUNCTION()
-	void SessionNameTextChanged(const FText& NewText);
+	UPROPERTY(meta = (BindWidget))
+	class UScrollBox* LobbyListScrollBox;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Lobby")
+	TSubclassOf<class UOpenLobby> OnlineLobbyClass;
 
 	UFUNCTION()
-	void LoginButtonClicked();
+	void SessionNameTextChanged(const FText& NewText);
 
 	UFUNCTION()
 	void CreateSessionButtonClicked();
 
 	UFUNCTION()
 	void FindSessionsButtonClicked();
+
+	void SessionSearchCompleted(const TArray<FOnlineSessionSearchResult>& searchResults);
+
+	UFUNCTION()
+	void LobbySelected(int lobbyIndex);
+
+	UFUNCTION()
+	void Return();
+
+	UFUNCTION()
+	void JoinLobbyButtonClicked();
+
+	int SelectedLobbyIndex = -1;
 };
