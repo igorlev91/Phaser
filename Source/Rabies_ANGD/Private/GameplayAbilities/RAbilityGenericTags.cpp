@@ -52,3 +52,23 @@ FGameplayTag URAbilityGenericTags::GetEndAttackTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.attack.endAttack");
 }
+
+FGameplayTag URAbilityGenericTags::GetUnActionableTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.unActionable");
+}
+
+FGameplayTag URAbilityGenericTags::GetFlyingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.flying");
+}
+
+FGameplayTag URAbilityGenericTags::GetEndFlyingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.endFlying");
+}
+
+FGameplayTag URAbilityGenericTags::GetEndTakeOffChargeTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.endTakeOffCharge");
+}

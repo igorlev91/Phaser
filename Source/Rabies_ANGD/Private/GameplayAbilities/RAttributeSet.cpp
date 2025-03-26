@@ -13,7 +13,8 @@ void URAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, flo
 
 	if (Attribute == GetMovementSpeedAttribute())
 	{
-		//UE_LOG(LogTemp, Error, TEXT("Move Speed"));
+		//MovementSpeed = NewValue;
+		UE_LOG(LogTemp, Error, TEXT("Move speed pre attribute is: %f"), NewValue);
 	}
 }
 

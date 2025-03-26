@@ -43,6 +43,9 @@ public:
 	bool ShouldDoUpperBody() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool ShouldDotBeFlapping() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
 	bool GetIsAiming() const { return bIsScoping; }
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
@@ -53,6 +56,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
 	bool GetRangedAttacking() const { return bAttacking && bIsScoping; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool GetFlying() const { return bFlying; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool IsMovingInAir() const { return AirSpeed != 0; }
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
@@ -70,6 +79,7 @@ private:
 	const UCharacterMovementComponent* OwnerMovementComp;
 
 	float Speed;
+	float AirSpeed;
 	bool bIsJumping;
 	FRotator LookOffset;
 
@@ -82,7 +92,9 @@ private:
 	bool bIsScoping;
 
 	bool bAttacking;
+	bool bFlying;
 
 	void AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	void FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 };

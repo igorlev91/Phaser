@@ -1,14 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameplayAbilities/AnimNotify_SendGameplayEvent.h"
+#include "GameplayAbilities/AnimNotify_AddOrRemoveLooseTag.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
+#include "GameplayAbilities/RAbilityGenericTags.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameplayTagsManager.h"
 
-void UAnimNotify_SendGameplayEvent::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UAnimNotify_AddOrRemoveLooseTag::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
@@ -17,10 +18,18 @@ void UAnimNotify_SendGameplayEvent::Notify(USkeletalMeshComponent* MeshComp, UAn
 	UAbilitySystemComponent* OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(MeshComp->GetOwner());
 	if (!OwnerASC) return;
 
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(MeshComp->GetOwner(), EventTag, FGameplayEventData());
+	if (bAddTag)
+	{
+		OwnerASC->AddLooseGameplayTag(EventTag);
+	}
+	else
+	{
+		OwnerASC->RemoveLooseGameplayTag(EventTag);
+	}
 }
 
-FString UAnimNotify_SendGameplayEvent::GetNotifyName_Implementation() const
+
+FString UAnimNotify_AddOrRemoveLooseTag::GetNotifyName_Implementation() const
 {
 	if (EventTag.IsValid())
 	{

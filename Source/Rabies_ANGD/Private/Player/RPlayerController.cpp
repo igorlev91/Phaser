@@ -72,3 +72,8 @@ void ARPlayerController::ChangeCrosshairState(bool state)
 	GameplayUI->SetCrosshairState(state);
 
 }
+
+void ARPlayerController::ChangeTakeOffState(bool state, float charge)
+{
+	GameplayUI->SetTakeOffBarState(state, charge);
+}

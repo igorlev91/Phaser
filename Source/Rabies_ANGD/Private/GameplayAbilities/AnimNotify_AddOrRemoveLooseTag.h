@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "GameplayTagContainer.h"
-#include "AnimNotify_SendGameplayEvent.generated.h"
+#include "AnimNotify_AddOrRemoveLooseTag.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UAnimNotify_SendGameplayEvent : public UAnimNotify
+class UAnimNotify_AddOrRemoveLooseTag : public UAnimNotify
 {
 	GENERATED_BODY()
 	
@@ -19,6 +19,9 @@ class UAnimNotify_SendGameplayEvent : public UAnimNotify
 
 	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
 	FGameplayTag EventTag;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
+	bool bAddTag;
 
 	virtual FString GetNotifyName_Implementation() const override;
 };

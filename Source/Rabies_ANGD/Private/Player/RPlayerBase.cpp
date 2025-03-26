@@ -7,12 +7,11 @@
 #include "EnhancedInputComponent.h"
 #include "Player/RPlayerController.h"
 
-#include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
+#include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
-#include "GameplayAbilities/RAbilityGenericTags.h"
 #include "Animation/AnimInstance.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
@@ -29,8 +28,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SceneComponent.h"
 
-#define ECC_RangedAttack ECC_GameTraceChannel2
-
 ARPlayerBase::ARPlayerBase()
 {
 	viewPivot = CreateDefaultSubobject<USceneComponent>("Camera Pivot");
@@ -45,6 +42,7 @@ ARPlayerBase::ARPlayerBase()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(1080.f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->AirControl = 0.7f;
 
 	cameraClampMax = 10;
 	cameraClampMin = -60;
@@ -56,6 +54,19 @@ void ARPlayerBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
+
+	if (IsFlying() && GetCharacterMovement()->IsFalling() == false && bHoldingJump == false)
+	{
+		FGameplayEventData eventData;
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndFlyingTag(), eventData);
+	}
+
+	if (IsFlying() && bHoldingJump)
+	{
+		FVector NewVelocity = GetVelocity();
+		NewVelocity.Z = FMath::Lerp(NewVelocity.Z, -0.1f, 4 * DeltaTime);
+		GetCharacterMovement()->Velocity = NewVelocity;
+	}
 	
 	if (bIsScoping)
 	{
@@ -68,9 +79,6 @@ void ARPlayerBase::Tick(float DeltaTime)
 void ARPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//SetReplicates(true);
-	//SetReplicateMovement(true);
 
 	playerController = Cast<ARPlayerController>(GetController());
 }
@@ -96,7 +104,8 @@ void ARPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	{
 		enhancedInputComp->BindAction(moveInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Move);
 		enhancedInputComp->BindAction(lookInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Look);
-		enhancedInputComp->BindAction(jumpInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Jump);
+		enhancedInputComp->BindAction(jumpInputAction, ETriggerEvent::Started, this, &ARPlayerBase::StartJump);
+		enhancedInputComp->BindAction(jumpInputAction, ETriggerEvent::Completed, this, &ARPlayerBase::ReleaseJump);
 		enhancedInputComp->BindAction(QuitOutAction, ETriggerEvent::Triggered, this, &ARPlayerBase::QuitOut);
 		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::DoBasicAttack);
 		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Completed, this, &ARPlayerBase::StopBasicAttack);
@@ -114,6 +123,8 @@ void ARPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void ARPlayerBase::Move(const FInputActionValue& InputValue)
 {
+	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetUnActionableTag()) || GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag())) return;
+
 	FVector2D input = InputValue.Get<FVector2D>();
 	input.Normalize();
 
@@ -131,6 +142,32 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 	newRot.Pitch = FMath::ClampAngle(newRot.Pitch, cameraClampMin, cameraClampMax);
 
 	viewPivot->SetWorldRotation(newRot);
+}
+
+void ARPlayerBase::StartJump()
+{
+	if (bInstantJump)
+	{
+		Jump();
+		return;
+	}
+
+	bHoldingJump = true;
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Passive); // Dot's jump fly
+}
+
+void ARPlayerBase::ReleaseJump()
+{
+	if (bInstantJump) return;
+
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndTakeOffChargeTag(), eventData);
+
+	bHoldingJump = false;
+	if (!IsFlying())
+	{
+		Jump();
+	}
 }
 
 void ARPlayerBase::QuitOut()
@@ -246,7 +283,7 @@ FVector ARPlayerBase::GetMoveRightDir() const
 
 void ARPlayerBase::ScopingTagChanged(bool bNewIsAiming)
 {
-	//bUseControllerRotationYaw = bNewIsAiming;
+	bUseControllerRotationYaw = bNewIsAiming;
 	bIsScoping = bNewIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bNewIsAiming;
 

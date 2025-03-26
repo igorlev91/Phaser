@@ -24,6 +24,9 @@ public:
 	UFUNCTION()
 	void ChangeCrosshairState(bool state);
 
+	UFUNCTION()
+	void ChangeTakeOffState(bool state, float charge);
+
 private:
 	void PostPossessionSetup(APawn* NewPawn);
 

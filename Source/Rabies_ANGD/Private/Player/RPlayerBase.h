@@ -30,10 +30,10 @@ public:
 
 	bool bRangedAttacking;
 
-private:
-
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	class ARPlayerController* playerController;
+
+private:
 
 	UPROPERTY(VisibleAnywhere, Category = "View")
 	USceneComponent* viewPivot;
@@ -67,6 +67,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* jumpInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float SuperJumpHoldDuration = 1;
+
+	float CurrentJumpHoldDuration;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* scopeInputAction;
@@ -105,6 +110,12 @@ private:
 
 	UFUNCTION()
 	void Look(const FInputActionValue& InputValue);
+
+	UFUNCTION()
+	void StartJump();
+
+	UFUNCTION()
+	void ReleaseJump();
 
 	UFUNCTION()
 	void QuitOut();
@@ -162,7 +173,7 @@ private:
 
 	bool canInteract;
 
-	public:
+public:
 	void SetInteraction(bool setInteract);
 
 	/////////////////////////////////
@@ -171,7 +182,20 @@ private:
 
 	bool isPaused;
 
-	public:
 	void SetPausetoFalse();
 
+	/////////////////////////////////
+	/*          Anim	           */
+	////////////////////////////////
+
+	/////////////////////////////////
+	/*          Passives           */
+	////////////////////////////////
+
+private:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Passive")
+	bool bInstantJump;
+
+	bool bHoldingJump = false;
 };

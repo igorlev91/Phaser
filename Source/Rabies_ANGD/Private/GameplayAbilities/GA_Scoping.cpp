@@ -7,6 +7,8 @@
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+#include "Net/UnrealNetwork.h"
+
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 
 #include "Player/RPlayerBase.h"
@@ -25,10 +27,6 @@ void UGA_Scoping::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 		K2_EndAbility();
 		return;
 	}
-
-	//UAbilityTask_WaitCancel* WaitCancel = UAbilityTask_WaitCancel::WaitCancel(this);
-	//WaitCancel->OnCancel.AddDynamic(this, &UGA_Scoping::StopScoping); // Use a WaitEvent instead of waitCancel, WaitCancel is a generic keyword used a lot
-	//WaitCancel->ReadyForActivation();
 
 	UAbilityTask_WaitGameplayEvent* WaitStopEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetEndScopingTag());
 	WaitStopEvent->EventReceived.AddDynamic(this, &UGA_Scoping::StopScoping);

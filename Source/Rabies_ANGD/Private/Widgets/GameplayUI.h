@@ -25,6 +25,9 @@ public:
 	UFUNCTION()
 	void SetCrosshairState(bool state);
 
+	UFUNCTION()
+	void SetTakeOffBarState(bool state, float charge);
+
 private:
 	//************************//
 	//        Health         //
@@ -45,6 +48,13 @@ private:
 
 	UPROPERTY()
 	const class UAbilitySystemComponent* OwnerAbilitySystemComponent;
+
+	//************************//
+	//        Abilites         //
+	//************************//
+
+	UPROPERTY(meta = (BindWidget))
+	class UChageBar* SuperJumpChargeBar;
 
 	//************************//
 	//     Test n' Online      //

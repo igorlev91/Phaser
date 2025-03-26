@@ -11,6 +11,9 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 
+#include "Widgets/ChageBar.h"
+#include "Components/ProgressBar.h"
+
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -47,6 +50,13 @@ void UGameplayUI::SetCrosshairState(bool state)
 {
 	Crosshair->SetVisibility((state) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	crosshairState = state;
+}
+
+void UGameplayUI::SetTakeOffBarState(bool state, float charge)
+{
+	SuperJumpChargeBar->SetVisibility((state) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+	SuperJumpChargeBar->Charge(charge);
 }
 
 void UGameplayUI::HealthUpdated(const FOnAttributeChangeData& ChangeData)

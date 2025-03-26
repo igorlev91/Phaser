@@ -1,3 +1,4 @@
+
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
@@ -26,5 +27,9 @@ public:
 	static FGameplayTag GetEndScopingTag();
 	static FGameplayTag GetAttackingTag();
 	static FGameplayTag GetEndAttackTag();
+	static FGameplayTag GetUnActionableTag();
+	static FGameplayTag GetFlyingTag();
+	static FGameplayTag GetEndFlyingTag();
+	static FGameplayTag GetEndTakeOffChargeTag();
 
 };

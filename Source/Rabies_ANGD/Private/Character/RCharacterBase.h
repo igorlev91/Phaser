@@ -51,6 +51,10 @@ public:
 
 public:
 	FORCEINLINE bool IsScoping() const { return bIsScoping; }
+	FORCEINLINE bool IsFlying() const { return bIsFlying; }
+
+	UFUNCTION()
+	AActor* Hitscan(float range, float sphereRadius);
 
 private:
 
@@ -58,10 +62,15 @@ private:
 	virtual void ScopingTagChanged(bool bNewIsAiming) {/*empty in base*/ };
 	bool bIsScoping;
 
+	void FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	virtual void FlyingTagChanged(bool bNewIsAiming) {/*empty in base*/ };
+	bool bIsFlying;
+	FHitResult hitResult;
+
 	UPROPERTY(VisibleAnywhere, Category = "Gameplay Ability")
 	URAbilitySystemComponent* AbilitySystemComponent;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	URAttributeSet* AttributeSet;
 
 	UPROPERTY(VisibleAnywhere, Category = "UI")
@@ -73,6 +82,13 @@ private:
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MovementSpeedUpdated(const FOnAttributeChangeData& ChangeData);
+
+public:
+	UFUNCTION(NetMulticast, Unreliable)
+	void ClientPlayAnimMontage(UAnimMontage* montage);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void ClientStopAnimMontage(UAnimMontage* montage);
 
 
 private:

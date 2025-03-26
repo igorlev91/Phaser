@@ -13,7 +13,12 @@
 
 bool URAnimInstanceBase::ShouldDoUpperBody() const
 {
-	return IsMoving() || IsJumping() || GetIsAiming();
+	return (IsMoving() || IsJumping() || GetIsAiming());
+}
+
+bool URAnimInstanceBase::ShouldDotBeFlapping() const
+{
+	return (GetFlying() && GetIsAiming());
 }
 
 void URAnimInstanceBase::NativeInitializeAnimation()
@@ -29,6 +34,7 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 		{
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &URAnimInstanceBase::ScopingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAttackingTag()).AddUObject(this, &URAnimInstanceBase::AttackingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &URAnimInstanceBase::FlyingTagChanged);
 		}
 	}
 
@@ -44,6 +50,11 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	if (OwnerCharacter && OwnerMovementComp)
 	{
 		Speed = OwnerCharacter->GetVelocity().Length();
+
+		FVector airVelocity = OwnerCharacter->GetVelocity();
+		airVelocity.Z = 0;
+		AirSpeed = airVelocity.Length();
+
 		bIsJumping = OwnerMovementComp->IsFalling();
 
 		FRotator characterRot = OwnerCharacter->GetActorRotation();
@@ -69,6 +80,11 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 void URAnimInstanceBase::ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
 	bIsScoping = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bFlying = NewStackCount != 0;
 }
 
 void URAnimInstanceBase::AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)

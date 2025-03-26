@@ -9,4 +9,5 @@
 UGA_AbilityBase::UGA_AbilityBase()
 {
 	ActivationBlockedTags.AddTag(URAbilityGenericTags::GetDeadTag());
+	ActivationBlockedTags.AddTag(URAbilityGenericTags::GetUnActionableTag());
 }
