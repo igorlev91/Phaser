@@ -33,6 +33,14 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	class ARPlayerController* playerController;
 
+	UPROPERTY()
+	FVector2D MoveInput;
+
+	bool bHoldingJump = false;
+
+	UFUNCTION()
+	AActor* Hitscan(float range, float sphereRadius);
+
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "View")
@@ -69,11 +77,6 @@ private:
 	UInputAction* jumpInputAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	float SuperJumpHoldDuration = 1;
-
-	float CurrentJumpHoldDuration;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* scopeInputAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -107,6 +110,9 @@ private:
 
 	UFUNCTION()
 	void Move(const FInputActionValue& InputValue);
+
+	UFUNCTION()
+	void RotatePlayer(float DeltaTime);
 
 	UFUNCTION()
 	void Look(const FInputActionValue& InputValue);
@@ -162,6 +168,7 @@ private:
 	void LerpCameraToLocalOffset(const FVector& LocalOffset);
 	void TickCameraLocalOffset(FVector Goal);
 	FTimerHandle CameraLerpHandle;
+	FHitResult hitResult;
 
 	float cameraClampMin;
 	float cameraClampMax;
@@ -188,6 +195,8 @@ public:
 	/*          Anim	           */
 	////////////////////////////////
 
+	FName RangedAttackSocketName = TEXT("Ranged_Socket");
+
 	/////////////////////////////////
 	/*          Passives           */
 	////////////////////////////////
@@ -196,6 +205,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Passive")
 	bool bInstantJump;
-
-	bool bHoldingJump = false;
 };

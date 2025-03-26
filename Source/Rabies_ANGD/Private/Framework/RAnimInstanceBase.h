@@ -61,7 +61,10 @@ public:
 	bool GetFlying() const { return bFlying; }
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
-	bool IsMovingInAir() const { return AirSpeed != 0; }
+	bool IsMovingInAir() const { return AirSpeed >= 300; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool IsHoldingJump() const { return !bHoldingJump; }
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
@@ -81,6 +84,7 @@ private:
 	float Speed;
 	float AirSpeed;
 	bool bIsJumping;
+	bool bHoldingJump;
 	FRotator LookOffset;
 
 	FRotator PrevRot;

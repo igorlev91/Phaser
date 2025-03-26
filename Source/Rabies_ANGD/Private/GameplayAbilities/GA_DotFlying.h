@@ -19,12 +19,16 @@ public:
 
 private:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> FlyingSpeedClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim")
 	UAnimMontage* TakeOffMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Anim")
+	UAnimMontage* HardLandingMontage;
 
 	UFUNCTION()
 	void StopFlying(FGameplayEventData Payload);
@@ -35,9 +39,12 @@ private:
 	FTimerHandle TakeOffHandle;
 
 	float CurrentHoldDuration;
+	bool bFlying;
 
 	void Hold(float timeRemaining);
 
 	UPROPERTY()
 	class ARPlayerBase* Player;
+
+	FActiveGameplayEffectHandle FlyingSpeedEffectHandle;
 };

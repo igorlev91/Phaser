@@ -41,6 +41,8 @@ void UGA_DotFlying::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	if (Player == nullptr)
 		return;
 
+	bFlying = false;
+
 	UAbilityTask_WaitGameplayEvent* EndFlyingEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetEndFlyingTag());
 	EndFlyingEvent->EventReceived.AddDynamic(this, &UGA_DotFlying::StopFlying);
 	EndFlyingEvent->ReadyForActivation();
@@ -48,42 +50,41 @@ void UGA_DotFlying::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	UAbilityTask_WaitGameplayEvent* EndTakeOffEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetEndTakeOffChargeTag());
 	EndTakeOffEvent->EventReceived.AddDynamic(this, &UGA_DotFlying::StopTakeOff);
 	EndTakeOffEvent->ReadyForActivation();
-
+	
 	GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
 	CurrentHoldDuration = 0;
 
 	if (!Player->GetCharacterMovement() || Player->GetCharacterMovement()->IsFalling()) return;
 
-	Player->playerController->ChangeTakeOffState(true, 0);
-	TakeOffHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_DotFlying::Hold, CurrentHoldDuration));
+	
+
+	//Player->playerController->ChangeTakeOffState(true, 0); // THE ISSUE IS THAT THE PLAYERCONTROLLER IS NULL IN ONLINE MULTIPLAYER WHATTTTTTTTTTTTTTTTTTT
+
+	//TakeOffHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_DotFlying::Hold, CurrentHoldDuration));
 }
 
 void UGA_DotFlying::StopFlying(FGameplayEventData Payload)
 {
-	URAbilitySystemComponent* AbilitySystem = Cast<URAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
-	if (AbilitySystem)
-	{
-		FGameplayEffectQuery Query;
-		Query.EffectDefinition = FlyingSpeedClass;
-
-		const TArray<FActiveGameplayEffectHandle>& ActiveEffects = AbilitySystem->GetActiveEffects(Query);
-		if (ActiveEffects.Num() > 0)
-		{
-			AbilitySystem->RemoveActiveGameplayEffect(ActiveEffects[0]);
-		}
-	}
-
 	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetFlyingTag());
 	Player->playerController->ChangeTakeOffState(false, 0);
 	GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
+
+	Player->PlayAnimMontage(HardLandingMontage);
 
 	K2_EndAbility();
 }
 
 void UGA_DotFlying::StopTakeOff(FGameplayEventData Payload)
 {
+	if (bFlying)
+	{
+		return;
+	}
+
 	Player->playerController->ChangeTakeOffState(false, 0);
 	GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
+
+	K2_EndAbility();
 }
 
 void UGA_DotFlying::Hold(float timeRemaining)
@@ -97,14 +98,24 @@ void UGA_DotFlying::Hold(float timeRemaining)
 	}
 	else
 	{
-		Player->playerController->ChangeTakeOffState(false, 0);
-		GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
+		bFlying = true;
 
 		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(FlyingSpeedClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
+		FlyingSpeedEffectHandle = ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
 
+		Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 		Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetUnActionableTag());
 		Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetFlyingTag());
 		Player->PlayAnimMontage(TakeOffMontage);
+	}
+}
+
+void UGA_DotFlying::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (ASC)
+	{
+		ASC->RemoveActiveGameplayEffect(FlyingSpeedEffectHandle);
 	}
 }

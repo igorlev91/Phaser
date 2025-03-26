@@ -54,6 +54,7 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 		FVector airVelocity = OwnerCharacter->GetVelocity();
 		airVelocity.Z = 0;
 		AirSpeed = airVelocity.Length();
+		bHoldingJump = Cast<ARPlayerBase>(OwnerCharacter)->bHoldingJump;
 
 		bIsJumping = OwnerMovementComp->IsFalling();
 

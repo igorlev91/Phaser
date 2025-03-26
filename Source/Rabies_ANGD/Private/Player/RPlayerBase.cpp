@@ -11,12 +11,14 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Animation/AnimInstance.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -28,21 +30,23 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SceneComponent.h"
 
+#define ECC_RangedAttack ECC_GameTraceChannel2
+
 ARPlayerBase::ARPlayerBase()
 {
 	viewPivot = CreateDefaultSubobject<USceneComponent>("Camera Pivot");
 	viewCamera = CreateDefaultSubobject<UCameraComponent>("View Camera");
 
 	viewCamera->SetupAttachment(viewPivot, USpringArmComponent::SocketName);
-	viewCamera->bUsePawnControlRotation = false;
 	viewCamera->SetRelativeLocation(DefaultCameraLocal);
+	viewCamera->bUsePawnControlRotation = false;
 
 	bUseControllerRotationYaw = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(1080.f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 0.7f;
+	GetCharacterMovement()->AirControl = 2.0f;
 
 	cameraClampMax = 10;
 	cameraClampMin = -60;
@@ -55,24 +59,22 @@ void ARPlayerBase::Tick(float DeltaTime)
 
 	viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
 
-	if (IsFlying() && GetCharacterMovement()->IsFalling() == false && bHoldingJump == false)
+	if (IsFlying() && GetCharacterMovement()->IsFalling() == false && !GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag()))
 	{
 		FGameplayEventData eventData;
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndFlyingTag(), eventData);
 	}
 
-	if (IsFlying() && bHoldingJump)
+	FVector currentVelocity = GetVelocity();
+	if (IsFlying() && bHoldingJump && currentVelocity.Z <= 0)
 	{
-		FVector NewVelocity = GetVelocity();
-		NewVelocity.Z = FMath::Lerp(NewVelocity.Z, -0.1f, 4 * DeltaTime);
-		GetCharacterMovement()->Velocity = NewVelocity;
+		currentVelocity.Z = FMath::Lerp(currentVelocity.Z, -0.0005f, 8 * DeltaTime);
+		GetCharacterMovement()->Velocity = currentVelocity;
 	}
 	
 	if (bIsScoping)
 	{
-		FRotator playerRot = viewPivot->GetRelativeRotation();
-		playerRot.Roll = 0;
-		SetActorRotation(playerRot); // replciate this movement as well as Movement Component
+		RotatePlayer(DeltaTime);
 	}
 }
 
@@ -125,10 +127,33 @@ void ARPlayerBase::Move(const FInputActionValue& InputValue)
 {
 	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetUnActionableTag()) || GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag())) return;
 
-	FVector2D input = InputValue.Get<FVector2D>();
-	input.Normalize();
+	MoveInput = InputValue.Get<FVector2D>();
+	MoveInput.Normalize();
 
-	AddMovementInput(input.Y * GetMoveFwdDir() + input.X * GetMoveRightDir());
+	AddMovementInput(MoveInput.Y * GetMoveFwdDir() + MoveInput.X * GetMoveRightDir());
+}
+
+void ARPlayerBase::RotatePlayer(float DeltaTime)
+{
+	FRotator cameraRot = viewPivot->GetComponentRotation();
+	cameraRot.Roll = 0;
+
+	FRotator currentRot = GetActorRotation();
+
+	float yawDiff = cameraRot.Yaw - currentRot.Yaw;
+	float pitchDiff = cameraRot.Pitch - currentRot.Pitch;
+
+	if (yawDiff > 180.0f) yawDiff -= 360.0f;
+	if (yawDiff < -180.0f) yawDiff += 360.0f;
+
+	if (pitchDiff > 180.0f) pitchDiff -= 360.0f;
+	if (pitchDiff < -180.0f) pitchDiff += 360.0f;
+
+	float yawInput = FMath::Lerp(0.0f, yawDiff, 10 * DeltaTime);
+	float pitchInput = FMath::Lerp(0.0f, pitchDiff, 10 * DeltaTime);
+
+	AddControllerYawInput(yawInput);
+	AddControllerPitchInput(pitchInput);
 }
 
 void ARPlayerBase::Look(const FInputActionValue& InputValue)
@@ -144,26 +169,69 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 	viewPivot->SetWorldRotation(newRot);
 }
 
+AActor* ARPlayerBase::Hitscan(float range, float sphereRadius)
+{
+	int32 sizeX, sizeY;
+	ARPlayerController* PlayerController = Cast<ARPlayerController>(GetController());
+
+	if (PlayerController == nullptr) return nullptr;
+
+	PlayerController->GetViewportSize(sizeX, sizeY);
+
+	sizeX /= 2.0f;
+	sizeY /= 2.0f;
+
+	FVector WorldLocation;
+	FVector WorldDirection;
+	if (PlayerController->DeprojectScreenPositionToWorld(sizeX, sizeY, WorldLocation, WorldDirection))
+	{
+		FVector startTrace = viewCamera->GetComponentLocation();
+		FVector endTrace = startTrace + WorldDirection * range;
+
+		//FVector lineStart = GetMesh()->GetSocketLocation(RangedAttackSocketName);
+		//FVector lineEnd = lineStart + GetActorForwardVector() * range;
+
+
+		DrawDebugLine(GetWorld(), startTrace, endTrace, FColor::Green);
+
+		FCollisionShape collisionShape = FCollisionShape::MakeSphere(sphereRadius);
+		bool hit = GetWorld()->SweepSingleByChannel(hitResult, startTrace, endTrace, FQuat::Identity, ECC_RangedAttack, collisionShape);
+		if (hit)
+		{
+			//FString actorName = hitResult.GetActor()->GetName();
+			//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Hit!"));
+
+			return hitResult.GetActor();
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("I cannot interact"));
+	}
+
+	return nullptr;
+}
+
 void ARPlayerBase::StartJump()
 {
+	bHoldingJump = true;
 	if (bInstantJump)
 	{
 		Jump();
 		return;
 	}
 
-	bHoldingJump = true;
 	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Passive); // Dot's jump fly
 }
 
 void ARPlayerBase::ReleaseJump()
 {
+	bHoldingJump = false;
 	if (bInstantJump) return;
 
 	FGameplayEventData eventData;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndTakeOffChargeTag(), eventData);
 
-	bHoldingJump = false;
 	if (!IsFlying())
 	{
 		Jump();
@@ -298,6 +366,7 @@ void ARPlayerBase::ScopingTagChanged(bool bNewIsAiming)
 	}
 	else
 	{
+		DisableScoping();
 		cameraClampMax = 10;
 		cameraClampMin = -60;
 		LerpCameraToLocalOffset(DefaultCameraLocal);

@@ -72,3 +72,8 @@ FGameplayTag URAbilityGenericTags::GetEndTakeOffChargeTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.passive.endTakeOffCharge");
 }
+
+FGameplayTag URAbilityGenericTags::GetTakeOffDelayTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.TakeOffDelay");
+}

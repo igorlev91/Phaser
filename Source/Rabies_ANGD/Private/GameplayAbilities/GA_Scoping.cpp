@@ -35,25 +35,22 @@ void UGA_Scoping::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 	if (K2_HasAuthority())
 	{
 		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(ScopeSlowdownClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
+		ScopeSlowDownEffectHandle = ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
 		//ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
+	}
+}
+
+void UGA_Scoping::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (ASC)
+	{
+		ASC->RemoveActiveGameplayEffect(ScopeSlowDownEffectHandle);
 	}
 }
 
 void UGA_Scoping::StopScoping(FGameplayEventData Payload)
 {
-	URAbilitySystemComponent* AbilitySystem = Cast<URAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
-	if (AbilitySystem)
-	{
-		FGameplayEffectQuery Query;
-		Query.EffectDefinition = ScopeSlowdownClass;
-
-		const TArray<FActiveGameplayEffectHandle>& ActiveEffects = AbilitySystem->GetActiveEffects(Query);
-		if (ActiveEffects.Num() > 0)
-		{
-			AbilitySystem->RemoveActiveGameplayEffect(ActiveEffects[0]);
-		}
-	}
-
 	K2_EndAbility();
 }

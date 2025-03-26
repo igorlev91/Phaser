@@ -28,7 +28,7 @@ void URAnimNotifyState_DotTakeOff::NotifyTick(USkeletalMeshComponent* MeshComp, 
 	if (!Player) return;
 
 	FVector NewVelocity = Player->GetVelocity();
-	NewVelocity.Z += 50;
+	NewVelocity.Z += 40;
 	Player->GetCharacterMovement()->Velocity = NewVelocity;
 }
 
@@ -37,6 +37,8 @@ void URAnimNotifyState_DotTakeOff::NotifyEnd(USkeletalMeshComponent* MeshComp, U
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
 	if (!Player) return;
+
+	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 
 	Player->GetCharacterMovement()->GravityScale = OriginalGravityScale;
 }

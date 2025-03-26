@@ -75,5 +75,10 @@ void ARPlayerController::ChangeCrosshairState(bool state)
 
 void ARPlayerController::ChangeTakeOffState(bool state, float charge)
 {
+	if (!IsLocalPlayerController() || GameplayUI == nullptr)
+	{
+		return;
+	}
+
 	GameplayUI->SetTakeOffBarState(state, charge);
 }
