@@ -48,7 +48,10 @@ void UGameplayUI::NativeConstruct()
 
 void UGameplayUI::SetCrosshairState(bool state)
 {
-	Crosshair->SetVisibility((state) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	if (Crosshair)
+	{
+		Crosshair->SetVisibility((state) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
 	crosshairState = state;
 }
 

@@ -82,7 +82,6 @@ void ARPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	playerController = Cast<ARPlayerController>(GetController());
 }
 
 void ARPlayerBase::PawnClientRestart()
@@ -169,47 +168,40 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 	viewPivot->SetWorldRotation(newRot);
 }
 
-AActor* ARPlayerBase::Hitscan(float range, float sphereRadius)
+void ARPlayerBase::SetRabiesPlayerController(ARPlayerController* newController)
 {
-	int32 sizeX, sizeY;
-	ARPlayerController* PlayerController = Cast<ARPlayerController>(GetController());
+	playerController = newController;
+}
 
-	if (PlayerController == nullptr) return nullptr;
-
-	PlayerController->GetViewportSize(sizeX, sizeY);
-
-	sizeX /= 2.0f;
-	sizeY /= 2.0f;
-
-	FVector WorldLocation;
-	FVector WorldDirection;
-	if (PlayerController->DeprojectScreenPositionToWorld(sizeX, sizeY, WorldLocation, WorldDirection))
+void ARPlayerBase::Hitscan(float range)
+{
+	if (HasAuthority())
 	{
-		FVector startTrace = viewCamera->GetComponentLocation();
-		FVector endTrace = startTrace + WorldDirection * range;
-
-		//FVector lineStart = GetMesh()->GetSocketLocation(RangedAttackSocketName);
-		//FVector lineEnd = lineStart + GetActorForwardVector() * range;
-
-
-		DrawDebugLine(GetWorld(), startTrace, endTrace, FColor::Green);
-
-		FCollisionShape collisionShape = FCollisionShape::MakeSphere(sphereRadius);
-		bool hit = GetWorld()->SweepSingleByChannel(hitResult, startTrace, endTrace, FQuat::Identity, ECC_RangedAttack, collisionShape);
-		if (hit)
-		{
-			//FString actorName = hitResult.GetActor()->GetName();
-			//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Hit!"));
-
-			return hitResult.GetActor();
-		}
+		ClientCallHitScan();
 	}
-	else
+}
+
+void ARPlayerBase::ClientCallHitScan_Implementation()
+{
+	FVector startPos = viewCamera->GetComponentLocation();
+	FVector endPos = startPos + viewCamera->GetComponentRotation().Vector() * 9000;
+	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Green);
+
+	FCollisionShape collisionShape = FCollisionShape::MakeSphere(1);
+	bool hit = GetWorld()->SweepSingleByChannel(hitResult, startPos, endPos, FQuat::Identity, ECC_RangedAttack, collisionShape);
+	if (hit)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("I cannot interact"));
+		FString actorName = hitResult.GetActor()->GetName();
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
+		ClientHitScan.Broadcast(hitResult.GetActor(), startPos, endPos);
+		return;
 	}
+}
 
-	return nullptr;
+
+bool ARPlayerBase::ClientCallHitScan_Validate()
+{
+	return true;
 }
 
 void ARPlayerBase::StartJump()
@@ -240,11 +232,11 @@ void ARPlayerBase::ReleaseJump()
 
 void ARPlayerBase::QuitOut()
 {
-	APlayerController* PlayerController = GetController<APlayerController>();
+	/*APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController)
 	{
 		UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
-	}
+	}*/
 }
 
 void ARPlayerBase::DoBasicAttack()
@@ -355,7 +347,8 @@ void ARPlayerBase::ScopingTagChanged(bool bNewIsAiming)
 	bIsScoping = bNewIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bNewIsAiming;
 
-	if (playerController)
+
+	if (IsValid(playerController))
 		playerController->ChangeCrosshairState(bNewIsAiming);
 
 	if (bNewIsAiming)

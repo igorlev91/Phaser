@@ -9,6 +9,10 @@
 #include "Widgets/ConnectOnlineMenu.h"
 #include "Widgets/RButton.h"
 
+#include "Engine/Engine.h"
+#include "Kismet/GameplayStatics.h"
+#include "UObject/SoftObjectPtr.h"
+
 #include "Framework/EOSGameInstance.h"
 #include "Components/EditableText.h"
 #include "Components/ScrollBox.h"
@@ -24,7 +28,12 @@ void UMainMenu::NativeConstruct()
 	SettingsBtn->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::SettingsClicked);
 	CreditsBtn->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::CreditsClicked);
 
+	ReturnCredits->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::ReturnFromCredits);
+	ReturnSettings->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::ReturnFromSettings);
+
 	GameInst = GetGameInstance<UEOSGameInstance>();
+
+	GameInst->SessionJoined.AddUObject(this, &UMainMenu::MoveToCharacterSelect);
 
 	ChangeMainMenuState(true);
 	ChangeConnectMenuState(false);
@@ -32,9 +41,30 @@ void UMainMenu::NativeConstruct()
 	ChangeCreditsState(false);
 }
 
+void UMainMenu::ReturnFromCredits()
+{
+	ChangeMainMenuState(true);
+	ChangeCreditsState(false);
+}
+
+void UMainMenu::ReturnFromSettings()
+{
+	ChangeMainMenuState(true);
+	ChangeSettingsState(false);
+}
+
+void UMainMenu::MoveToCharacterSelect()
+{
+	ChangeMainMenuState(false);
+	ChangeConnectMenuState(false);
+	ChangeSettingsState(false);
+	ChangeCreditsState(false);
+}
+
 void UMainMenu::SingleplayerClicked()
 {
-
+	FName levelName = FName(*FPackageName::ObjectPathToPackageName(GameLevel.ToString()));
+	UGameplayStatics::OpenLevel(GetWorld(), levelName);
 }
 
 void UMainMenu::MultiplayerClicked()

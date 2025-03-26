@@ -24,6 +24,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> FlyingSpeedClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> GravityJumpClass;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Anim")
 	UAnimMontage* TakeOffMontage;
 
@@ -43,8 +46,15 @@ private:
 
 	void Hold(float timeRemaining);
 
+	UFUNCTION()
+	void ApplyGravityJump(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void RemoveGravityJump(FGameplayEventData Payload);
+
 	UPROPERTY()
 	class ARPlayerBase* Player;
 
 	FActiveGameplayEffectHandle FlyingSpeedEffectHandle;
+	FActiveGameplayEffectHandle GravityJumpEffectHandle;
 };

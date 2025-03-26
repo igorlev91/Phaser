@@ -61,7 +61,10 @@ void UGA_Attack::HandleDamage(FGameplayEventData Payload)
 		ARPlayerBase* player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
 		if (player)
 		{
-			AActor* hitActor = player->Hitscan(9000, 1);
+			player->Hitscan(900);
+			return;
+			AActor* hitActor = nullptr;
+			player->Hitscan(9000);
 			if (hitActor == nullptr) return;
 			if (hitActor != player)
 			{

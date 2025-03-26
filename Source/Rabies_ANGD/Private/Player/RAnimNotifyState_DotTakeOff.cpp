@@ -16,8 +16,8 @@ void URAnimNotifyState_DotTakeOff::NotifyBegin(USkeletalMeshComponent* MeshComp,
 	Player = Cast<ARPlayerBase>(MeshComp->GetOwner());
 	if (!Player) return;
 
-	OriginalGravityScale = Player->GetCharacterMovement()->GravityScale;
-	Player->GetCharacterMovement()->GravityScale = 0.0f;
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetApplyGravityJump(), eventData);
 	Player->Jump();
 }
 
@@ -25,11 +25,7 @@ void URAnimNotifyState_DotTakeOff::NotifyTick(USkeletalMeshComponent* MeshComp, 
 {
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 
-	if (!Player) return;
-
-	FVector NewVelocity = Player->GetVelocity();
-	NewVelocity.Z += 40;
-	Player->GetCharacterMovement()->Velocity = NewVelocity;
+	//if (!Player) return;
 }
 
 void URAnimNotifyState_DotTakeOff::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
@@ -38,7 +34,8 @@ void URAnimNotifyState_DotTakeOff::NotifyEnd(USkeletalMeshComponent* MeshComp, U
 
 	if (!Player) return;
 
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetRemoveGravityJump(), eventData);
 	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 
-	Player->GetCharacterMovement()->GravityScale = OriginalGravityScale;
 }

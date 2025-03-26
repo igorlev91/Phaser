@@ -8,6 +8,7 @@
 #include "Interfaces/OnlineIdentityInterface.h"
 #include "Interfaces/OnlineSessionInterface.h"
 
+
 #include "MainMenu.generated.h"
 
 /**
@@ -40,6 +41,9 @@ protected:
 
 private:
 
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> GameLevel;
+
 	UPROPERTY(meta = (BindWidget))
 	class UConnectOnlineMenu* OnlineMenuLobby;
 
@@ -56,6 +60,18 @@ private:
 	class URButton* CreditsBtn;
 
 	UPROPERTY(meta = (BindWidget))
+	class URButton* ReturnCredits;
+
+	UFUNCTION()
+	void ReturnFromCredits();
+
+	UPROPERTY(meta = (BindWidget))
+	class URButton* ReturnSettings;
+
+	UFUNCTION()
+	void ReturnFromSettings();
+
+	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* TitleScreenText;
 
 	UPROPERTY(meta = (BindWidget))
@@ -66,6 +82,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UOverlay* CreditsOverlay;
+
+	UFUNCTION()
+	void MoveToCharacterSelect();
 
 	UFUNCTION()
 	void SingleplayerClicked();

@@ -13,7 +13,7 @@ UCLASS()
 class ARPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-
+	
 public:
 	//this function calls only on the server
 	virtual void OnPossess(APawn* NewPawn) override;

@@ -165,7 +165,8 @@ void UEOSGameInstance::CreateSessionCompleted(FName SessionName, bool bWasSucces
 
 	if (bWasSuccessful)
 	{
-		LoadMapAndListen(CharacterSelctLevel);
+		SessionJoined.Broadcast();
+		//LoadMapAndListen(CharacterSelctLevel); // Transition to the other screen now
 	}
 }
 
@@ -196,6 +197,7 @@ void UEOSGameInstance::JoinSessionCompleted(FName sessionName, EOnJoinSessionCom
 		FString TravelURL;
 		sessionPtr->GetResolvedConnectString(sessionName, TravelURL);
 		GetFirstLocalPlayerController(GetWorld())->ClientTravel(TravelURL, TRAVEL_Absolute);
+		SessionJoined.Broadcast();
 	}
 }
 

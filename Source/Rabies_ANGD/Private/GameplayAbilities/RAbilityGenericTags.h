@@ -32,5 +32,7 @@ public:
 	static FGameplayTag GetEndFlyingTag();
 	static FGameplayTag GetEndTakeOffChargeTag();
 	static FGameplayTag GetTakeOffDelayTag();
+	static FGameplayTag GetApplyGravityJump();
+	static FGameplayTag GetRemoveGravityJump();
 
 };

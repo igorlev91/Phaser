@@ -11,6 +11,7 @@
 #include "EOSGameInstance.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSessionSearchCompleted, const TArray<class FOnlineSessionSearchResult>& /* Seach results */);
+DECLARE_MULTICAST_DELEGATE(FOnSessionJoin);
 /**
  * 
  */
@@ -21,6 +22,7 @@ class UEOSGameInstance : public UGameInstance
 	
 public:
 	FOnSessionSearchCompleted SearchCompleted;
+	FOnSessionJoin SessionJoined;
 
 	void JoinLobbyBySearchIndex(int index);
 
@@ -60,9 +62,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> GameLevel;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSoftObjectPtr<UWorld> CharacterSelctLevel;
 
 	FName SessionNameKey{ "SessionName" };
 

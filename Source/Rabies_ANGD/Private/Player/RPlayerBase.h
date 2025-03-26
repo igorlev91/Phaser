@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/RCharacterBase.h"
+#include "GameplayEffectTypes.h"
 #include "RPlayerBase.generated.h"
 
 class USceneComponent;
@@ -11,6 +12,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnClientHitScan, AActor* /*Hit Target*/, FVector /* Start Pos */, FVector /* End Pos */);
 /**
  * 
  */
@@ -23,6 +25,11 @@ public:
 	ARPlayerBase();
 
 public:
+	FOnClientHitScan ClientHitScan;
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void ClientCallHitScan();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -36,10 +43,13 @@ public:
 	UPROPERTY()
 	FVector2D MoveInput;
 
+	UFUNCTION()
+	void SetRabiesPlayerController(class ARPlayerController* newController);
+
 	bool bHoldingJump = false;
 
 	UFUNCTION()
-	AActor* Hitscan(float range, float sphereRadius);
+	void Hitscan(float range);
 
 private:
 
@@ -165,6 +175,7 @@ private:
 
 	virtual void ScopingTagChanged(bool bNewIsAiming) override;
 
+
 	void LerpCameraToLocalOffset(const FVector& LocalOffset);
 	void TickCameraLocalOffset(FVector Goal);
 	FTimerHandle CameraLerpHandle;
@@ -181,6 +192,7 @@ private:
 	bool canInteract;
 
 public:
+
 	void SetInteraction(bool setInteract);
 
 	/////////////////////////////////
@@ -205,4 +217,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Passive")
 	bool bInstantJump;
+
+	/////////////////////////////////
+	/*          Online             */
+	////////////////////////////////
 };

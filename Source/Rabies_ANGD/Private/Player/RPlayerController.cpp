@@ -11,6 +11,7 @@ void ARPlayerController::OnPossess(APawn* NewPawn)
 	PostPossessionSetup(NewPawn);
 	if (PlayerBase)
 	{
+		
 		//PlayerCharacter->InitAbilities();
 	}
 }
@@ -33,6 +34,7 @@ void ARPlayerController::PostPossessionSetup(APawn* NewPawn)
 		return;
 	}
 
+	PlayerBase->SetRabiesPlayerController(this);
 	// Set up the players ability system
 
 	CreateGameplayUI();
@@ -69,7 +71,10 @@ void ARPlayerController::CreateGameplayUI()
 
 void ARPlayerController::ChangeCrosshairState(bool state)
 {
-	GameplayUI->SetCrosshairState(state);
+	if (GameplayUI)
+	{
+		GameplayUI->SetCrosshairState(state);
+	}
 
 }
 

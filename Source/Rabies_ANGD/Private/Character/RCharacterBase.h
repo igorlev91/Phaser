@@ -33,7 +33,7 @@ public:
 	void SetupAbilitySystemComponent();
 	void InitAttributes();
 	void InitAbilities();
-	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+	//virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
 
 protected:
 
@@ -78,6 +78,7 @@ private:
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MovementSpeedUpdated(const FOnAttributeChangeData& ChangeData);
+	void GravityUpdated(const FOnAttributeChangeData& ChangeData);
 
 public:
 	UFUNCTION(NetMulticast, Unreliable)
@@ -89,9 +90,9 @@ public:
 
 private:
 
-	UPROPERTY(Replicated)
-	FGenericTeamId TeamId;
+	//UPROPERTY(Replicated)
+	//FGenericTeamId TeamId;
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; // need this when doing Replicated things
+	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; // need this when doing Replicated things
 
 };

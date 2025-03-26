@@ -77,3 +77,13 @@ FGameplayTag URAbilityGenericTags::GetTakeOffDelayTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.passive.TakeOffDelay");
 }
+
+FGameplayTag URAbilityGenericTags::GetApplyGravityJump()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.applyGravityJump");
+}
+
+FGameplayTag URAbilityGenericTags::GetRemoveGravityJump()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.removeGravityJump");
+}

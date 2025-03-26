@@ -19,8 +19,5 @@ class URAnimNotifyState_DotTakeOff : public UAnimNotifyState
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference);
 
 	UPROPERTY()
-	float OriginalGravityScale;
-
-	UPROPERTY()
 	class ARPlayerBase* Player;
 };
