@@ -29,12 +29,27 @@ void URAbilitySystemComponent::GrantInitialAbilities()
 	{
 		GiveAbility(FGameplayAbilitySpec{ AbilityPair.Value, 1, (int)AbilityPair.Key, GetOwner() });
 	}
+
+	for (const TPair<EAbilityInputID, TSubclassOf<UGA_AbilityBase>>& AbilityPair : InvisibleAbilities)
+	{
+		GiveAbility(FGameplayAbilitySpec{ AbilityPair.Value, 1, (int)AbilityPair.Key, GetOwner() });
+	}
 }
 
 void URAbilitySystemComponent::ApplyFullStat()
 {
 	if (FullStatEffect)
 		ApplyGameplayEffect(FullStatEffect);
+}
+
+TArray<const UGA_AbilityBase*> URAbilitySystemComponent::GetNonGenericAbilityCDOs() const
+{
+	TArray<const UGA_AbilityBase*> GrantedAbilityCDOs;
+	for (const TPair<EAbilityInputID, TSubclassOf<UGA_AbilityBase>>& AbilityPair : Abilities)
+	{
+		GrantedAbilityCDOs.Add(AbilityPair.Value.GetDefaultObject());
+	}
+	return GrantedAbilityCDOs;
 }
 
 TArray<const FGameplayAbilitySpec*> URAbilitySystemComponent::GetGrantedNonGenericAbilities() const

@@ -9,16 +9,23 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Touch.h"
 
+#include "GameplayAbilities/RAbilityGenericTags.h"
+
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 
+#include "GameplayAbilities/GA_AbilityBase.h"
+#include "GameplayAbilities/RAbilityGenericTags.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "Framework/RGameMode.h"
 
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
-#include "GameplayAbilities/RAbilityGenericTags.h"
+#include "TimerManager.h"
+#include "Engine/World.h"
 
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -50,6 +57,45 @@ void AREnemyBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AREnemyBase::InitLevel_Implementation(int level)
+{
+	if (HasAuthority())
+	{
+		AILevel = level;
+		GetWorld()->GetTimerManager().SetTimer(LevelHandle, this, &AREnemyBase::CommitLevel, 0.1f, false);
+	}
+}
+
+void AREnemyBase::CommitLevel_Implementation()
+{
+	FGameplayEffectContextHandle contextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle effectSpechandle = GetAbilitySystemComponent()->MakeOutgoingSpec(WaveLevelUpgrade, 1.0f, contextHandle);
+
+	FGameplayEffectSpec* spec = effectSpechandle.Data.Get();
+	if (spec)
+	{
+		float levelScale = (float)AILevel - 1;
+		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetLevelTag(), levelScale);
+		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMaxHealthTag(), HealthOnLevelUp * levelScale);
+		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetHealthTag(), HealthOnLevelUp * levelScale);
+		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMeleeAttackStrengthTag(), MeleeStrengthOnLevelUp * levelScale);
+		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetRangedAttackStrengthTag(), RangedStrengthOnLevelUp * levelScale);
+
+		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+	}
+}
+
+void AREnemyBase::UpdateAimingTagChange_Implementation(bool state)
+{
+	if (state)
+	{
+		GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetScopingTag());
+	}
+	else
+	{
+		GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetScopingTag());
+	}
+}
 
 void AREnemyBase::HitDetected(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {

@@ -157,6 +157,30 @@ void UEOSGameInstance::Init()
 	sessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::FindSessionsCompleted);
 
 	sessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::JoinSessionCompleted);
+
+	if (AttemptAutoLogin())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("successful autologin"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("failed to login"));
+	}
+}
+
+bool UEOSGameInstance::AttemptAutoLogin()
+{
+	if (identityPtr)
+	{
+		FString authType = "";
+		FParse::Value(FCommandLine::Get(), TEXT("AUTH_TYPE="), authType);
+		if (!authType.IsEmpty())
+		{
+			return identityPtr->AutoLogin(0);
+		}
+	}
+
+	return false;
 }
 
 void UEOSGameInstance::CreateSessionCompleted(FName SessionName, bool bWasSuccessful)

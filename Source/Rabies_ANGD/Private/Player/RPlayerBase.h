@@ -12,7 +12,6 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnClientHitScan, AActor* /*Hit Target*/, FVector /* Start Pos */, FVector /* End Pos */);
 DECLARE_MULTICAST_DELEGATE(FOnPlayerInteraction);
 /**
  * 
@@ -26,12 +25,8 @@ public:
 	ARPlayerBase();
 
 public:
-	FOnClientHitScan ClientHitScan;
 
 	FOnPlayerInteraction PlayerInteraction;
-
-	UFUNCTION(NetMulticast, Unreliable, WithValidation)
-	void ClientHitScanResult(AActor* hitActor, FVector start, FVector end);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -49,10 +44,6 @@ public:
 	UFUNCTION()
 	void SetRabiesPlayerController(class ARPlayerController* newController);
 
-
-	UFUNCTION()
-	void Hitscan(float range);
-
 	UFUNCTION()
 	void SetPlayerState();
 
@@ -61,6 +52,10 @@ public:
 
 	UFUNCTION()
 	void SetItemPickup(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);
+
+	UFUNCTION()
+	AEOSPlayerState* GetPlayerBaseState();
+
 
 private:
 
@@ -202,7 +197,6 @@ private:
 	void LerpCameraToLocalOffset(const FVector& LocalOffset);
 	void TickCameraLocalOffset(FVector Goal);
 	FTimerHandle CameraLerpHandle;
-	FHitResult hitResult;
 
 	float cameraClampMin;
 	float cameraClampMax;
@@ -221,9 +215,6 @@ public:
 	/////////////////////////////////
 	/*          Anim	           */
 	////////////////////////////////
-
-	FName RangedAttackSocketName = TEXT("Ranged_Socket");
-	FName RootAimingSocketName = TEXT("RootAiming_Socket");
 
 	/////////////////////////////////
 	/*          Passives           */

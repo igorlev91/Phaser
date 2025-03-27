@@ -23,6 +23,7 @@ class URAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 	
 public:
+	ATTRIBUTE_ACCESSORS(URAttributeSet, Level)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, Health)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, MaxHealth)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, MeleeAttackStrength)
@@ -57,6 +58,8 @@ public:
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
 private:
+	UPROPERTY(ReplicatedUsing = OnRep_Level)
+	FGameplayAttributeData Level;
 	UPROPERTY(ReplicatedUsing = OnRep_Health)
 	FGameplayAttributeData Health;
 
@@ -147,6 +150,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_UraniumEffectChance)
 	FGameplayAttributeData UraniumEffectChance;
+	UFUNCTION()
+	void OnRep_Level(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldValue);

@@ -26,10 +26,30 @@ public:
 	UFUNCTION()
 	void SelectItem(AItemPickup* selectedItem, class ARPlayerBase* targetingPlayer);
 
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void AwardEnemyKill(TSubclassOf<class UGameplayEffect> rewardEffect);
+
 private:
+
+	FTimerHandle WaveHandle;
+
+	UPROPERTY()
+	float WaveTime;
+
+	UPROPERTY()
+	int WaveLevel;
+
+	UFUNCTION()
+	void WaveSpawn(float timeToNextWave);
+
+	UFUNCTION()
+	void SpawnEnemyWave(int amountOfEnemies);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Chest")
 	int AmountOfChests;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Enemies")
+	int enemyInitalSpawnRate;
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SpawnChest(FVector SpawnLocation);
@@ -54,6 +74,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Items")
 	TArray<URItemDataAsset*> ItemLibrary;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TArray<URItemDataAsset*> ItemSelection;
+
 
 	UPROPERTY(Replicated)
 	TArray<AItemChest*> AllChests;

@@ -11,6 +11,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+#include "Character/RCharacterBase.h"
+#include "AI/REnemyAIController.h"
+
+#include "BehaviorTree/BlackboardComponent.h"
+#include "BrainComponent.h"
+
 bool UREnemyAnimInstance::ShouldDoUpperBody() const
 {
 	return (IsMoving() || IsJumping());
@@ -27,7 +33,7 @@ void UREnemyAnimInstance::NativeInitializeAnimation()
 		UAbilitySystemComponent* OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TryGetPawnOwner());
 		if (OwnerASC)
 		{
-			
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &UREnemyAnimInstance::ScopingTagChanged);
 		}
 	}
 
@@ -58,10 +64,26 @@ void UREnemyAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 
 		FVector Velocity = OwnerCharacter->GetVelocity();
 
+		//  This is for getting the target
+		ARCharacterBase* enemyCharacter = Cast<ARCharacterBase>(TryGetPawnOwner());
+		if (enemyCharacter->GetTarget() == nullptr)
+		{
+			TargetLocation = FVector(0, 0, 0);
+		}
+		else
+		{
+			TargetLocation = (bIsScoping) ? enemyCharacter->GetTarget()->GetActorLocation() : TargetLocation;
+		}
+
 		FVector LookDir = lookRot.Vector();
 		LookDir.Z = 0;
 		LookDir.Normalize();
 		FwdSpeed = Velocity.Dot(LookDir);
 		RightSpeed = -Velocity.Dot(LookDir.Cross(FVector::UpVector));
 	}
+}
+
+void UREnemyAnimInstance::ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bIsScoping = NewStackCount != 0;
 }

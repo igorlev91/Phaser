@@ -9,9 +9,13 @@
 
 #include "Framework/RGameMode.h"
 
+#include "Framework/EOSActionGameState.h"
+
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
+
+#include "Framework/EOSPlayerState.h"
 
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -27,6 +31,8 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Touch.h"
 
+#define ECC_RangedAttack ECC_GameTraceChannel2
+
 // Sets default values
 ARCharacterBase::ARCharacterBase()
 {
@@ -39,6 +45,7 @@ ARCharacterBase::ARCharacterBase()
 
 	AttributeSet = CreateDefaultSubobject<URAttributeSet>("Attribute Set");
 
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetLevelAttribute()).AddUObject(this, &ARCharacterBase::LevelUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &ARCharacterBase::HealthUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &ARCharacterBase::MaxHealthUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMovementSpeedAttribute()).AddUObject(this, &ARCharacterBase::MovementSpeedUpdated);
@@ -110,7 +117,12 @@ void ARCharacterBase::PossessedBy(AController* NewController)
 
 void ARCharacterBase::InitStatusHUD()
 {
-	HealthBar = Cast<UHealthBar>(HealthBarWidgetComp->GetUserWidgetObject());
+	HealthBarWidgetComp->SetWidgetClass(HealthBarClass);
+	HealthBar = CreateWidget<UHealthBar>(GetWorld(), HealthBarWidgetComp->GetWidgetClass());
+	if (HealthBar)
+	{
+		HealthBarWidgetComp->SetWidget(HealthBar);
+	}
 	if (!HealthBar)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s can't spawn health has the wrong widget setup"), *GetName());
@@ -141,6 +153,48 @@ int ARCharacterBase::GetCurrentScrap()
 	return AttributeSet->GetScrap();
 }
 
+void ARCharacterBase::Hitscan(float range, AEOSPlayerState* requestedPlayerState)
+{
+	FVector startPos = FVector(0, 0, 0);
+	FVector endPos = FVector(0, 0, 0);
+
+	if (requestedPlayerState == nullptr) // it's an enemy request
+	{
+		FVector gunSocket = GetMesh()->GetSocketLocation(RangedAttackSocketName);
+		FRotator gunRotation = GetMesh()->GetSocketRotation(RangedAttackSocketName);
+		startPos = gunSocket + gunRotation.Vector();
+		endPos = startPos + gunRotation.Vector() * range;
+	}
+	else
+	{
+		startPos = requestedPlayerState->GetRootAimingLocation() + requestedPlayerState->GetHitscanRotator().Vector();
+		endPos = startPos + requestedPlayerState->GetHitscanRotator().Vector() * range;
+	}
+
+	FCollisionShape collisionShape = FCollisionShape::MakeSphere(1);
+	bool hit = GetWorld()->SweepSingleByChannel(hitResult, startPos, endPos, FQuat::Identity, ECC_RangedAttack, collisionShape);
+	if (hit)
+	{
+		FVector weaponStart = (requestedPlayerState == nullptr) ? startPos : requestedPlayerState->GetRangedLocation();
+		FVector hitEnd = hitResult.ImpactPoint;
+		ClientHitScanResult(hitResult.GetActor(), weaponStart, hitEnd);
+	}
+}
+
+void ARCharacterBase::ClientHitScanResult_Implementation(AActor* hitActor, FVector start, FVector end)
+{
+	FString actorName = hitActor->GetName();
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
+	DrawDebugLine(GetWorld(), start, end, FColor::Green);
+	ClientHitScan.Broadcast(hitActor, start, end);
+}
+
+
+bool ARCharacterBase::ClientHitScanResult_Validate(AActor* hitActor, FVector start, FVector end)
+{
+	return true;
+}
+
 UAbilitySystemComponent* ARCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
@@ -159,7 +213,7 @@ void ARCharacterBase::PlayMontage(UAnimMontage* MontageToPlay)
 
 void ARCharacterBase::StartDeath()
 {
-	PlayMontage(DeathMontage);
+	//PlayMontage(DeathMontage);
 	//AbilitySystemComponent->ApplyGameplayEffect(DeathEffect);
 	AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetDeadTag());
 	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
@@ -171,7 +225,7 @@ void ARCharacterBase::DeathTagChanged(const FGameplayTag TagChanged, int32 NewSt
 {
 	if (NewStackCount == 0) // for getting revived
 	{
-		StopAnimMontage(DeathMontage);
+		//StopAnimMontage(DeathMontage);
 		//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		AbilitySystemComponent->ApplyFullStat();
 		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -204,6 +258,22 @@ void ARCharacterBase::HoldingJumpTagChanged(const FGameplayTag TagChanged, int32
 	HoldingJumpTagChanged(bHoldingJump);
 }
 
+void ARCharacterBase::LevelUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	if (!AttributeSet)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s NO ATTRIBUTE SET"), *GetName());
+		return;
+	}
+
+	if (HealthBar)
+	{
+		HealthBar->SetLevel(ChangeData.NewValue);
+	}
+
+	onLevelUp.Broadcast(ChangeData.NewValue);
+}
+
 void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 {
 	if (!AttributeSet)
@@ -213,7 +283,9 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 	}
 
 	if (HealthBar)
+	{
 		HealthBar->SetHealth(ChangeData.NewValue, AttributeSet->GetMaxHealth());
+	}
 
 	if (HasAuthority())
 	{
@@ -227,12 +299,14 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 		}
 	}
 
-	if (ChangeData.NewValue <= 0)
+	if (ChangeData.NewValue <= 0 && !bHasDied)
 	{
+		bHasDied = true;
 		StartDeath();
-		if (HasAuthority() && ChangeData.GEModData)
+		AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
+		if (HasAuthority() && ChangeData.GEModData && GetOwner() == gameState)
 		{
-
+			gameState->AwardEnemyKill(DeathEffect);
 		}
 	}
 }
@@ -293,8 +367,20 @@ void ARCharacterBase::ClientStopAnimMontage_Implementation(UAnimMontage* montage
 	}
 }
 
+AActor* ARCharacterBase::GetTarget()
+{
+	return AITarget;
+}
+
+void ARCharacterBase::UpdateAITarget_Implementation(AActor* newTargetActor)
+{
+	AITarget = newTargetActor;
+}
+
 void ARCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ARCharacterBase, TeamId, COND_None);
+	DOREPLIFETIME_CONDITION(ARCharacterBase, AITarget, COND_None);
+	DOREPLIFETIME_CONDITION(ARCharacterBase, AILevel, COND_None);
 }

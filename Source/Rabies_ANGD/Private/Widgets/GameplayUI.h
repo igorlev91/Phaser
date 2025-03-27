@@ -32,9 +32,15 @@ public:
 	void AddItem(class URItemDataAsset* itemAsset);
 
 private:
+
 	//************************//
 	//        Health         //
 	//************************//
+
+	UPROPERTY(meta = (BindWidget))
+	class UProgressBar* levelBar;
+
+	class UTextBlock* levelText;
 
 	UPROPERTY(meta = (BindWidget))
 	class UHealthBar* PlayerHealth;
@@ -51,8 +57,33 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UPlayerItemInventory* PlayerItemInventory;
 
+	UPROPERTY(meta = (BindWidget))
+	class UHorizontalBox* AbilityHorizontalBox;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* meleeStrength;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* meleeAttackSpeed;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* rangedStrength;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* rangedAttackSpeed;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* movementspeed;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* damageReduction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	TSubclassOf<class UPlayerAbilityGauge> AbilityGaugeClass;
+
 	bool crosshairState;
 
+	void LevelUpdated(const FOnAttributeChangeData& ChangeData);
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void ScrapUpdated(const FOnAttributeChangeData& ChangeData);
@@ -72,10 +103,4 @@ private:
 	//************************//
 	//     Test n' Online      //
 	//************************//
-
-	//UPROPERTY(meta = (BindWidget))
-	//class UButton* quitButton;
-
-	//UFUNCTION()
-	//void Quit();
 };

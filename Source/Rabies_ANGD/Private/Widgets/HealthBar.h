@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+
 #include "HealthBar.generated.h"
 
+class URAbilitySystemComponent;
 /**
  * 
  */
@@ -19,7 +21,10 @@ public:
 	
 	void SetHealth(float NewHealth, float MaxHealth);
 
+	void SetLevel(int newLevel);
+
 private:
+
 	UPROPERTY(EditAnywhere, Category = "Visual")
 	FLinearColor FillColor;
 
@@ -31,4 +36,7 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
 	class UTextBlock* DisplayText;
+
+	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
+	class UTextBlock* LevelText;
 };

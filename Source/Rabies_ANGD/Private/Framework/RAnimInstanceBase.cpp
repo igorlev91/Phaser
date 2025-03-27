@@ -36,6 +36,7 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAttackingTag()).AddUObject(this, &URAnimInstanceBase::AttackingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &URAnimInstanceBase::FlyingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetHoldingJump()).AddUObject(this, &URAnimInstanceBase::HoldingJumpTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetDeadTag()).AddUObject(this, &URAnimInstanceBase::DeathTagChanged);
 		}
 	}
 
@@ -91,6 +92,11 @@ void URAnimInstanceBase::FlyingTagChanged(const FGameplayTag TagChanged, int32 N
 void URAnimInstanceBase::HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
 	bHoldingJump = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::DeathTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bDead = NewStackCount != 0;
 }
 
 void URAnimInstanceBase::AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)

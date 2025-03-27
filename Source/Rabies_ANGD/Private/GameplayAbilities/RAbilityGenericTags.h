@@ -21,11 +21,15 @@ public:
 	static FGameplayTag GetFullHealthTag();
 	static FGameplayTag GetDeadTag();
 	static FGameplayTag GetBasicAttackActivationTag();
+	static FGameplayTag GetMeleeAttackCooldown();
+	static FGameplayTag GetRangedAttackCooldown();
 	static FGameplayTag GetSpecialAttackActivationTag();
 	static FGameplayTag GetUltimateAttackActivationTag();
 	static FGameplayTag GetScopingTag();
 	static FGameplayTag GetEndScopingTag();
 	static FGameplayTag GetAttackingTag();
+	static FGameplayTag GetStartAimingTag();
+	static FGameplayTag GetEndAimingTag();
 	static FGameplayTag GetEndAttackTag();
 	static FGameplayTag GetUnActionableTag();
 	static FGameplayTag GetFlyingTag();
@@ -33,5 +37,11 @@ public:
 	static FGameplayTag GetEndTakeOffChargeTag();
 	static FGameplayTag GetApplyGravityJump();
 	static FGameplayTag GetHoldingJump();
+
+	static FGameplayTag GetLevelTag();
+	static FGameplayTag GetMaxHealthTag();
+	static FGameplayTag GetHealthTag();
+	static FGameplayTag GetMeleeAttackStrengthTag();
+	static FGameplayTag GetRangedAttackStrengthTag();
 
 };

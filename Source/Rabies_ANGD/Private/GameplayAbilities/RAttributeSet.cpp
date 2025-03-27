@@ -11,9 +11,24 @@ void URAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, flo
 		Health = FMath::Clamp(NewValue, 0, GetMaxHealth());
 	}
 
-	if (Attribute == GetMovementSpeedAttribute())
+	if (Attribute == GetAbilityCooldownReductionAttribute())
 	{
+		AbilityCooldownReduction = FMath::Clamp(NewValue, 0.1f, 1.0f);
+	}
 
+	if (Attribute == GetMeleeAttackCooldownReductionAttribute())
+	{
+		MeleeAttackCooldownReduction = FMath::Clamp(NewValue, 0.1f, 1.0f);
+	}
+
+	if (Attribute == GetRangedAttackCooldownReductionAttribute())
+	{
+		RangedAttackCooldownReduction = FMath::Clamp(NewValue, 0.1f, 1.0f);
+	}
+
+	if (Attribute == GetUltimateCooldownReductionAttribute())
+	{
+		UltimateCooldownReduction = FMath::Clamp(NewValue, 0.1f, 1.0f);
 	}
 }
 
@@ -30,6 +45,11 @@ void URAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackD
 	{
 
 	}
+}
+
+void URAttributeSet::OnRep_Level(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, Level, OldValue);
 }
 
 void URAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
@@ -185,6 +205,8 @@ void URAttributeSet::OnRep_UraniumEffectChance(const FGameplayAttributeData& Old
 void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Level, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);

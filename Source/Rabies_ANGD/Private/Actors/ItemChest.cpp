@@ -126,6 +126,12 @@ void AItemChest::Server_OpenChest_Implementation()
 			return;
 		}
 
+		if (bWasOpened)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Already Opened"));
+			return;
+		}
+
 		UAbilitySystemComponent* ASC = player->GetAbilitySystemComponent();
 		if (ASC && ScrapPriceEffect)
 		{

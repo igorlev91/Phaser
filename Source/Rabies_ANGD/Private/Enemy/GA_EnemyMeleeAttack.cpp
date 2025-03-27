@@ -31,7 +31,6 @@ UGA_EnemyMeleeAttack::UGA_EnemyMeleeAttack()
 
 void UGA_EnemyMeleeAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	UE_LOG(LogTemp, Error, TEXT("Set up attack"));
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Ending Attack no commitment"));

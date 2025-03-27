@@ -11,8 +11,6 @@ void UPlayerItemInventory::AddItem(URItemDataAsset* itemAsset)
 {
 	UPlayerItem* playerItem = nullptr;
 
-	UE_LOG(LogTemp, Error, TEXT("Adding item in invntory"));
-
 	for (UPlayerItem* item : AllItems)
 	{
 		if (item->itemData->ItemName == itemAsset->ItemName)

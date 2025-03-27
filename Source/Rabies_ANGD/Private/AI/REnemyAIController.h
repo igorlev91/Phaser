@@ -18,6 +18,7 @@ public:
 	AREnemyAIController();
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
+
 	virtual void BeginPlay() override;
 	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const override;
 

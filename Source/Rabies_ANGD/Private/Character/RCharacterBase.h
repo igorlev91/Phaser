@@ -18,6 +18,8 @@ class URAttributeSet;
 class UGameplayEffect;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDeadStatusChanged, bool /*bIsDead*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnLevelUp, int /*new level*/);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnClientHitScan, AActor* /*Hit Target*/, FVector /* Start Pos */, FVector /* End Pos */);
 
 UCLASS()
 class ARCharacterBase : public ACharacter, public IAbilitySystemInterface, /*public IRGameplayCueInterface,*/ public IGenericTeamAgentInterface
@@ -26,6 +28,9 @@ class ARCharacterBase : public ACharacter, public IAbilitySystemInterface, /*pub
 
 public:
 	FOnDeadStatusChanged OnDeadStatusChanged;
+
+	FOnClientHitScan ClientHitScan;
+	FOnLevelUp onLevelUp;
 
 	// Sets default values for this character's properties
 	ARCharacterBase();
@@ -41,6 +46,10 @@ public:
 
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
 
+	UFUNCTION()
+	void Hitscan(float range, class AEOSPlayerState* requestedPlayerState);
+
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -51,6 +60,7 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
+	UFUNCTION(BlueprintCallable)
 	void InitStatusHUD();
 
 	UFUNCTION(BlueprintCallable)
@@ -59,6 +69,9 @@ public:
 	UFUNCTION()
 	int GetCurrentScrap();
 
+	FName RangedAttackSocketName = TEXT("Ranged_Socket");
+	FName RootAimingSocketName = TEXT("RootAiming_Socket");
+
 public:
 	FORCEINLINE bool IsScoping() const { return bIsScoping; }
 	FORCEINLINE bool IsFlying() const { return bIsFlying; }
@@ -66,6 +79,7 @@ public:
 	FORCEINLINE bool IsHoldingJump() const { return bHoldingJump; }
 
 private:
+	bool bHasDied;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
 	class URAttackingBoxComponent* AttackingBoxComponent;
@@ -106,13 +120,19 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* HealthBarWidgetComp;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class UHealthBar> HealthBarClass;
+
 	UPROPERTY()
 	class UHealthBar* HealthBar;
 
+	void LevelUpdated(const FOnAttributeChangeData& ChangeData);
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MovementSpeedUpdated(const FOnAttributeChangeData& ChangeData);
 	void GravityUpdated(const FOnAttributeChangeData& ChangeData);
+
+	FHitResult hitResult;
 
 public:
 
@@ -125,12 +145,28 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void ClientStopAnimMontage(UAnimMontage* montage);
 
+	UFUNCTION()
+	AActor* GetTarget();
+
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
+	void UpdateAITarget(AActor* newTargetActor);
+
+	UFUNCTION(NetMulticast, Unreliable, WithValidation)
+	void ClientHitScanResult(AActor* hitActor, FVector start, FVector end);
 
 private:
 
 	UPROPERTY(Replicated)
 	FGenericTeamId TeamId;
 
+	UPROPERTY(Replicated)
+	AActor* AITarget;
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; // need this when doing Replicated things
+
+public:
+	UPROPERTY(Replicated)
+	int AILevel;
+
 
 };

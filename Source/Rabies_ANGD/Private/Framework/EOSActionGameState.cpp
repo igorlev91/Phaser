@@ -14,10 +14,13 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "Math/UnrealMathUtility.h"
 #include "Enemy/REnemyBase.h"
+#include "GameFramework/PlayerState.h"
 #include "Character/RCharacterBase.h"
 #include "Actors/ChestSpawnLocation.h"
 #include "Framework/EOSPlayerState.h"
 #include "Player/RPlayerController.h"
+#include "Actors/EnemySpawnLocation.h"
+#include "GameplayAbilities/GA_AbilityBase.h"
 
 void AEOSActionGameState::BeginPlay()
 {
@@ -35,9 +38,9 @@ void AEOSActionGameState::BeginPlay()
         spawnLocations.RemoveAt(randomSpawn);
     }
 
-    //float randomSpawn = FMath::RandRange(0, spawnLocations.Num() - 1);
-    //SpawnEnemy(0, spawnLocations[randomSpawn]->GetActorLocation());
-    //spawnLocations.RemoveAt(randomSpawn);
+    WaveLevel = 0;
+    WaveTime = enemyInitalSpawnRate;
+    WaveHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &AEOSActionGameState::WaveSpawn, 0.0f));
 }
 
 void AEOSActionGameState::SpawnChest_Implementation(FVector SpawnLocation)
@@ -57,6 +60,10 @@ void AEOSActionGameState::SpawnEnemy_Implementation(int EnemyIDToSpawn, FVector 
     {
         FActorSpawnParameters SpawnParams;
         AREnemyBase* newEnemy = GetWorld()->SpawnActor<AREnemyBase>(EnemyLibrary[EnemyIDToSpawn], SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+        newEnemy->SetOwner(this);
+        UAbilitySystemComponent* ASC = newEnemy->GetAbilitySystemComponent();
+        ASC->SetOwnerActor(newEnemy);
+        newEnemy->InitLevel(WaveLevel);
         AllEnemies.Add(newEnemy); // make sure that the enemies has bReplicates to true
     }
 }
@@ -78,10 +85,56 @@ void AEOSActionGameState::SelectItem(AItemPickup* selectedItem, ARPlayerBase* ta
     for (int i = 0; i < AllItems.Num(); i++)
     {
         if (selectedItem == AllItems[i])
-        {
+        { 
             PickedUpItem(i, targetingPlayer);
             return;
         }
+    }
+}
+
+void AEOSActionGameState::AwardEnemyKill_Implementation(TSubclassOf<class UGameplayEffect> rewardEffect)
+{
+    if (HasAuthority())
+    {
+        for (APlayerState* playerState : PlayerArray)
+        {
+            if (playerState && playerState->GetPawn())
+            {
+                ARPlayerBase* player = Cast<ARPlayerBase>(playerState->GetPawn());
+                if (player)
+                {
+                    player->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(rewardEffect.GetDefaultObject(), 1.0f, player->GetAbilitySystemComponent()->MakeEffectContext());
+                }
+            }
+        }
+    }
+}
+
+void AEOSActionGameState::WaveSpawn(float timeToNextWave)
+{
+    if (timeToNextWave >= WaveTime)
+    {
+        WaveLevel++;
+        SpawnEnemyWave(1);
+        WaveHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &AEOSActionGameState::WaveSpawn, 0.0f));
+    }
+    else
+    {
+        timeToNextWave += GetWorld()->GetDeltaSeconds();
+        WaveHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &AEOSActionGameState::WaveSpawn, timeToNextWave));
+    }
+}
+
+void AEOSActionGameState::SpawnEnemyWave(int amountOfEnemies)
+{
+    TArray<AActor*> spawnLocations;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemySpawnLocation::StaticClass(), spawnLocations);
+
+    for (int i = 0; i < amountOfEnemies; i++)
+    {
+        float randomSpawn = FMath::RandRange(0, spawnLocations.Num() - 1);
+        SpawnEnemy(1, spawnLocations[randomSpawn]->GetActorLocation());
+        spawnLocations.RemoveAt(randomSpawn);
     }
 }
 
@@ -101,8 +154,18 @@ void AEOSActionGameState::OpenedChest_Implementation(int chestID)
     {
         AllChests[chestID]->UpdateChestOpened();
 
-        int32 randomIndex = FMath::RandRange(0, ItemLibrary.Num() - 1);
-        URItemDataAsset* newData = ItemLibrary[randomIndex];
+        URItemDataAsset* newData = ItemLibrary[0];
+
+        if (ItemSelection.IsEmpty() == false)
+        {
+            int32 randomIndex = FMath::RandRange(0, ItemSelection.Num() - 1);
+            newData = ItemSelection[randomIndex];
+        }
+        else
+        {
+            int32 randomIndex = FMath::RandRange(0, ItemLibrary.Num() - 1);
+            newData = ItemLibrary[randomIndex];
+        }
 
         FActorSpawnParameters SpawnParams;
         AItemPickup* newitem = GetWorld()->SpawnActor<AItemPickup>(ItemPickupClass, AllChests[chestID]->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);

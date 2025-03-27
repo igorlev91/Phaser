@@ -10,6 +10,11 @@
 
 #include "Framework/RItemDataAsset.h"
 
+#include "Widgets/PlayerAttributeGauge.h"
+
+#include "GameplayAbilities/GA_AbilityBase.h"
+#include "Widgets/PlayerAbilityGauge.h"
+
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Button.h"
@@ -22,6 +27,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
+
 #include "GameplayAbilitySpec.h"
 
 #include "GameplayAbilities/RAttributeSet.h"
@@ -31,17 +39,48 @@ void UGameplayUI::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//quitButton->OnClicked.AddDynamic(this, &UGameplayUI::Quit);
-
 	UAbilitySystemComponent* OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwningPlayerPawn());
 	if (OwnerASC)
 	{
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetLevelAttribute()).AddUObject(this, &UGameplayUI::LevelUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &UGameplayUI::HealthUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &UGameplayUI::MaxHealthUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetScrapAttribute()).AddUObject(this, &UGameplayUI::ScrapUpdated);
+
+		meleeStrength->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetMeleeAttackStrengthAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMeleeAttackStrengthAttribute()).AddUObject(meleeStrength, &UPlayerAttributeGauge::UpdateValue);
+		meleeAttackSpeed->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetMeleeAttackCooldownReductionAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMeleeAttackCooldownReductionAttribute()).AddUObject(meleeAttackSpeed, &UPlayerAttributeGauge::UpdateValue);
+
+		rangedStrength->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetRangedAttackStrengthAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetRangedAttackStrengthAttribute()).AddUObject(rangedStrength, &UPlayerAttributeGauge::UpdateValue);
+		rangedAttackSpeed->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetRangedAttackCooldownReductionAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetRangedAttackCooldownReductionAttribute()).AddUObject(rangedAttackSpeed, &UPlayerAttributeGauge::UpdateValue);
+
+		movementspeed->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetMovementSpeedAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMovementSpeedAttribute()).AddUObject(movementspeed, &UPlayerAttributeGauge::UpdateValue);
+
+		damageReduction->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetDamageReductionAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetDamageReductionAttribute()).AddUObject(damageReduction, &UPlayerAttributeGauge::UpdateValue);
+
 	}
 
 	OwnerAbilitySystemComponent = OwnerASC;
+
+	AbilityHorizontalBox->ClearChildren();
+	const URAbilitySystemComponent* RAbilitySystemComp = Cast<URAbilitySystemComponent>(OwnerASC);
+	if (RAbilitySystemComp)
+	{
+		TArray<const UGA_AbilityBase*> GrantedAbilities = RAbilitySystemComp->GetNonGenericAbilityCDOs();
+		for (const UGA_AbilityBase* GrantedAbility : GrantedAbilities)
+		{
+			UPlayerAbilityGauge* newAbilityGague = CreateWidget<UPlayerAbilityGauge>(this, AbilityGaugeClass);
+			UHorizontalBoxSlot* AbilitySlot = AbilityHorizontalBox->AddChildToHorizontalBox(newAbilityGague);
+			newAbilityGague->SetupOwningAbilityCDO(GrantedAbility, OwnerASC);
+			OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetRangedAttackCooldownReductionAttribute()).AddUObject(newAbilityGague, &UPlayerAbilityGauge::CooldownUpdate);
+			AbilitySlot->SetPadding(FMargin(5));
+		}
+	}
 
 	float playerHealth = GetAttributeValue(URAttributeSet::GetHealthAttribute());
 	float playerMaxHealth = GetAttributeValue(URAttributeSet::GetMaxHealthAttribute());
@@ -80,6 +119,12 @@ void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 	}
 }
 
+void UGameplayUI::LevelUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	FText Text = FText::Format(FText::FromString("Lv {0}"), FText::AsNumber((int)ChangeData.NewValue));
+	levelText->SetText(Text);
+}
+
 void UGameplayUI::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 {
 	PlayerHealth->SetHealth(ChangeData.NewValue, GetAttributeValue(URAttributeSet::GetMaxHealthAttribute()));
@@ -112,12 +157,3 @@ float UGameplayUI::GetAttributeValue(const FGameplayAttribute& Attribute) const
 
 	return -1;
 }
-
-//void UGameplayUI::Quit()
-//{
-//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-//	if (PlayerController)
-//	{
-//		UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
-//	}
-//}

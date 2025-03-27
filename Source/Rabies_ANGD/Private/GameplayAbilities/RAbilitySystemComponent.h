@@ -7,6 +7,8 @@
 #include "GameplayAbilities/RAbilitySystemTypes.h"
 #include "RAbilitySystemComponent.generated.h"
 
+struct FGameplayAbilitySpec;
+class UGA_AbilityBase;
 /**
  * 
  */
@@ -23,6 +25,8 @@ public:
 	void GrantInitialAbilities();
 	void ApplyFullStat();
 
+	TArray<const UGA_AbilityBase*> GetNonGenericAbilityCDOs() const;
+
 	TArray<const FGameplayAbilitySpec*> GetGrantedNonGenericAbilities() const;
 
 private:
@@ -34,4 +38,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Init")
 	TMap<EAbilityInputID, TSubclassOf<class UGA_AbilityBase>> Abilities;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Init")
+	TMap<EAbilityInputID, TSubclassOf<class UGA_AbilityBase>> InvisibleAbilities;
 };

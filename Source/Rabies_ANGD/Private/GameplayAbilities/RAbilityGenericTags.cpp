@@ -23,6 +23,16 @@ FGameplayTag URAbilityGenericTags::GetBasicAttackActivationTag()
 	return FGameplayTag::RequestGameplayTag("ability.attack.activate");
 }
 
+FGameplayTag URAbilityGenericTags::GetMeleeAttackCooldown()
+{
+	return FGameplayTag::RequestGameplayTag("ability.attack.meleeAtkCooldown");
+}
+
+FGameplayTag URAbilityGenericTags::GetRangedAttackCooldown()
+{
+	return FGameplayTag::RequestGameplayTag("ability.attack.rangedAtkCooldown");
+}
+
 FGameplayTag URAbilityGenericTags::GetSpecialAttackActivationTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.special.activate");
@@ -46,6 +56,16 @@ FGameplayTag URAbilityGenericTags::GetScopingTag()
 FGameplayTag URAbilityGenericTags::GetAttackingTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.attack.attacking");
+}
+
+FGameplayTag URAbilityGenericTags::GetStartAimingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.attack.startAiming");
+}
+
+FGameplayTag URAbilityGenericTags::GetEndAimingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.attack.endAiming");
 }
 
 FGameplayTag URAbilityGenericTags::GetEndAttackTag()
@@ -81,4 +101,29 @@ FGameplayTag URAbilityGenericTags::GetApplyGravityJump()
 FGameplayTag URAbilityGenericTags::GetHoldingJump()
 {
 	return FGameplayTag::RequestGameplayTag("ability.passive.holdingJump");
+}
+
+FGameplayTag URAbilityGenericTags::GetLevelTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.level");
+}
+
+FGameplayTag URAbilityGenericTags::GetMaxHealthTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.maxHealth");
+}
+
+FGameplayTag URAbilityGenericTags::GetHealthTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.health");
+}
+
+FGameplayTag URAbilityGenericTags::GetMeleeAttackStrengthTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.meleeAttackStrength");
+}
+
+FGameplayTag URAbilityGenericTags::GetRangedAttackStrengthTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.rangedAttackStrength");
 }

@@ -48,6 +48,8 @@ protected:
 	virtual void Init() override;
 
 private:
+	bool AttemptAutoLogin();
+
 	class ARMainMenuController* MenuController;
 
 	class IOnlineSubsystem* onlineSubsystem;

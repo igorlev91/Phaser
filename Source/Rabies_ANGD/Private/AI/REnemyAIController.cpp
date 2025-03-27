@@ -7,6 +7,10 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
 
+#include "Player/RPlayerBase.h"
+
+#include "Net/UnrealNetwork.h"
+
 #include "Character/RCharacterBase.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
 
@@ -56,6 +60,8 @@ void AREnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetGenericTeamId(254);
+
 	if (BehaviorTree)
 		RunBehaviorTree(BehaviorTree);
 
@@ -96,10 +102,17 @@ void AREnemyAIController::TargetPerceptionUpdated(AActor* Target, FAIStimulus St
 {
 	if (!GetBlackboardComponent()) return;
 
-	if(Stimulus.WasSuccessfullySensed())
+	ARPlayerBase* player = Cast<ARPlayerBase>(Target);
+	if (!player)
+	{
+		return;
+	}
+
+	if (Stimulus.WasSuccessfullySensed())
 	{
 		if (!GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName))
 		{
+			Enemy->UpdateAITarget(Target);
 			GetBlackboardComponent()->SetValueAsObject(TargetBlackboardKeyName, Target);
 		}
 	}
@@ -135,10 +148,12 @@ void AREnemyAIController::TargetForgotton(AActor* Target)
 		PerceptionComponent->GetPerceivedHostileActors(OtherTargets);
 		if (OtherTargets.Num() != 0)
 		{
+			Enemy->UpdateAITarget(OtherTargets[0]);
 			GetBlackboardComponent()->SetValueAsObject(TargetBlackboardKeyName, OtherTargets[0]);
 		}
 		else
 		{
+			Enemy->UpdateAITarget(nullptr);
 			GetBlackboardComponent()->ClearValue(TargetBlackboardKeyName);
 		}
 	}

@@ -65,6 +65,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
 	bool IsHoldingJump() const { return !bHoldingJump; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool IsDead() const { return bDead; }
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
@@ -96,10 +99,12 @@ private:
 	bool bIsScoping;
 
 	bool bAttacking;
+	bool bDead;
 	bool bFlying;
 
 	void AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	void DeathTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 };

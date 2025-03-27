@@ -22,23 +22,31 @@ private:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	UFUNCTION()
-	void SendInputForHitScan(FGameplayEventData Payload);
+	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos);
 
 	UFUNCTION()
-	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos);
+	void Fire(FGameplayEventData Payload);
 
 	UFUNCTION()
 	void TryCommitAttack(FGameplayEventData Payload);
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	TSubclassOf<class UGameplayEffect> RangedGattlingDamage;
-
 	UFUNCTION()
 	void AbilityInputPressed(float TimeWaited);
 
-	bool bAttackCommitted;
-
+	UFUNCTION()
 	void SetupWaitInputTask();
+
+	const FGameplayAbilityActorInfo* actorInfo;
+
+	UPROPERTY()
+	FGameplayAbilityActivationInfo activationInfo;
+
+	UPROPERTY()
+	FGameplayAbilitySpecHandle cooldownHandle;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> RangedGattlingDamage;
 
 	FDelegateHandle ClientHitScanHandle;
 
@@ -47,4 +55,6 @@ private:
 
 	UPROPERTY()
 	class ARPlayerBase* Player;
+
+	FTimerHandle RangedAttackHandle;
 };
