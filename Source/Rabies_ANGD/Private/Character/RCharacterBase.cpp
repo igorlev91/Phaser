@@ -201,7 +201,8 @@ void ARCharacterBase::ClientHitScanResult_Implementation(AActor* hitActor, FVect
 {
 	FString actorName = hitActor->GetName();
 	//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
-	DrawDebugLine(GetWorld(), start, end, FColor::Green);
+	//DrawDebugLine(GetWorld(), start, end, FColor::Green);
+	DrawDebugCylinder(GetWorld(), start, end, 1.0f, 32, FColor::Green, false, 1.0f, 0U, 1.0f);
 	ClientHitScan.Broadcast(hitActor, start, end);
 }
 
@@ -315,7 +316,7 @@ void ARCharacterBase::NextLevelExpUpdated(const FOnAttributeChangeData& ChangeDa
 	}
 }
 
-void ARCharacterBase::LevelUp(int carryOverEXP)
+void ARCharacterBase::LevelUp(int carryOverEXP) // Handles the player level up
 {
 	if (LevelUpEffect && GetAbilitySystemComponent())
 	{

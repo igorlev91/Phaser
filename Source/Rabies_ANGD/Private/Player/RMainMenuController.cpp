@@ -16,7 +16,6 @@
 #include "LevelSequenceCameraSettings.h"
 #include "GameFramework/GameStateBase.h"
 #include "Widgets/CharacterSelect.h"
-#include "Widgets/CharacterSelect.h"
 #include "Framework/RCharacterDefination.h"
 #include "LevelSequencePlayer.h"
 #include "MovieSceneSequence.h"
@@ -30,8 +29,7 @@ void ARMainMenuController::OnRep_PlayerState()
 
 	if (IsLocalPlayerController()) //maybe also check if they have authority?
 	{
-		myPlayerID = GetPlayerID();
-		//CreateCharacterSelectUI();
+
 	}
 }
 
@@ -130,20 +128,6 @@ void ARMainMenuController::ConfirmCharacterChoice()
 	playerState->Server_CharacterSelected(CurrentlyHoveredCharacter);
 }
 
-int ARMainMenuController::GetPlayerID()
-{
-	for (int i = 0; i < GameState->PlayerArray.Num(); i++)
-	{
-		//AEOSPlayerState* currentPlayer = Cast<AEOSPlayerState>(GameState->PlayerArray[i]);
-		//if (myPlayerID == GameState->PlayerArray[i].)
-		//{
-		//	return i;
-		//}
-	}
-
-	return 1;
-}
-
 void ARMainMenuController::PostPossessionSetup(APawn* NewPawn)
 {
 
@@ -179,35 +163,13 @@ void ARMainMenuController::CreateMenuUI()
 	}
 }
 
-void ARMainMenuController::CreateLobbyUI()
-{
-	if (!CharacterSelectUIClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s,  missing Gameplay UI class, Can't Spawn Gameplay UI"), *GetName());
-		return;
-	}
-
-	if (!IsLocalPlayerController())
-	{
-		return;
-	}
-
-	CharacterSelectUI = CreateWidget<UCharacterSelect>(this, CharacterSelectUIClass);
-	if (CharacterSelectUI)
-	{
-		CharacterSelectUI->AddToViewport();
-	}
-}
-
 void ARMainMenuController::OnSequenceEnd()
 {
-	CreateLobbyUI();
-
 	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
 	if (SequencePlayer)
 	{
 		FMovieSceneSequencePlaybackParams playbackParams;
-		playbackParams.Frame = FFrameNumber(70);
+		playbackParams.Frame = FFrameNumber(45);
 
 		SequencePlayer->SetPlaybackPosition(playbackParams);
 

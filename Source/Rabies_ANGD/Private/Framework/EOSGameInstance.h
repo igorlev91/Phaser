@@ -48,6 +48,12 @@ protected:
 	virtual void Init() override;
 
 private:
+	FTimerHandle DelayedLoadTimer;
+
+	FName newSessionName;
+
+	void DelayedLoad();
+
 	bool AttemptAutoLogin();
 
 	class ARMainMenuController* MenuController;
@@ -64,6 +70,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> GameLevel;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> SelectLevel;
 
 	FName SessionNameKey{ "SessionName" };
 

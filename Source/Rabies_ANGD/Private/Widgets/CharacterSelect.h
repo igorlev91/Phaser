@@ -14,6 +14,9 @@ class UCharacterSelect : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	UFUNCTION()
+	void SetPlayerController(ARMainMenuController* menuController);
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -25,7 +28,7 @@ private:
 	UFUNCTION()
 	void ReadyUp();
 
-	void LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad);
+	class ARMainMenuController* MenuController;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> GameLevel;

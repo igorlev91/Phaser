@@ -38,7 +38,6 @@ public:
 	UFUNCTION()
 	void ConfirmCharacterChoice();
 
-	int GetPlayerID();
 
 private:
 	class ACineCameraActor* CineCamera;
@@ -51,8 +50,6 @@ private:
 
 	void CreateMenuUI();
 
-	void CreateLobbyUI();
-
 	UFUNCTION()
 	void OnSequenceEnd();
 
@@ -61,12 +58,6 @@ private:
 
 	UPROPERTY()
 	class UMainMenu* MenuUI;
-
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<class UCharacterSelect> CharacterSelectUIClass;
-
-	UPROPERTY()
-	class UCharacterSelect* CharacterSelectUI;
 
 	UPROPERTY()
 	class URCharacterDefination* CurrentlyHoveredCharacter;

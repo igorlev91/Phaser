@@ -33,7 +33,7 @@ void UMainMenu::NativeConstruct()
 
 	GameInst = GetGameInstance<UEOSGameInstance>();
 
-	GameInst->SessionJoined.AddUObject(this, &UMainMenu::MoveToCharacterSelect);
+	//GameInst->SessionJoined.AddUObject(this, &UMainMenu::MoveToCharacterSelect);
 
 	ChangeMainMenuState(true);
 	ChangeConnectMenuState(false);
@@ -51,14 +51,6 @@ void UMainMenu::ReturnFromSettings()
 {
 	ChangeMainMenuState(true);
 	ChangeSettingsState(false);
-}
-
-void UMainMenu::MoveToCharacterSelect()
-{
-	ChangeMainMenuState(false);
-	ChangeConnectMenuState(false);
-	ChangeSettingsState(false);
-	ChangeCreditsState(false);
 }
 
 void UMainMenu::SingleplayerClicked()

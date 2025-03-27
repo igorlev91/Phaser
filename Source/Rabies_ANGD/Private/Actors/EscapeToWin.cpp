@@ -6,10 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/WidgetComponent.h"
-#include "Widgets/CanEscape.h"
-#include "Widgets/CannotEscape.h"
-#include "Widgets/GameWinUI.h"
-#include "Widgets/InitiateBossFight.h"
+#include "Widgets/EndGameWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -30,14 +27,9 @@ AEscapeToWin::AEscapeToWin()
 	EndGameMesh->SetupAttachment(GetRootComponent());
 	EndGameMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
-	CanEscapeWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Can Escape Widget Comp");
-	CanEscapeWidgetComp->SetupAttachment(GetRootComponent());
+	EndGameWidgetComp = CreateDefaultSubobject<UWidgetComponent>("End Game Widget Comp");
+	EndGameWidgetComp->SetupAttachment(GetRootComponent());
 
-	CannotEscapeWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Cannot Escape Widget Comp");
-	CannotEscapeWidgetComp->SetupAttachment(GetRootComponent());
-
-	GameWinWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Win Game Widget Comp");
-	GameWinWidgetComp->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -45,39 +37,38 @@ void AEscapeToWin::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetUpTrueUI();
-	SetUpFalseUI();
-	SetUpEndUI();
+	SetUpEndGame();
 }
 
 // Called every frame
 void AEscapeToWin::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AEscapeToWin::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	player = Cast<ARPlayerBase>(OtherActor);
 
-	if (bHasWonGame || !player)
+	if (!player || !player->IsLocallyControlled() || bHasWonGame)
 	{
 		return;
 	}
 
-	if (bHasBeatenBoss)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("You have defeated the boss! You can escape!"));
-		CanEscapeWidgetComp->SetVisibility(true);
+	UE_LOG(LogTemp, Warning, TEXT("Try to Escape?"));
+	EndGameUI->SetVisibility(ESlateVisibility::Visible);
+	EndGameUI->UpdateText(FText::FromString("Insert Keycard?\n[F]"));
+	EndGameUI->UpdateTextColor(FLinearColor::White);
 
-		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::EndGame);
-		
+	if (!bStartBoss)
+	{
+		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::CheckKeyCard);
+		return;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Door is locked, defeat the boss."));
-		CannotEscapeWidgetComp->SetVisibility(true);
+		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::UseKeycard);
+		return;
 	}
 }
 
@@ -85,54 +76,71 @@ void AEscapeToWin::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	player = Cast<ARPlayerBase>(OtherActor);
 
-	if (bHasWonGame || !player)
+	if (!player || !player->IsLocallyControlled() || bHasWonGame)
 	{
 		return;
 	}
 
-	if (bHasBeatenBoss)
+	EndGameUI->SetVisibility(ESlateVisibility::Collapsed);
+	player->PlayerInteraction.Clear();
+}
+
+void AEscapeToWin::SetUpEndGame()
+{
+	EndGameUI = Cast<UEndGameWidget>(EndGameWidgetComp->GetUserWidgetObject());
+	EndGameUI->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void AEscapeToWin::CheckKeyCard()
+{
+	//Check to see if player has keycard
+
+	if (bHasKeyCard == true)
 	{
-		CanEscapeWidgetComp->SetVisibility(false);
-		player->PlayerInteraction.Clear();
+		SpawnBoss();
 	}
 	else
 	{
-		CannotEscapeWidgetComp->SetVisibility(false);
+		EndGameUI->UpdateText(FText::FromString("No Keycard Detected.\nAccessed Denied."));
+		EndGameUI->UpdateTextColor(FLinearColor::Red);
 	}
 }
 
-void AEscapeToWin::SetUpTrueUI()
+void AEscapeToWin::SpawnBoss()
 {
-	CanEscapeWidgetUI = Cast<UCanEscape>(CanEscapeWidgetComp->GetUserWidgetObject());
+	UE_LOG(LogTemp, Error, TEXT("Spawning Boss"));
+	bStartBoss = true;
 
-	CanEscapeWidgetComp->SetVisibility(false);
-}
+	player->PlayerInteraction.Clear();
 
-void AEscapeToWin::SetUpFalseUI()
-{
-	CannotEscapeWidgetUI = Cast<UCannotEscape>(CannotEscapeWidgetComp->GetUserWidgetObject());
-
-	CannotEscapeWidgetComp->SetVisibility(false);
-}
-
-void AEscapeToWin::SetUpEndUI()
-{
-	GameWinUI = Cast<UGameWinUI>(GameWinWidgetComp->GetUserWidgetObject());
+	EndGameUI->UpdateText(FText::FromString("ERROR!\nAccess Overrided."));
+	EndGameUI->UpdateTextColor(FLinearColor::Red);
 	
-	GameWinWidgetComp->SetVisibility(false);
+	//Spawn Boss into the world
 }
 
-void AEscapeToWin::SetUpBossUI()
+void AEscapeToWin::UseKeycard()
 {
-	InitiateBossFightUI = Cast<UInitiateBossFight>(InitiateBossWidgetComp->GetUserWidgetObject());
-
-	InitiateBossWidgetComp->SetVisibility(false);
+	if (!bHasBeatenBoss)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Door is locked, defeat the boss."));
+		EndGameUI->UpdateText(FText::FromString("Access Denied.\nDeadlock Security - Online"));
+		EndGameUI->UpdateTextColor(FLinearColor::Red);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Door is opened, you escaped!"));
+		EndGameUI->UpdateText(FText::FromString("Access Granted.\nLeave the Facility?\n[F]"));
+		EndGameUI->UpdateTextColor(FLinearColor::Green);
+		
+		player->PlayerInteraction.Clear();
+		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::EndGame);
+	}
 }
 
-bool AEscapeToWin::SetActivatingExit()
+void AEscapeToWin::SetActivatingExit()
 {
 	bHasBeatenBoss = true;
-	return bHasBeatenBoss;
 }
 
 void AEscapeToWin::EndGame()
@@ -140,8 +148,9 @@ void AEscapeToWin::EndGame()
 	UE_LOG(LogTemp, Error, TEXT("You Win!!!"));
 	bHasWonGame = true;
 
-	CanEscapeWidgetComp->SetVisibility(false);
 	player->PlayerInteraction.Clear();
 
-	GameWinWidgetComp->SetVisibility(true);
+	//Whatever needs to be done for the ending, I am not sure exactly what they want
+	EndGameUI->UpdateText(FText::FromString("CONGRATULATIONS!\nYou have beaten the game!"));
+	EndGameUI->UpdateTextColor(FLinearColor::White);
 }

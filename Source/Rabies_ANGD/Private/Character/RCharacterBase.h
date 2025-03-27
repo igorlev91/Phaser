@@ -123,7 +123,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Gameplay Ability")
 	URAbilitySystemComponent* AbilitySystemComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
+	UPROPERTY(EditDefaultsOnly, Category = "Player Level Up Ability")
 	TSubclassOf<UGameplayEffect> LevelUpEffect;
 
 	UPROPERTY(Transient)

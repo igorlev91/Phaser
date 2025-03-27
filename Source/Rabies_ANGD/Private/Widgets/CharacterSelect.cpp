@@ -7,6 +7,8 @@
 #include "Components/Button.h"
 #include "Widgets/RButton.h"
 
+#include "Player/RMainMenuController.h"
+
 #include "Net/UnrealNetwork.h"
 #include "Framework/EOSGameState.h"
 #include "Framework/EOSPlayerState.h"
@@ -20,23 +22,13 @@ void UCharacterSelect::NativeConstruct()
 	ReadyUpButton->RabiesButton->OnClicked.AddDynamic(this, &UCharacterSelect::ReadyUp);
 }
 
+void UCharacterSelect::SetPlayerController(ARMainMenuController* menuController)
+{
+	MenuController = menuController;
+}
+
 void UCharacterSelect::ReadyUp()
 {
 	// do your checks here
 	UE_LOG(LogTemp, Warning, TEXT("Ready up"));
-	LoadMapAndListen(GameLevel);
-}
-
-void UCharacterSelect::LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad)
-{
-	if (!levelToLoad.IsValid())
-	{
-		levelToLoad.LoadSynchronous();
-	}
-
-	if (levelToLoad.IsValid())
-	{
-		const FName levelName = FName(*FPackageName::ObjectPathToPackageName(levelToLoad.ToString()));
-		GetWorld()->ServerTravel(levelName.ToString() + "?listen");
-	}
 }

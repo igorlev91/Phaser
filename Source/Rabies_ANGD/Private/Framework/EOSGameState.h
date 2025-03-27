@@ -34,6 +34,13 @@ public:
 	URCharacterDefination* GetDefinationFromIndex(int index);
 	
 private:
+	UFUNCTION(NetMulticast, Reliable) // this function calls on both server and client if it's called from the server.
+	void LoadMapAndListen();
+
+
+	void TryLoadIntoGame();
+
+	FTimerHandle TryLoadIntoGameTimer;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_SessionName)
 	FName SessionName;
@@ -52,6 +59,9 @@ private:
 
 	UPROPERTY()
 	class AEOSPlayerState* PlayerState;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> GameLevel;
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;

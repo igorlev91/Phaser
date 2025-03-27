@@ -6,6 +6,8 @@
 #include "Online/OnlineSessionNames.h"
 #include "OnlineSessionSettings.h"
 
+#include "TimerManager.h"
+
 #include "Engine/World.h"
 
 #include "Player/RMainMenuController.h"
@@ -45,21 +47,11 @@ void UEOSGameInstance::LoginCompleted(int numOfPlayers, bool bWasSuccessful, con
 {
 	if (bWasSuccessful)
 	{
-		if (MenuController)
-		{
-			MenuController->ChangeMainMenuState(false);
-			MenuController->ChangeOnlineMenuState(true);
-			UE_LOG(LogTemp, Warning, TEXT("Logged in"));
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Logged in"));
 	}
 	else
 	{
-		if (MenuController)
-		{
-			MenuController->ChangeMainMenuState(true);
-			MenuController->ChangeOnlineMenuState(false);
-			UE_LOG(LogTemp, Warning, TEXT("Failed to Login"));
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Failed to Login"));
 	}
 }
 
@@ -190,8 +182,15 @@ void UEOSGameInstance::CreateSessionCompleted(FName SessionName, bool bWasSucces
 	if (bWasSuccessful)
 	{
 		SessionJoined.Broadcast();
-		//LoadMapAndListen(CharacterSelctLevel); // Transition to the other screen now
+		LoadMapAndListen(SelectLevel);
 	}
+}
+
+void UEOSGameInstance::DelayedLoad()
+{
+	FString TravelURL;
+	sessionPtr->GetResolvedConnectString(newSessionName, TravelURL);
+	GetFirstLocalPlayerController(GetWorld())->ClientTravel(TravelURL, TRAVEL_Absolute);
 }
 
 void UEOSGameInstance::FindSessionsCompleted(bool bWasSuccessful)
@@ -217,11 +216,11 @@ void UEOSGameInstance::JoinSessionCompleted(FName sessionName, EOnJoinSessionCom
 {
 	if (Result == EOnJoinSessionCompleteResult::Success)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Joining Session: %s completed"), *sessionName.ToString())
-		FString TravelURL;
-		sessionPtr->GetResolvedConnectString(sessionName, TravelURL);
-		GetFirstLocalPlayerController(GetWorld())->ClientTravel(TravelURL, TRAVEL_Absolute);
+		UE_LOG(LogTemp, Warning, TEXT("Joining Session: %s completed"), *sessionName.ToString());
 		SessionJoined.Broadcast();
+
+		newSessionName = sessionName;
+		GetWorld()->GetTimerManager().SetTimer(DelayedLoadTimer, this, &UEOSGameInstance::DelayedLoad, 1.0f, false);
 	}
 }
 

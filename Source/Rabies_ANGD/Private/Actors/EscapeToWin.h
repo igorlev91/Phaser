@@ -16,9 +16,10 @@ public:
 	AEscapeToWin();
 
 	bool bHasBeatenBoss = false;
+	bool bHasKeyCard = false;
 
 protected:
-	bool startGame = false;
+	bool bStartBoss = false;
 	bool bHasWonGame = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Escape")
@@ -29,29 +30,15 @@ protected:
 
 
 private:
+
+	/*	Widget Compositions	 */
 	UPROPERTY(VisibleAnywhere, Category = "UI")
-	class UWidgetComponent* CanEscapeWidgetComp;
+	class UWidgetComponent* EndGameWidgetComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "UI")
-	class UWidgetComponent* CannotEscapeWidgetComp;
-
-	UPROPERTY(VisibleAnywhere, Category = "UI")
-	class UWidgetComponent* GameWinWidgetComp;
-
-	UPROPERTY(VisibleAnywhere, Category = "UI")
-	class UWidgetComponent* InitiateBossWidgetComp;
-
+	/*	Widgets	 */
 	UPROPERTY()
-	class UCannotEscape* CannotEscapeWidgetUI;
+	class UEndGameWidget* EndGameUI;
 
-	UPROPERTY()
-	class UCanEscape* CanEscapeWidgetUI;
-
-	UPROPERTY()
-	class UGameWinUI* GameWinUI;
-
-	UPROPERTY()
-	class UInitiateBossFight* InitiateBossFightUI;
 	//Transient - Reference to the widget
 
 	class ARPlayerBase* player;
@@ -63,26 +50,27 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Chest Detail")
+	UFUNCTION(BlueprintCallable, Category = "Escape")
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION(BlueprintCallable, Category = "Chest Detail")
+	UFUNCTION(BlueprintCallable, Category = "Escape")
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	/*	UI Setup  */
 	UFUNCTION()
-	void SetUpTrueUI();
+	void SetUpEndGame();
 
 	UFUNCTION()
-	void SetUpFalseUI();
+	void CheckKeyCard();
 
 	UFUNCTION()
-	void SetUpEndUI();
+	void SpawnBoss();
 
 	UFUNCTION()
-	void SetUpBossUI();
+	void UseKeycard();
 
 	UFUNCTION()
-	bool SetActivatingExit();
+	void SetActivatingExit();
 
 	UFUNCTION()
 	void EndGame();

@@ -84,9 +84,6 @@ private:
 	class UOverlay* CreditsOverlay;
 
 	UFUNCTION()
-	void MoveToCharacterSelect();
-
-	UFUNCTION()
 	void SingleplayerClicked();
 
 	UFUNCTION()

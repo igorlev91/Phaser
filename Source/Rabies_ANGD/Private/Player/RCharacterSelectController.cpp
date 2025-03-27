@@ -7,9 +7,19 @@
 #include "Framework/EOSGameState.h"
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/CameraActor.h"
+#include "Engine/World.h"
+#include "EngineUtils.h"
+#include "LevelSequenceActor.h"
+#include "CineCameraActor.h"
+#include "LevelSequence.h"
+#include "LevelSequenceCameraSettings.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/GameStateBase.h"
 #include "Widgets/CharacterSelect.h"
+#include "Framework/RCharacterDefination.h"
+#include "LevelSequencePlayer.h"
+#include "MovieSceneSequence.h"
 #include "Framework/RCharacterDefination.h"
 
 void ARCharacterSelectController::OnRep_PlayerState()
@@ -17,11 +27,10 @@ void ARCharacterSelectController::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	BP_OnRep_PlayerState();
-	
-	if (IsLocalPlayerController()) //maybe also check if they have authority?
+	if (IsLocalController() && CharacterSelectUI == nullptr) //maybe also check if they have authority?
 	{
-		myPlayerID = GetPlayerID();
 		CreateCharacterSelectUI();
+		myPlayerID = GetPlayerID();
 	}
 }
 
@@ -46,6 +55,33 @@ void ARCharacterSelectController::BeginPlay()
 
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	GetWorld()->GetFirstPlayerController()->bEnableClickEvents = true;
+
+	for (TActorIterator<ACineCameraActor> It(GetWorld()); It; ++It)
+	{
+		CineCamera = *It;
+		break;
+	}
+
+	for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
+	{
+		MainMenuSequence = *It;
+		break;
+	}
+
+	if (!CineCamera || !MainMenuSequence)
+		return;
+
+	SetViewTarget(CineCamera);
+	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
+	if (SequencePlayer)
+	{
+		FMovieSceneSequencePlaybackParams playbackParams;
+		playbackParams.Time = 0;
+		SequencePlayer->SetPlaybackPosition(playbackParams);
+
+		SequencePlayer->Play();
+		SequencePlayer->OnFinished.AddDynamic(this, &ARCharacterSelectController::OnSequenceEnd);
+	}
 
 	GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
 	if (!GameState)
@@ -89,6 +125,11 @@ int ARCharacterSelectController::GetPlayerID()
 
 void ARCharacterSelectController::PostPossessionSetup(APawn* NewPawn)
 {
+	if (IsLocalController() && CharacterSelectUI == nullptr) //maybe also check if they have authority?
+	{
+		CreateCharacterSelectUI();
+		myPlayerID = GetPlayerID();
+	}
 }
 
 void ARCharacterSelectController::CreateCharacterSelectUI()
@@ -108,5 +149,19 @@ void ARCharacterSelectController::CreateCharacterSelectUI()
 	if (CharacterSelectUI)
 	{
 		CharacterSelectUI->AddToViewport();
+	}
+}
+
+void ARCharacterSelectController::OnSequenceEnd()
+{
+	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
+	if (SequencePlayer)
+	{
+		FMovieSceneSequencePlaybackParams playbackParams;
+		playbackParams.Frame = FFrameNumber(29);
+
+		SequencePlayer->SetPlaybackPosition(playbackParams);
+
+		//SequencePlayer->OnFinished.AddDynamic(this, &ARMainMenuController::OnSequenceEnd);
 	}
 }
