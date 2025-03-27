@@ -28,6 +28,9 @@ public:
 	void ChangeTakeOffState(bool state, float charge);
 
 	UFUNCTION()
+	void ChangeRevivalState(bool state, float charge);
+
+	UFUNCTION()
 	void AddNewItemToUI(class URItemDataAsset* newItemAsset);
 
 private:

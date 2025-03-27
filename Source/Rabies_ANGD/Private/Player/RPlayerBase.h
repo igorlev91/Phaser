@@ -56,20 +56,39 @@ public:
 	UFUNCTION()
 	AEOSPlayerState* GetPlayerBaseState();
 
+	UPROPERTY()
+	TArray<AActor*> nearbyFaintedActors;
 
 private:
 
-	UPROPERTY(VisibleAnywhere, Category = "Item Detail")
+	UPROPERTY(VisibleAnywhere, Category = "PlayerDetail")
 	class USphereComponent* ItemPickupCollider;
 
 	class AItemChest* interactionChest;
 
+	UFUNCTION()
+	void DeadStatusUpdated(bool bIsDead);
+
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "Item Detail")
+	UFUNCTION(BlueprintCallable, Category = "PlayerDetail")
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION(BlueprintCallable, Category = "PlayerDetail")
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 private:
+
+	bool bInRangeToRevive;
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	class UWidgetComponent* ReviveUIWidgetComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class UReviveUI> ReviveUIClass;
+
+	UPROPERTY()
+	class UReviveUI* ReviveUI;
 
 	UPROPERTY(VisibleAnywhere, Category = "View")
 	USceneComponent* viewPivot;
@@ -239,6 +258,9 @@ private:
 	void ServerRequestPickupItem(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);
 
 	public:
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void ServerSetPlayerReviveState(bool state);
 
 	UFUNCTION(Client, Reliable)
 	void AddNewItem(class URItemDataAsset* newItemAsset);

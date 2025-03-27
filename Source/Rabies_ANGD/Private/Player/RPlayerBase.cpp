@@ -8,6 +8,7 @@
 #include "Player/RPlayerController.h"
 #include "Framework/EOSPlayerState.h"
 
+#include "Widgets/ReviveUI.h"
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
@@ -15,7 +16,8 @@
 #include "Framework/RItemDataAsset.h"
 
 #include "Actors/ItemChest.h"
-
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Animation/AnimInstance.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
@@ -31,6 +33,7 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Actors/ItemPickup.h"
+#include "Components/WidgetComponent.h"
 
 #include "Framework/RGameMode.h"
 
@@ -54,12 +57,13 @@ ARPlayerBase::ARPlayerBase()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 2.0f;
 
+	ReviveUIWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Revive Widget Comp");
+	ReviveUIWidgetComp->SetupAttachment(GetRootComponent());
+
 	// sphere radius
 	ItemPickupCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Item Collider"));
 	ItemPickupCollider->SetupAttachment(GetRootComponent());
 	ItemPickupCollider->SetCollisionProfileName(TEXT("OverlapAll"));
-
-	ItemPickupCollider->OnComponentBeginOverlap.AddDynamic(this, &ARPlayerBase::OnOverlapBegin);
 
 	cameraClampMax = 10;
 	cameraClampMin = -60;
@@ -87,6 +91,25 @@ void ARPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ItemPickupCollider->OnComponentBeginOverlap.AddDynamic(this, &ARPlayerBase::OnOverlapBegin);
+	ItemPickupCollider->OnComponentEndOverlap.AddDynamic(this, &ARPlayerBase::OnOverlapEnd);
+
+	OnDeadStatusChanged.AddUObject(this, &ARPlayerBase::DeadStatusUpdated);
+
+	ReviveUIWidgetComp->SetWidgetClass(ReviveUIClass);
+	ReviveUI = CreateWidget<UReviveUI>(GetWorld(), ReviveUIWidgetComp->GetWidgetClass());
+	if (ReviveUI)
+	{
+		ReviveUIWidgetComp->SetWidget(ReviveUI);
+	}
+	if (!ReviveUI)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s can't spawn revive has the wrong widget setup"), *GetName());
+		return;
+	}
+
+	ReviveUI->SetRenderScale(FVector2D{ 2.5f });
+	ReviveUI->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ARPlayerBase::PawnClientRestart()
@@ -182,6 +205,12 @@ void ARPlayerBase::SetRabiesPlayerController(ARPlayerController* newController)
 
 void ARPlayerBase::StartJump()
 {
+	if (bInRangeToRevive)
+	{
+		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Revive);
+		return;
+	}
+
 	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::HoldJump);
 
 	if (bInstantJump)
@@ -197,6 +226,8 @@ void ARPlayerBase::ReleaseJump()
 {
 	FGameplayEventData eventData;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndTakeOffChargeTag(), eventData);
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndRevivingTag(), eventData);
 
 	if (bInstantJump) return;
 
@@ -365,6 +396,24 @@ void ARPlayerBase::SetPausetoFalse()
 	isPaused = false;
 }
 
+void ARPlayerBase::ServerSetPlayerReviveState_Implementation(bool state)
+{
+	if (ReviveUI == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to set player revive UI"));
+		return;
+	}
+
+	if (state)
+	{
+		ReviveUI->SetVisibility(ESlateVisibility::Visible);
+	}
+	else 
+	{
+		ReviveUI->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
 void ARPlayerBase::ServerRequestPickupItem_Implementation(AItemPickup* itemPickup, URItemDataAsset* itemAsset)
 {
 	if (itemPickup && itemAsset)
@@ -410,8 +459,22 @@ void ARPlayerBase::AddNewItem_Implementation(URItemDataAsset* newItemAsset)
 	playerController->AddNewItemToUI(newItemAsset);
 }
 
+void ARPlayerBase::DeadStatusUpdated(bool bIsDead)
+{
+	if (bIsDead)
+	{
+		
+	}
+	else
+	{
+		
+	}
+}
+
 void ARPlayerBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetUnActionableTag()) || GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag())) return;
+
 	AItemPickup* newItem = Cast<AItemPickup>(OtherActor);
 	if (newItem)
 	{
@@ -419,8 +482,31 @@ void ARPlayerBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 	}
 
 	ARPlayerBase* player = Cast<ARPlayerBase>(OtherActor);
-	if (player)
+	if (player && player != this)
 	{
-		// do the revival prompt for the player here
+		if (!nearbyFaintedActors.Contains(OtherActor))
+			nearbyFaintedActors.Add(OtherActor);
+
+		if (player->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		{
+			bInRangeToRevive = true;
+			player->ServerSetPlayerReviveState(true);
+		}
+	}
+}
+
+void ARPlayerBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	ARPlayerBase* player = Cast<ARPlayerBase>(OtherActor);
+	if (player && player != this)
+	{
+		if (nearbyFaintedActors.Contains(OtherActor))
+			nearbyFaintedActors.Remove(OtherActor);
+
+		if (player->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		{
+			bInRangeToRevive = false;
+			player->ServerSetPlayerReviveState(false);
+		}
 	}
 }

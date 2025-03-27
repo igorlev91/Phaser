@@ -2,6 +2,7 @@
 
 
 #include "Framework/EOSActionGameState.h"
+#include "Enemy/REnemyBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Actors/ItemChest.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,7 +14,6 @@
 #include "Animation/AnimMontage.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "Math/UnrealMathUtility.h"
-#include "Enemy/REnemyBase.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/RCharacterBase.h"
 #include "Actors/ChestSpawnLocation.h"
@@ -68,6 +68,19 @@ void AEOSActionGameState::SpawnEnemy_Implementation(int EnemyIDToSpawn, FVector 
     }
 }
 
+void AEOSActionGameState::SelectEnemy(AREnemyBase* selectedEnemy)
+{
+    for (int i = 0; i < AllEnemies.Num(); i++)
+    {
+        if (selectedEnemy == AllEnemies[i])
+        {
+            RemoveEnemy(i);
+            return;
+        }
+    }
+}
+
+
 void AEOSActionGameState::SelectChest(AItemChest* openedChest)
 {
     for (int i = 0; i < AllChests.Num(); i++)
@@ -114,7 +127,7 @@ void AEOSActionGameState::WaveSpawn(float timeToNextWave)
 {
     if (timeToNextWave >= WaveTime)
     {
-        WaveLevel++;
+        WaveLevel += PlayerArray.Num();
         SpawnEnemyWave(1);
         WaveHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &AEOSActionGameState::WaveSpawn, 0.0f));
     }
@@ -135,6 +148,15 @@ void AEOSActionGameState::SpawnEnemyWave(int amountOfEnemies)
         float randomSpawn = FMath::RandRange(0, spawnLocations.Num() - 1);
         SpawnEnemy(1, spawnLocations[randomSpawn]->GetActorLocation());
         spawnLocations.RemoveAt(randomSpawn);
+    }
+}
+
+void AEOSActionGameState::RemoveEnemy_Implementation(int enemyID)
+{
+    if (HasAuthority())
+    {
+        AllEnemies[enemyID]->UpdateEnemyDeath();
+        AllEnemies.RemoveAt(enemyID);
     }
 }
 

@@ -14,7 +14,6 @@
 #include "GameplayAbilities/RAbilityGenericTags.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-
 #include "Abilities/GameplayAbility.h"
 
 #include "Net/UnrealNetwork.h"
@@ -137,7 +136,15 @@ void AItemChest::Server_OpenChest_Implementation()
 		{
 			FGameplayEffectContextHandle effectContext = ASC->MakeEffectContext();
 			FGameplayEffectSpecHandle effectSpecHandle = ASC->MakeOutgoingSpec(ScrapPriceEffect, 1.0f, effectContext);
-			ASC->ApplyGameplayEffectSpecToSelf(*effectSpecHandle.Data.Get());
+			FGameplayEffectSpec* spec = effectSpecHandle.Data.Get();
+
+			if (spec)
+			{
+				spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetScrapTag(), -ScrapPrice);
+				ASC->ApplyGameplayEffectSpecToSelf(*spec);
+			}
+
+
 			AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
 			if (gameState == GetOwner())
 			{
@@ -158,4 +165,5 @@ void AItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(AItemChest, bWasOpened, COND_None);
+	DOREPLIFETIME_CONDITION(AItemChest, ScrapPrice, COND_None);
 }

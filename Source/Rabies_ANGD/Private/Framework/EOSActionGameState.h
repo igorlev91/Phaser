@@ -6,6 +6,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "EOSActionGameState.generated.h"
 
+class AREnemyBase;
 class AItemChest;
 class AItemPickup;
 class URItemDataAsset;
@@ -19,6 +20,9 @@ class AEOSActionGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+
+	UFUNCTION()
+	void SelectEnemy(AREnemyBase* selectedEnemy);
 
 	UFUNCTION()
 	void SelectChest(AItemChest* openedChest);
@@ -59,6 +63,9 @@ private:
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void OpenedChest(int chestID);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void RemoveEnemy(int enemyID);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void PickedUpItem(int itemID, class ARPlayerBase* targetingPlayer);

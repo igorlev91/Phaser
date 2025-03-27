@@ -24,6 +24,10 @@ class URAttributeSet : public UAttributeSet
 	
 public:
 	ATTRIBUTE_ACCESSORS(URAttributeSet, Level)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, Exp)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, NextLevelExp)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, PrevLevelExp)
+
 	ATTRIBUTE_ACCESSORS(URAttributeSet, Health)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, MaxHealth)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, MeleeAttackStrength)
@@ -60,6 +64,16 @@ public:
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_Level)
 	FGameplayAttributeData Level;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Exp)
+	FGameplayAttributeData Exp;
+
+	UPROPERTY(ReplicatedUsing = OnRep_NextLevelExp)
+	FGameplayAttributeData NextLevelExp;
+
+	UPROPERTY(ReplicatedUsing = OnRep_PrevLevelExp)
+	FGameplayAttributeData PrevLevelExp;
+
 	UPROPERTY(ReplicatedUsing = OnRep_Health)
 	FGameplayAttributeData Health;
 
@@ -152,6 +166,15 @@ private:
 	FGameplayAttributeData UraniumEffectChance;
 	UFUNCTION()
 	void OnRep_Level(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_Exp(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_NextLevelExp(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_PrevLevelExp(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldValue);

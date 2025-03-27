@@ -101,6 +101,16 @@ void ARPlayerController::ChangeTakeOffState(bool state, float charge)
 	GameplayUI->SetTakeOffBarState(state, charge);
 }
 
+void ARPlayerController::ChangeRevivalState(bool state, float charge)
+{
+	if (!IsLocalPlayerController() || GameplayUI == nullptr)
+	{
+		return;
+	}
+
+	GameplayUI->SetRevivalBarState(state, charge);
+}
+
 void ARPlayerController::AddNewItemToUI(URItemDataAsset* newItemAsset)
 {
 	if (!IsLocalPlayerController() || GameplayUI == nullptr)

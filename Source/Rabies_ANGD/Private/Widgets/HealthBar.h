@@ -39,4 +39,13 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
 	class UTextBlock* LevelText;
+
+	UPROPERTY(EditAnywhere, Category = "Visual")
+	FLinearColor colorGreen;
+
+	UPROPERTY(EditAnywhere, Category = "Visual")
+	FLinearColor colorYellow;
+
+	UPROPERTY(EditAnywhere, Category = "Visual")
+	FLinearColor colorRed;
 };

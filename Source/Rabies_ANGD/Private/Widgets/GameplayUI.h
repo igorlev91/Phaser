@@ -29,6 +29,9 @@ public:
 	void SetTakeOffBarState(bool state, float charge);
 
 	UFUNCTION()
+	void SetRevivalBarState(bool state, float charge);
+
+	UFUNCTION()
 	void AddItem(class URItemDataAsset* itemAsset);
 
 private:
@@ -40,7 +43,8 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* levelBar;
 
-	class UTextBlock* levelText;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* LEvelText;
 
 	UPROPERTY(meta = (BindWidget))
 	class UHealthBar* PlayerHealth;
@@ -84,6 +88,9 @@ private:
 	bool crosshairState;
 
 	void LevelUpdated(const FOnAttributeChangeData& ChangeData);
+	void ExpUpdated(const FOnAttributeChangeData& ChangeData);
+	void NextLevelExpUpdated(const FOnAttributeChangeData& ChangeData);
+
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void ScrapUpdated(const FOnAttributeChangeData& ChangeData);
@@ -99,6 +106,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UChageBar* SuperJumpChargeBar;
+
+	UPROPERTY(meta = (BindWidget))
+	class UChageBar* ReviveChargeBar;
 
 	//************************//
 	//     Test n' Online      //

@@ -38,11 +38,11 @@ private:
 
 	class ARPlayerBase* player;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
+	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TSubclassOf<class UGameplayEffect> ScrapPriceEffect;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
-	int ScrapPrice;
+	UPROPERTY(Replicated, Transient, EditDefaultsOnly, Category = "Abilities")
+	float ScrapPrice;
 
 protected:
 	// Called when the game starts or when spawned

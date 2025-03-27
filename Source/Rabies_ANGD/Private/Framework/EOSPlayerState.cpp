@@ -86,7 +86,7 @@ void AEOSPlayerState::Server_ProcessDotFly_Implementation(ARPlayerBase* player)
 {
 	FGameplayEventData eventData;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(player, URAbilityGenericTags::GetApplyGravityJump(), eventData);
-	UE_LOG(LogTemp, Error, TEXT("%s Gravity jump implementaiton"), *GetName());
+	//UE_LOG(LogTemp, Error, TEXT("%s Gravity jump implementaiton"), *GetName());
 }
 
 bool AEOSPlayerState::Server_ProcessDotFly_Validate(ARPlayerBase* player)

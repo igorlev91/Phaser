@@ -103,9 +103,39 @@ FGameplayTag URAbilityGenericTags::GetHoldingJump()
 	return FGameplayTag::RequestGameplayTag("ability.passive.holdingJump");
 }
 
+FGameplayTag URAbilityGenericTags::GetScrapTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.scrap");
+}
+
+FGameplayTag URAbilityGenericTags::GetRevivingTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.reviving");
+}
+
+FGameplayTag URAbilityGenericTags::GetEndRevivingTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.endReviving");
+}
+
 FGameplayTag URAbilityGenericTags::GetLevelTag()
 {
 	return FGameplayTag::RequestGameplayTag("stat.level");
+}
+
+FGameplayTag URAbilityGenericTags::GetExpTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.exp");
+}
+
+FGameplayTag URAbilityGenericTags::GetNextLevelTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.nextLevelExp");
+}
+
+FGameplayTag URAbilityGenericTags::GetPrevLevelTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.prevLevelExp");
 }
 
 FGameplayTag URAbilityGenericTags::GetMaxHealthTag()

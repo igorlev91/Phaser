@@ -43,6 +43,9 @@ void UGameplayUI::NativeConstruct()
 	if (OwnerASC)
 	{
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetLevelAttribute()).AddUObject(this, &UGameplayUI::LevelUpdated);
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetExpAttribute()).AddUObject(this, &UGameplayUI::ExpUpdated);
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetNextLevelExpAttribute()).AddUObject(this, &UGameplayUI::NextLevelExpUpdated);
+
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &UGameplayUI::HealthUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &UGameplayUI::MaxHealthUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetScrapAttribute()).AddUObject(this, &UGameplayUI::ScrapUpdated);
@@ -111,6 +114,13 @@ void UGameplayUI::SetTakeOffBarState(bool state, float charge)
 	SuperJumpChargeBar->Charge(charge);
 }
 
+void UGameplayUI::SetRevivalBarState(bool state, float charge)
+{
+	ReviveChargeBar->SetVisibility((state) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+	ReviveChargeBar->Charge(charge);
+}
+
 void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 {
 	if (PlayerItemInventory)
@@ -121,8 +131,21 @@ void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 
 void UGameplayUI::LevelUpdated(const FOnAttributeChangeData& ChangeData)
 {
-	FText Text = FText::Format(FText::FromString("Lv {0}"), FText::AsNumber((int)ChangeData.NewValue));
-	levelText->SetText(Text);
+	if (LEvelText)
+	{
+		FText Text = FText::Format(FText::FromString("Lv {0}"), FText::AsNumber((int)ChangeData.NewValue));
+		LEvelText->SetText(Text);
+	}
+}
+
+void UGameplayUI::ExpUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	float Percent = ChangeData.NewValue / GetAttributeValue(URAttributeSet::GetNextLevelExpAttribute());
+	levelBar->SetPercent(Percent);
+}
+
+void UGameplayUI::NextLevelExpUpdated(const FOnAttributeChangeData& ChangeData)
+{
 }
 
 void UGameplayUI::HealthUpdated(const FOnAttributeChangeData& ChangeData)

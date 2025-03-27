@@ -81,6 +81,8 @@ public:
 private:
 	bool bHasDied;
 
+	void LevelUp(int carryOverEXP);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
 	class URAttackingBoxComponent* AttackingBoxComponent;
 
@@ -114,6 +116,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Gameplay Ability")
 	URAbilitySystemComponent* AbilitySystemComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
+	TSubclassOf<UGameplayEffect> LevelUpEffect;
+
 	UPROPERTY(Transient)
 	URAttributeSet* AttributeSet;
 
@@ -127,6 +132,9 @@ private:
 	class UHealthBar* HealthBar;
 
 	void LevelUpdated(const FOnAttributeChangeData& ChangeData);
+	void ExpUpdated(const FOnAttributeChangeData& ChangeData);
+	void NextLevelExpUpdated(const FOnAttributeChangeData& ChangeData);
+
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MovementSpeedUpdated(const FOnAttributeChangeData& ChangeData);
@@ -168,5 +176,19 @@ public:
 	UPROPERTY(Replicated)
 	int AILevel;
 
+	UFUNCTION()
+	void LevelUpUpgrade(int level, bool setLevel);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	TSubclassOf<UGameplayEffect> LevelupUpgradeEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	float HealthOnLevelUp = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	float MeleeStrengthOnLevelUp = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	float RangedStrengthOnLevelUp = 1;
 
 };

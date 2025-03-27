@@ -17,6 +17,9 @@
 
 #include "Framework/EOSPlayerState.h"
 
+#include "Math/Color.h"
+#include "Math/UnrealMathUtility.h"
+
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
@@ -46,6 +49,10 @@ ARCharacterBase::ARCharacterBase()
 	AttributeSet = CreateDefaultSubobject<URAttributeSet>("Attribute Set");
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetLevelAttribute()).AddUObject(this, &ARCharacterBase::LevelUpdated);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetExpAttribute()).AddUObject(this, &ARCharacterBase::ExpUpdated);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetNextLevelExpAttribute()).AddUObject(this, &ARCharacterBase::NextLevelExpUpdated);
+
+
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &ARCharacterBase::HealthUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &ARCharacterBase::MaxHealthUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMovementSpeedAttribute()).AddUObject(this, &ARCharacterBase::MovementSpeedUpdated);
@@ -60,6 +67,8 @@ ARCharacterBase::ARCharacterBase()
 
 	AttackingBoxComponent = CreateDefaultSubobject<URAttackingBoxComponent>("Attacking Box Component");
 	AttackingBoxComponent->SetupAttachment(GetMesh());
+
+	PrimaryActorTick.bRunOnAnyThread = false; // prevents crash??
 }
 
 void ARCharacterBase::SetupAbilitySystemComponent()
@@ -215,9 +224,11 @@ void ARCharacterBase::StartDeath()
 {
 	//PlayMontage(DeathMontage);
 	//AbilitySystemComponent->ApplyGameplayEffect(DeathEffect);
-	AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetDeadTag());
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Dead);
+	//AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetDeadTag());
 	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	OnDeadStatusChanged.Broadcast(true);
 }
 
@@ -230,6 +241,7 @@ void ARCharacterBase::DeathTagChanged(const FGameplayTag TagChanged, int32 NewSt
 		AbilitySystemComponent->ApplyFullStat();
 		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		// change the AI perception
+
 		OnDeadStatusChanged.Broadcast(false);
 	}
 }
@@ -272,6 +284,52 @@ void ARCharacterBase::LevelUpdated(const FOnAttributeChangeData& ChangeData)
 	}
 
 	onLevelUp.Broadcast(ChangeData.NewValue);
+}
+
+void ARCharacterBase::ExpUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	if (HasAuthority())
+	{
+		if (ChangeData.NewValue >= AttributeSet->GetNextLevelExp())
+		{
+			LevelUp(ChangeData.NewValue - AttributeSet->GetNextLevelExp());
+		}
+	}
+}
+
+void ARCharacterBase::NextLevelExpUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	if (HasAuthority())
+	{
+		if (ChangeData.NewValue <= AttributeSet->GetExp())
+		{
+			LevelUp(AttributeSet->GetExp() - ChangeData.NewValue);
+		}
+	}
+}
+
+void ARCharacterBase::LevelUp(int carryOverEXP)
+{
+	if (LevelUpEffect && GetAbilitySystemComponent())
+	{
+
+		FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(LevelUpEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+		FGameplayEffectSpec* spec = specHandle.Data.Get();
+		if (spec)
+		{
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetExpTag(), carryOverEXP);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetPrevLevelTag(), AttributeSet->GetNextLevelExp());
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetNextLevelTag(), FMath::CeilToInt(AttributeSet->GetNextLevelExp() * 1.2f)); // This is exponential level curve. 1.2x required every level
+			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+		}
+
+		LevelUpUpgrade(AttributeSet->GetLevel(), false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s NO LEVEL UP EFFECT"), *GetName());
+	}
 }
 
 void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
@@ -345,6 +403,38 @@ void ARCharacterBase::GravityUpdated(const FOnAttributeChangeData& ChangeData)
 
 	GetCharacterMovement()->GravityScale = ChangeData.NewValue;
 }
+
+void ARCharacterBase::LevelUpUpgrade(int level, bool setLevel)
+{
+	FGameplayEffectContextHandle contextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle effectSpechandle = GetAbilitySystemComponent()->MakeOutgoingSpec(LevelupUpgradeEffect, 1.0f, contextHandle);
+
+	FGameplayEffectSpec* spec = effectSpechandle.Data.Get();
+	if (spec)
+	{
+		if (setLevel)
+		{
+			float levelScale = (float)level - 1;
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetLevelTag(), levelScale);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMaxHealthTag(), HealthOnLevelUp * levelScale);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetHealthTag(), HealthOnLevelUp * levelScale);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMeleeAttackStrengthTag(), MeleeStrengthOnLevelUp * levelScale);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetRangedAttackStrengthTag(), RangedStrengthOnLevelUp * levelScale);
+		}
+		else
+		{
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetLevelTag(), 0.0f);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMaxHealthTag(), HealthOnLevelUp);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetHealthTag(), HealthOnLevelUp);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMeleeAttackStrengthTag(), MeleeStrengthOnLevelUp);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetRangedAttackStrengthTag(), RangedStrengthOnLevelUp);
+		}
+
+		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+	}
+
+}
+
 
 void ARCharacterBase::ServerPlayAnimMontage_Implementation(UAnimMontage* montage)
 {

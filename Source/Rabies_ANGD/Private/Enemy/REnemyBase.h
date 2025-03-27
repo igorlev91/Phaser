@@ -30,23 +30,12 @@ public:
 
 private:
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TSubclassOf<UGameplayEffect> WaveLevelUpgrade;
-
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float HealthOnLevelUp = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float MeleeStrengthOnLevelUp = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float RangedStrengthOnLevelUp = 1;
-
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "AI")
 	class UAIPerceptionStimuliSourceComponent* AIPerceptionSourceComp;
 
 	FTimerHandle LevelHandle;
+	FTimerHandle DeathHandle;
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void CommitLevel();
@@ -56,5 +45,12 @@ private:
 
 	UFUNCTION()
 	void DeadStatusUpdated(bool bIsDead);
+	
+	UFUNCTION()
+	void DelayServerDeathRequest();
+
+public:
+	UFUNCTION(NetMulticast, Unreliable)
+	void UpdateEnemyDeath();
 
 };

@@ -11,6 +11,7 @@
 
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+#include "Framework/EOSActionGameState.h"
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 
@@ -49,7 +50,7 @@ AREnemyBase::AREnemyBase()
 void AREnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
-	OnDeadStatusChanged.AddUObject(this, &AREnemyBase::DeadStatusUpdated);
+	
 }
 
 void AREnemyBase::Tick(float DeltaTime)
@@ -68,21 +69,9 @@ void AREnemyBase::InitLevel_Implementation(int level)
 
 void AREnemyBase::CommitLevel_Implementation()
 {
-	FGameplayEffectContextHandle contextHandle = GetAbilitySystemComponent()->MakeEffectContext();
-	FGameplayEffectSpecHandle effectSpechandle = GetAbilitySystemComponent()->MakeOutgoingSpec(WaveLevelUpgrade, 1.0f, contextHandle);
+	OnDeadStatusChanged.AddUObject(this, &AREnemyBase::DeadStatusUpdated);
 
-	FGameplayEffectSpec* spec = effectSpechandle.Data.Get();
-	if (spec)
-	{
-		float levelScale = (float)AILevel - 1;
-		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetLevelTag(), levelScale);
-		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMaxHealthTag(), HealthOnLevelUp * levelScale);
-		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetHealthTag(), HealthOnLevelUp * levelScale);
-		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMeleeAttackStrengthTag(), MeleeStrengthOnLevelUp * levelScale);
-		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetRangedAttackStrengthTag(), RangedStrengthOnLevelUp * levelScale);
-
-		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
-	}
+	LevelUpUpgrade(AILevel, true);
 }
 
 void AREnemyBase::UpdateAimingTagChange_Implementation(bool state)
@@ -108,5 +97,29 @@ void AREnemyBase::DeadStatusUpdated(bool bIsDead)
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	AIPerceptionSourceComp->UnregisterFromPerceptionSystem();
+	if (AIPerceptionSourceComp) {
+		AIPerceptionSourceComp->UnregisterFromPerceptionSystem();
+	}
+
+	if (bIsDead)
+	{
+		GetWorld()->GetTimerManager().SetTimer(DeathHandle, this, &AREnemyBase::DelayServerDeathRequest, 0.5f, false);
+	}
+}
+
+void AREnemyBase::DelayServerDeathRequest()
+{
+	if (HasAuthority())
+	{
+		AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
+		if (gameState == GetOwner())
+		{
+			gameState->SelectEnemy(this);
+		}
+	}
+}
+
+void AREnemyBase::UpdateEnemyDeath_Implementation()
+{
+	Destroy();
 }

@@ -17,16 +17,29 @@ public:
 
 protected:
 	bool bHasBeatenBoss = false;
+	bool bHasWonGame = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Escape")
 	class USphereComponent* SphereCollider;
 
-	UPROPERTY(VisibleAnywhere, Category = "Escaoe")
+	UPROPERTY(EditDefaultsOnly, Category = "Escape")
+	class UStaticMeshComponent* EndGameMesh;
+
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* EscapeWidgetComp;
 
-	//UI for the false bHasBeatenBoss
+	UPROPERTY(EditDefaultsOnly, Category = "Escape")  //TSubclass of
+	class UCannotEscape* CannotEscapeWidgetUI;
 
-	//UI for the true bHasBeatenBoss
+	UPROPERTY(EditDefaultsOnly, Category = "Escape")
+	class UCanEscape* CanEscapeWidgetUI;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Escape")
+	class UGameWinUI* GameWinUI;
+
+	//Transient - Reference to the widget
 
 	class ARPlayerBase* player;
 
@@ -52,11 +65,11 @@ public:
 	UFUNCTION()
 	void SetUpEndUI();
 
-
 	UFUNCTION()
-	void SetActivatingExit(bool bBossDefeated);
+	bool SetActivatingExit();
 
 	UFUNCTION()
 	void EndGame();
+
 
 };
