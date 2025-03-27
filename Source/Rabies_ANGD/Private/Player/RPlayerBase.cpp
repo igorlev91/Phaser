@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Player/RPlayerController.h"
+#include "Framework/EOSPlayerState.h"
 
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
@@ -58,6 +59,11 @@ void ARPlayerBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
+	
+	if (EOSPlayerState)
+	{
+		EOSPlayerState->Server_UpdateSocketLocations(GetMesh()->GetSocketLocation(RootAimingSocketName), GetMesh()->GetSocketLocation(RangedAttackSocketName));
+	}
 
 	if (IsFlying() && GetCharacterMovement()->IsFalling() == false && !GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag()))
 	{
@@ -165,6 +171,7 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 
 	newRot.Pitch = FMath::ClampAngle(newRot.Pitch, cameraClampMin, cameraClampMax);
 
+	EOSPlayerState->Server_UpdateHitscanRotator(newRot);
 	viewPivot->SetWorldRotation(newRot);
 }
 
@@ -172,34 +179,31 @@ void ARPlayerBase::SetRabiesPlayerController(ARPlayerController* newController)
 {
 	playerController = newController;
 }
-
 void ARPlayerBase::Hitscan(float range)
 {
-	if (HasAuthority())
-	{
-		ClientCallHitScan();
-	}
-}
-
-void ARPlayerBase::ClientCallHitScan_Implementation()
-{
-	FVector startPos = viewCamera->GetComponentLocation();
-	FVector endPos = startPos + viewCamera->GetComponentRotation().Vector() * 9000;
-	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Green);
+	FVector startPos = EOSPlayerState->GetRootAimingLocation() + EOSPlayerState->GetHitscanRotator().Vector();
+	FVector endPos = startPos + EOSPlayerState->GetHitscanRotator().Vector() * range;
 
 	FCollisionShape collisionShape = FCollisionShape::MakeSphere(1);
 	bool hit = GetWorld()->SweepSingleByChannel(hitResult, startPos, endPos, FQuat::Identity, ECC_RangedAttack, collisionShape);
 	if (hit)
 	{
-		FString actorName = hitResult.GetActor()->GetName();
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
-		ClientHitScan.Broadcast(hitResult.GetActor(), startPos, endPos);
-		return;
+		FVector weaponStart = EOSPlayerState->GetRangedLocation();
+		FVector hitEnd = hitResult.ImpactPoint;
+		ClientHitScanResult(hitResult.GetActor(), weaponStart, hitEnd);
 	}
 }
 
+void ARPlayerBase::ClientHitScanResult_Implementation(AActor* hitActor, FVector start, FVector end)
+{
+	FString actorName = hitActor->GetName();
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
+	DrawDebugLine(GetWorld(), start, end, FColor::Green);
+	ClientHitScan.Broadcast(hitActor, start, end);
+}
 
-bool ARPlayerBase::ClientCallHitScan_Validate()
+
+bool ARPlayerBase::ClientHitScanResult_Validate(AActor* hitActor, FVector start, FVector end)
 {
 	return true;
 }
@@ -394,4 +398,9 @@ void ARPlayerBase::SetInteraction(bool setInteract)
 void ARPlayerBase::SetPausetoFalse()
 {
 	isPaused = false;
+}
+
+void ARPlayerBase::SetPlayerState()
+{
+	EOSPlayerState = Cast<AEOSPlayerState>(GetPlayerState());
 }

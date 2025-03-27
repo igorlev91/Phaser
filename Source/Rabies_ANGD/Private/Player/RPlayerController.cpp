@@ -3,6 +3,9 @@
 
 #include "Player/RPlayerController.h"
 #include "Player/RPlayerBase.h"
+
+#include "Kismet/GameplayStatics.h"
+
 #include "Widgets/GameplayUI.h"
 
 void ARPlayerController::OnPossess(APawn* NewPawn)
@@ -35,6 +38,7 @@ void ARPlayerController::PostPossessionSetup(APawn* NewPawn)
 	}
 
 	PlayerBase->SetRabiesPlayerController(this);
+	PlayerBase->SetPlayerState();
 	// Set up the players ability system
 
 	CreateGameplayUI();
@@ -61,6 +65,13 @@ void ARPlayerController::CreateGameplayUI()
 	{
 		return;
 	}
+
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
+	GetWorld()->GetFirstPlayerController()->bEnableClickEvents = false;
+
+	FInputModeGameOnly game;
+	GetWorld()->GetFirstPlayerController()->SetInputMode(game);
 
 	GameplayUI = CreateWidget<UGameplayUI>(this, GameplayUIClass);
 	if (GameplayUI)

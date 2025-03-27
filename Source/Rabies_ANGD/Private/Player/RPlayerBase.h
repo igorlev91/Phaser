@@ -27,8 +27,8 @@ public:
 public:
 	FOnClientHitScan ClientHitScan;
 
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void ClientCallHitScan();
+	UFUNCTION(NetMulticast, Unreliable, WithValidation)
+	void ClientHitScanResult(AActor* hitActor, FVector start, FVector end);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -50,6 +50,9 @@ public:
 
 	UFUNCTION()
 	void Hitscan(float range);
+
+	UFUNCTION()
+	void SetPlayerState();
 
 private:
 
@@ -208,6 +211,7 @@ public:
 	////////////////////////////////
 
 	FName RangedAttackSocketName = TEXT("Ranged_Socket");
+	FName RootAimingSocketName = TEXT("RootAiming_Socket");
 
 	/////////////////////////////////
 	/*          Passives           */
@@ -221,4 +225,7 @@ private:
 	/////////////////////////////////
 	/*          Online             */
 	////////////////////////////////
+
+	UPROPERTY()
+	class AEOSPlayerState* EOSPlayerState;
 };

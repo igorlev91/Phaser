@@ -3,6 +3,7 @@
 
 #include "Framework/EOSPlayerState.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/RPlayerBase.h"
 #include "Framework/EOSGameState.h"
 #include "Framework/RCharacterDefination.h"
 #include "Kismet/GameplayStatics.h"
@@ -38,6 +39,44 @@ bool AEOSPlayerState::Server_CharacterSelected_Validate(URCharacterDefination* n
 	return true;
 }
 
+void AEOSPlayerState::Server_UpdateHitscanRotator_Implementation(FRotator newRot)
+{
+	//On server
+	hitscanRotation = newRot;
+}
+
+bool AEOSPlayerState::Server_UpdateHitscanRotator_Validate(FRotator newRot)
+{
+	return true;
+}
+
+void AEOSPlayerState::Server_UpdateSocketLocations_Implementation(FVector rootAimingLoc, FVector rangedLoc)
+{
+	//On server
+	RootAiming_SocketLocation = rootAimingLoc;
+	Ranged_SocketLocation = rangedLoc;
+}
+
+bool AEOSPlayerState::Server_UpdateSocketLocations_Validate(FVector rootAimingLoc, FVector rangedLoc)
+{
+	return true;
+}
+
+FRotator AEOSPlayerState::GetHitscanRotator()
+{
+	return hitscanRotation;
+}
+
+FVector AEOSPlayerState::GetRootAimingLocation()
+{
+	return RootAiming_SocketLocation;
+}
+
+FVector AEOSPlayerState::GetRangedLocation()
+{
+	return Ranged_SocketLocation;
+}
+
 void AEOSPlayerState::OnRep_SelectedCharacter()
 {
 	OnSelectedCharacterReplicated.Broadcast(SelectedCharacter);
@@ -46,5 +85,10 @@ void AEOSPlayerState::OnRep_SelectedCharacter()
 void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, SelectedCharacter, COND_None, REPNOTIFY_Always)
+
+	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, SelectedCharacter, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, hitscanRotation, COND_None);
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, Ranged_SocketLocation, COND_None);
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, RootAiming_SocketLocation, COND_None);
 }

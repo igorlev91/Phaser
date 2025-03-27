@@ -188,8 +188,7 @@ void ARMainMenuController::OnSequenceEnd()
 		playbackParams.Frame = FFrameNumber(70);
 
 		SequencePlayer->SetPlaybackPosition(playbackParams);
-		SequencePlayer->Play();
 
-		SequencePlayer->OnFinished.AddDynamic(this, &ARMainMenuController::OnSequenceEnd);
+		//SequencePlayer->OnFinished.AddDynamic(this, &ARMainMenuController::OnSequenceEnd);
 	}
 }

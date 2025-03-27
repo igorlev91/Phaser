@@ -40,7 +40,7 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const 
 	}
 
 	UAbilityTask_WaitGameplayEvent* WaitTargetAquiredEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetGenericTargetAquiredTag());
-	WaitTargetAquiredEvent->EventReceived.AddDynamic(this, &UGA_Attack::HandleDamage);
+	WaitTargetAquiredEvent->EventReceived.AddDynamic(this, &UGA_Attack::SendInputForHitScan);
 	WaitTargetAquiredEvent->ReadyForActivation();
 
 	UAbilityTask_WaitGameplayEvent* WaitForActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetBasicAttackActivationTag());
@@ -51,36 +51,54 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const 
 	WaitStopEvent->EventReceived.AddDynamic(this, &UGA_Attack::StopAttacking);
 	WaitStopEvent->ReadyForActivation();
 
+	ARPlayerBase* player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
+	if (player)
+	{
+		player->ClientHitScan.AddLambda([this](AActor* hitActor, FVector startPos, FVector endPos)
+		{
+				RecieveAttackHitscan(hitActor, startPos, endPos);
+		});
+	}
+
 	SetupWaitInputTask();
 }
 
-void UGA_Attack::HandleDamage(FGameplayEventData Payload)
+void UGA_Attack::SendInputForHitScan(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
 		ARPlayerBase* player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
 		if (player)
 		{
-			player->Hitscan(900);
+			player->Hitscan(2000);
 			return;
-			AActor* hitActor = nullptr;
-			player->Hitscan(9000);
-			if (hitActor == nullptr) return;
-			if (hitActor != player)
-			{
-				Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(hitActor);
+		}
+	}
+}
 
-				UE_LOG(LogTemp, Error, TEXT("Attacking FRIEND"));
-				FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(DamageTest, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-				ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
-			}
+void UGA_Attack::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos)
+{
+	if (K2_HasAuthority())
+	{
+		ARPlayerBase* player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
+
+		if (hitActor == nullptr) return;
+		if (hitActor != player)
+		{
+			FGameplayEventData Payload = FGameplayEventData();
+
+			Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(hitActor);
+
+			//UE_LOG(LogTemp, Error, TEXT("Attacking FRIEND"));
+			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(DamageTest, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
 		}
 	}
 }
 
 void UGA_Attack::TryCommitAttack(FGameplayEventData Payload)
 {
-	HandleDamage(Payload);
+	SendInputForHitScan(Payload);
 	bAttackCommitted = true;
 }
 
