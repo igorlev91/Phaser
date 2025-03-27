@@ -10,6 +10,8 @@
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+#include "Framework/EOSActionGameState.h"
+
 #include "AbilitySystemBlueprintLibrary.h"
 
 #include "Enemy/REnemyBase.h"
@@ -29,6 +31,7 @@ UGA_EnemyMeleeAttack::UGA_EnemyMeleeAttack()
 
 void UGA_EnemyMeleeAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	UE_LOG(LogTemp, Error, TEXT("Set up attack"));
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Ending Attack no commitment"));
@@ -36,16 +39,35 @@ void UGA_EnemyMeleeAttack::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		return;
 	}
 
+
 	UAbilityTask_WaitGameplayEvent* WaitForActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetBasicAttackActivationTag());
 	WaitForActivation->EventReceived.AddDynamic(this, &UGA_EnemyMeleeAttack::TryCommitAttack);
 	WaitForActivation->ReadyForActivation();
+
+	UAbilityTask_WaitGameplayEvent* WaitForDamage = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetGenericTargetAquiredTag());
+	WaitForDamage->EventReceived.AddDynamic(this, &UGA_EnemyMeleeAttack::HandleDamage);
+	WaitForDamage->ReadyForActivation();
 }
 
 void UGA_EnemyMeleeAttack::TryCommitAttack(FGameplayEventData Payload)
 {
-	ARCharacterBase* character = Cast<ARCharacterBase>(GetOwningActorFromActorInfo());
-	if (character)
+	if (K2_HasAuthority())
 	{
-		character->ClientPlayAnimMontage(AttackAnim);
+		ARCharacterBase* character = Cast<ARCharacterBase>(GetOwningActorFromActorInfo());
+		if (character)
+		{
+			character->ServerPlayAnimMontage(AttackAnim);
+		}
+	}
+}
+
+void UGA_EnemyMeleeAttack::HandleDamage(FGameplayEventData Payload)
+{
+	if (K2_HasAuthority())
+	{
+		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(AttackDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
+		SignalDamageStimuliEvent(Payload.TargetData);
+
 	}
 }

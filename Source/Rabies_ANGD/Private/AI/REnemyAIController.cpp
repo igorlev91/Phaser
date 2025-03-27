@@ -8,6 +8,11 @@
 #include "GameplayAbilities/GA_AbilityBase.h"
 
 #include "Character/RCharacterBase.h"
+#include "GameplayAbilities/GA_AbilityBase.h"
+
+#include "Enemy/REnemyBase.h"
+
+#include "Enemy/GA_EnemyMeleeAttack.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BrainComponent.h"
@@ -23,9 +28,9 @@ AREnemyAIController::AREnemyAIController()
 	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>("AI Perception Component");
 
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>("Sight Config");
-	SightConfig->PeripheralVisionAngleDegrees = 85.0f;
-	SightConfig->SightRadius = 850.0f;
-	SightConfig->LoseSightRadius = 1000.0f;
+	SightConfig->PeripheralVisionAngleDegrees = 90.0f;
+	SightConfig->SightRadius = 1850.0f;
+	SightConfig->LoseSightRadius = 2000.0f;
 	SightConfig->SetMaxAge(5.0f);
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = false;
@@ -56,12 +61,6 @@ void AREnemyAIController::BeginPlay()
 
 	AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AREnemyAIController::TargetPerceptionUpdated);
 	AIPerceptionComponent->OnTargetPerceptionForgotten.AddDynamic(this, &AREnemyAIController::TargetForgotton);
-
-	ARCharacterBase* PawnAsCharacter = Cast<ARCharacterBase>(GetPawn());
-	if (PawnAsCharacter)
-	{
-		PawnAsCharacter->OnDeadStatusChanged.AddUObject(this, &AREnemyAIController::PawnDeathStatusChanged);
-	}
 }
 
 void AREnemyAIController::GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const
@@ -75,6 +74,21 @@ void AREnemyAIController::GetActorEyesViewPoint(FVector& OutLocation, FRotator& 
 	else
 	{
 		Super::GetActorEyesViewPoint(OutLocation, OutRotation);
+	}
+}
+
+void AREnemyAIController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	ARCharacterBase* character = Cast<ARCharacterBase>(InPawn);
+	if (character)
+	{
+		Enemy = Cast<AREnemyBase>(character);
+		if (Enemy)
+		{
+			Enemy->OnDeadStatusChanged.AddUObject(this, &AREnemyAIController::PawnDeathStatusChanged);
+		}
 	}
 }
 

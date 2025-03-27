@@ -18,7 +18,6 @@ void URAnimNotifyState_DotTakeOff::NotifyBegin(USkeletalMeshComponent* MeshComp,
 
 	FGameplayEventData eventData;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetApplyGravityJump(), eventData);
-	Player->Jump();
 }
 
 void URAnimNotifyState_DotTakeOff::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -33,9 +32,5 @@ void URAnimNotifyState_DotTakeOff::NotifyEnd(USkeletalMeshComponent* MeshComp, U
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
 	if (!Player) return;
-
-	FGameplayEventData eventData;
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetRemoveGravityJump(), eventData);
-	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 
 }

@@ -12,6 +12,7 @@ enum class EAbilityInputID : uint8
 	Cancel								   UMETA(DisplayName = "Cancel"),
 	BasicAttack                         UMETA(DisplayName = "Basic Attack"),
 	Passive                         UMETA(DisplayName = "Passive Ability"),
+	HoldJump                         UMETA(DisplayName = "Holding Jump"),
 	Scoping                         UMETA(DisplayName = "Scoping"),
 	SpecialAttack                          UMETA(DisplayName = "Special Attack"),
 	UltimateAttack						   UMETA(DisplayName = "Ultimate Attack")

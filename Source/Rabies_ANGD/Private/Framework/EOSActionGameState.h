@@ -24,11 +24,20 @@ private:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SpawnChest(FVector SpawnLocation);
 
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SpawnEnemy(int EnemyIDToSpawn, FVector SpawnLocation);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Chest")
 	TSubclassOf<class AItemChest> ItemChestClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Enemies")
+	TArray<TSubclassOf<class AREnemyBase>> EnemyLibrary;
+
 	UPROPERTY(Replicated)
 	TArray<class AItemChest*> AllChests;
+
+	UPROPERTY(Replicated)
+	TArray<class AREnemyBase*> AllEnemies;
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;

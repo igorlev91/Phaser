@@ -58,7 +58,7 @@ public:
 	bool GetRangedAttacking() const { return bAttacking && bIsScoping; }
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
-	bool GetFlying() const { return bFlying; }
+	bool GetFlying() const { return bFlying && bIsJumping; }
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
 	bool IsMovingInAir() const { return AirSpeed >= 300; }
@@ -101,4 +101,5 @@ private:
 	void AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	void HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 };

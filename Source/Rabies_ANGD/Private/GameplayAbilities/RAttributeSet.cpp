@@ -87,19 +87,99 @@ void URAttributeSet::OnRep_MovementSpeed(const FGameplayAttributeData& OldValue)
 	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, MovementSpeed, OldValue);
 }
 
+void URAttributeSet::OnRep_Scrap(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, Scrap, OldValue);
+}
+
 void URAttributeSet::OnRep_Gravity(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, Gravity, OldValue);
 }
 
-void URAttributeSet::OnRep_VelocityY(const FGameplayAttributeData& OldValue)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, VelocityY, OldValue);
-}
-
 void URAttributeSet::OnRep_ReviveSpeed(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, ReviveSpeed, OldValue);
+}
+
+void URAttributeSet::OnRep_BasicAttackLifesteal(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, BasicAttackLifesteal, OldValue);
+}
+
+void URAttributeSet::OnRep_DamageReduction(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, DamageReduction, OldValue);
+}
+
+void URAttributeSet::OnRep_AbilityHealingRadius(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, AbilityHealingRadius, OldValue);
+}
+
+void URAttributeSet::OnRep_AbilityHealingStrength(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, AbilityHealingStrength, OldValue);
+}
+
+void URAttributeSet::OnRep_DownSurvivalTime(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, DownSurvivalTime, OldValue);
+}
+
+void URAttributeSet::OnRep_FriendshipHealingRadius(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, FriendshipHealingRadius, OldValue);
+}
+
+void URAttributeSet::OnRep_FriendshipHealingStrength(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, FriendshipHealingStrength, OldValue);
+}
+
+void URAttributeSet::OnRep_HealingRegen(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, HealingRegen, OldValue);
+}
+
+void URAttributeSet::OnRep_TaserStunChance(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, TaserStunChance, OldValue);
+}
+
+void URAttributeSet::OnRep_NailsEffectChance(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, NailsEffectChance, OldValue);
+}
+
+void URAttributeSet::OnRep_NailsEffectStrength(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, NailsEffectStrength, OldValue);
+}
+
+void URAttributeSet::OnRep_RadioEffectChance(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, RadioEffectChance, OldValue);
+}
+
+void URAttributeSet::OnRep_RadioEffectStrength(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, RadioEffectStrength, OldValue);
+}
+
+void URAttributeSet::OnRep_FuelCoolantEffectChance(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, FuelCoolantEffectChance, OldValue);
+}
+
+void URAttributeSet::OnRep_HeaterEffectChance(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, HeaterEffectChance, OldValue);
+}
+
+void URAttributeSet::OnRep_UraniumEffectChance(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, UraniumEffectChance, OldValue);
 }
 
 void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -120,7 +200,25 @@ void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, UltimateCooldownReduction, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, MovementSpeed, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Scrap, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Gravity, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, VelocityY, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, ReviveSpeed, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, BasicAttackLifesteal, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, DamageReduction, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, AbilityHealingRadius, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, AbilityHealingStrength, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, DownSurvivalTime, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, FriendshipHealingRadius, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, FriendshipHealingStrength, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, HealingRegen, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, TaserStunChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, NailsEffectChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, NailsEffectStrength, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, RadioEffectChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, RadioEffectStrength, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, FuelCoolantEffectChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, HeaterEffectChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, UraniumEffectChance, COND_None, REPNOTIFY_Always);
 }

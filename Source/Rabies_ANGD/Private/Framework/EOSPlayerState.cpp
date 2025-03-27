@@ -7,12 +7,23 @@
 #include "Framework/EOSGameState.h"
 #include "Framework/RCharacterDefination.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AEOSPlayerState::AEOSPlayerState()
 {
 	bReplicates = true;
 	NetUpdateFrequency = 100.0f;
 
+}
+
+void AEOSPlayerState::Server_OnPossessPlayer_Implementation(ARPlayerBase* myPlayer)
+{
+	Player = myPlayer;
+}
+
+bool AEOSPlayerState::Server_OnPossessPlayer_Validate(ARPlayerBase* myPlayer)
+{
+	return true;
 }
 
 void AEOSPlayerState::Server_CharacterSelected_Implementation(URCharacterDefination* newSelectedCharacterDefination)
@@ -60,21 +71,6 @@ void AEOSPlayerState::Server_UpdateSocketLocations_Implementation(FVector rootAi
 bool AEOSPlayerState::Server_UpdateSocketLocations_Validate(FVector rootAimingLoc, FVector rangedLoc)
 {
 	return true;
-}
-
-FRotator AEOSPlayerState::GetHitscanRotator()
-{
-	return hitscanRotation;
-}
-
-FVector AEOSPlayerState::GetRootAimingLocation()
-{
-	return RootAiming_SocketLocation;
-}
-
-FVector AEOSPlayerState::GetRangedLocation()
-{
-	return Ranged_SocketLocation;
 }
 
 void AEOSPlayerState::OnRep_SelectedCharacter()

@@ -35,6 +35,7 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &URAnimInstanceBase::ScopingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAttackingTag()).AddUObject(this, &URAnimInstanceBase::AttackingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &URAnimInstanceBase::FlyingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetHoldingJump()).AddUObject(this, &URAnimInstanceBase::HoldingJumpTagChanged);
 		}
 	}
 
@@ -54,7 +55,6 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 		FVector airVelocity = OwnerCharacter->GetVelocity();
 		airVelocity.Z = 0;
 		AirSpeed = airVelocity.Length();
-		bHoldingJump = Cast<ARPlayerBase>(OwnerCharacter)->bHoldingJump;
 
 		bIsJumping = OwnerMovementComp->IsFalling();
 
@@ -86,6 +86,11 @@ void URAnimInstanceBase::ScopingTagChanged(const FGameplayTag TagChanged, int32 
 void URAnimInstanceBase::FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
 	bFlying = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bHoldingJump = NewStackCount != 0;
 }
 
 void URAnimInstanceBase::AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)

@@ -24,6 +24,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 
+#include "Abilities/GameplayAbility.h"
+#include "Enemy/GA_EnemyMeleeAttack.h"
+
 AREnemyBase::AREnemyBase()
 {
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
@@ -32,13 +35,14 @@ AREnemyBase::AREnemyBase()
 
 	AIPerceptionSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("AI Perception Souce Comp");
 	AIPerceptionSourceComp->RegisterForSense(UAISense_Sight::StaticClass());
+
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 }
 
 void AREnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
+	OnDeadStatusChanged.AddUObject(this, &AREnemyBase::DeadStatusUpdated);
 }
 
 void AREnemyBase::Tick(float DeltaTime)
@@ -46,7 +50,17 @@ void AREnemyBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+
 void AREnemyBase::HitDetected(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	UAISense_Touch::ReportTouchEvent(this, OtherActor, this, GetActorLocation());
+}
+
+void AREnemyBase::DeadStatusUpdated(bool bIsDead)
+{
+	UE_LOG(LogTemp, Error, TEXT("Dead"));
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AIPerceptionSourceComp->UnregisterFromPerceptionSystem();
 }

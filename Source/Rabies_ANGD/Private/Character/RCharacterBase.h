@@ -30,9 +30,15 @@ public:
 	// Sets default values for this character's properties
 	ARCharacterBase();
 
+	UFUNCTION(BlueprintCallable)
 	void SetupAbilitySystemComponent();
+
+	UFUNCTION(BlueprintCallable)
 	void InitAttributes();
+
+	UFUNCTION(BlueprintCallable)
 	void InitAbilities();
+
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
 
 protected:
@@ -47,13 +53,19 @@ public:
 
 	void InitStatusHUD();
 
+	UFUNCTION(BlueprintCallable)
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 public:
 	FORCEINLINE bool IsScoping() const { return bIsScoping; }
 	FORCEINLINE bool IsFlying() const { return bIsFlying; }
+	FORCEINLINE bool IsTakeOffDelay() const { return bTakeOffDelay; }
+	FORCEINLINE bool IsHoldingJump() const { return bHoldingJump; }
 
 private:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
+	class URAttackingBoxComponent* AttackingBoxComponent;
 
 	void PlayMontage(UAnimMontage* MontageToPlay);
 
@@ -74,6 +86,14 @@ private:
 	virtual void FlyingTagChanged(bool bNewIsAiming) {/*empty in base*/ };
 	bool bIsFlying;
 
+	void TakeOffDelayTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	virtual void TakeOffDelayTagChanged(bool bNewIsAiming) {/*empty in base*/ };
+	bool bTakeOffDelay;
+
+	void HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	virtual void HoldingJumpTagChanged(bool bNewIsAiming) {/*empty in base*/ };
+	bool bHoldingJump;
+
 	UPROPERTY(VisibleAnywhere, Category = "Gameplay Ability")
 	URAbilitySystemComponent* AbilitySystemComponent;
 
@@ -92,6 +112,10 @@ private:
 	void GravityUpdated(const FOnAttributeChangeData& ChangeData);
 
 public:
+
+	UFUNCTION(NetMulticast, Reliable)
+	void ServerPlayAnimMontage(UAnimMontage* montage);
+
 	UFUNCTION(NetMulticast, Unreliable)
 	void ClientPlayAnimMontage(UAnimMontage* montage);
 

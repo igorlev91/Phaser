@@ -25,5 +25,8 @@ private:
 
 	int NextPatrolPointIndex = 0;
 
+protected:
+
+	virtual void BeginPlay() override;
 		
 };

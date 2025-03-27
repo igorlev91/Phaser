@@ -64,19 +64,6 @@ void ARPlayerBase::Tick(float DeltaTime)
 	{
 		EOSPlayerState->Server_UpdateSocketLocations(GetMesh()->GetSocketLocation(RootAimingSocketName), GetMesh()->GetSocketLocation(RangedAttackSocketName));
 	}
-
-	if (IsFlying() && GetCharacterMovement()->IsFalling() == false && !GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag()))
-	{
-		FGameplayEventData eventData;
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndFlyingTag(), eventData);
-	}
-
-	FVector currentVelocity = GetVelocity();
-	if (IsFlying() && bHoldingJump && currentVelocity.Z <= 0)
-	{
-		currentVelocity.Z = FMath::Lerp(currentVelocity.Z, -0.0005f, 8 * DeltaTime);
-		GetCharacterMovement()->Velocity = currentVelocity;
-	}
 	
 	if (bIsScoping)
 	{
@@ -178,6 +165,7 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 void ARPlayerBase::SetRabiesPlayerController(ARPlayerController* newController)
 {
 	playerController = newController;
+
 }
 void ARPlayerBase::Hitscan(float range)
 {
@@ -210,7 +198,8 @@ bool ARPlayerBase::ClientHitScanResult_Validate(AActor* hitActor, FVector start,
 
 void ARPlayerBase::StartJump()
 {
-	bHoldingJump = true;
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::HoldJump);
+
 	if (bInstantJump)
 	{
 		Jump();
@@ -222,11 +211,10 @@ void ARPlayerBase::StartJump()
 
 void ARPlayerBase::ReleaseJump()
 {
-	bHoldingJump = false;
-	if (bInstantJump) return;
-
 	FGameplayEventData eventData;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndTakeOffChargeTag(), eventData);
+
+	if (bInstantJump) return;
 
 	if (!IsFlying())
 	{
@@ -245,7 +233,10 @@ void ARPlayerBase::QuitOut()
 
 void ARPlayerBase::DoBasicAttack()
 {
-	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
+	if (IsScoping())
+	{
+		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
+	}
 }
 
 void ARPlayerBase::StopBasicAttack()
@@ -403,4 +394,8 @@ void ARPlayerBase::SetPausetoFalse()
 void ARPlayerBase::SetPlayerState()
 {
 	EOSPlayerState = Cast<AEOSPlayerState>(GetPlayerState());
+	if (EOSPlayerState)
+	{
+		EOSPlayerState->Server_OnPossessPlayer(this);
+	}
 }

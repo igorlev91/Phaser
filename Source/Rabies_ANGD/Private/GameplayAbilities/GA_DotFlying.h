@@ -34,23 +34,29 @@ private:
 	UAnimMontage* HardLandingMontage;
 
 	UFUNCTION()
-	void StopFlying(FGameplayEventData Payload);
+	void StopFlying();
+
+	void ProcessFlying();
 
 	UFUNCTION()
 	void StopTakeOff(FGameplayEventData Payload);
 
 	FTimerHandle TakeOffHandle;
+	FTimerHandle GravityHandle;
+	FTimerHandle SlowFallHandle;
 
 	float CurrentHoldDuration;
+	float CurrentGravityDuration;
 	bool bFlying;
 
 	void Hold(float timeRemaining);
+	void GravityJump(float timeRemaining);
 
 	UFUNCTION()
 	void ApplyGravityJump(FGameplayEventData Payload);
 
 	UFUNCTION()
-	void RemoveGravityJump(FGameplayEventData Payload);
+	void RemoveGravityJump();
 
 	UPROPERTY()
 	class ARPlayerBase* Player;

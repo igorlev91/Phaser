@@ -63,19 +63,14 @@ FGameplayTag URAbilityGenericTags::GetFlyingTag()
 	return FGameplayTag::RequestGameplayTag("ability.passive.flying");
 }
 
-FGameplayTag URAbilityGenericTags::GetEndFlyingTag()
+FGameplayTag URAbilityGenericTags::GetTakeOffDelayTag()
 {
-	return FGameplayTag::RequestGameplayTag("ability.passive.endFlying");
+	return FGameplayTag::RequestGameplayTag("ability.passive.TakeOffDelay");
 }
 
 FGameplayTag URAbilityGenericTags::GetEndTakeOffChargeTag()
 {
-	return FGameplayTag::RequestGameplayTag("ability.passive.endTakeOffCharge");
-}
-
-FGameplayTag URAbilityGenericTags::GetTakeOffDelayTag()
-{
-	return FGameplayTag::RequestGameplayTag("ability.passive.TakeOffDelay");
+	return FGameplayTag::RequestGameplayTag("ability.passive.endTakeOffDelay");;
 }
 
 FGameplayTag URAbilityGenericTags::GetApplyGravityJump()
@@ -83,7 +78,7 @@ FGameplayTag URAbilityGenericTags::GetApplyGravityJump()
 	return FGameplayTag::RequestGameplayTag("ability.passive.applyGravityJump");
 }
 
-FGameplayTag URAbilityGenericTags::GetRemoveGravityJump()
+FGameplayTag URAbilityGenericTags::GetHoldingJump()
 {
-	return FGameplayTag::RequestGameplayTag("ability.passive.removeGravityJump");
+	return FGameplayTag::RequestGameplayTag("ability.passive.holdingJump");
 }

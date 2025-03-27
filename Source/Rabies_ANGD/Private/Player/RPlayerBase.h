@@ -46,7 +46,6 @@ public:
 	UFUNCTION()
 	void SetRabiesPlayerController(class ARPlayerController* newController);
 
-	bool bHoldingJump = false;
 
 	UFUNCTION()
 	void Hitscan(float range);

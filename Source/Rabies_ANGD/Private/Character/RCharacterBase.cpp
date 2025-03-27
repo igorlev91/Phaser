@@ -19,6 +19,8 @@
 
 #include "Widgets/HealthBar.h"
 
+#include "Framework/RAttackingBoxComponent.h"
+
 #include "Net/UnrealNetwork.h"
 
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
@@ -43,9 +45,14 @@ ARCharacterBase::ARCharacterBase()
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetGravityAttribute()).AddUObject(this, &ARCharacterBase::GravityUpdated);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &ARCharacterBase::ScopingTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &ARCharacterBase::FlyingTagChanged);
+	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetTakeOffDelayTag()).AddUObject(this, &ARCharacterBase::TakeOffDelayTagChanged);
+	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetHoldingJump()).AddUObject(this, &ARCharacterBase::HoldingJumpTagChanged);
 
 	HealthBarWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
 	HealthBarWidgetComp->SetupAttachment(GetRootComponent());
+
+	AttackingBoxComponent = CreateDefaultSubobject<URAttackingBoxComponent>("Attacking Box Component");
+	AttackingBoxComponent->SetupAttachment(GetMesh());
 }
 
 void ARCharacterBase::SetupAbilitySystemComponent()
@@ -114,7 +121,7 @@ void ARCharacterBase::InitStatusHUD()
 
 	if (AttributeSet)
 	{
-		UE_LOG(LogTemp, Error, TEXT("health is: %d / %d"), AttributeSet->GetHealth(), AttributeSet->GetMaxHealth());
+		//UE_LOG(LogTemp, Error, TEXT("health is: %d / %d"), AttributeSet->GetHealth(), AttributeSet->GetMaxHealth());
 		HealthBar->SetHealth(AttributeSet->GetHealth(), AttributeSet->GetMaxHealth());
 	}
 	else
@@ -152,7 +159,6 @@ void ARCharacterBase::StartDeath()
 	AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetDeadTag());
 	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// change the AI perception
 	OnDeadStatusChanged.Broadcast(true);
 }
 
@@ -179,6 +185,18 @@ void ARCharacterBase::FlyingTagChanged(const FGameplayTag TagChanged, int32 NewS
 {
 	bIsFlying = NewStackCount != 0;
 	FlyingTagChanged(bIsFlying);
+}
+
+void ARCharacterBase::TakeOffDelayTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bTakeOffDelay = NewStackCount != 0;
+	TakeOffDelayTagChanged(bTakeOffDelay);
+}
+
+void ARCharacterBase::HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bHoldingJump = NewStackCount != 0;
+	HoldingJumpTagChanged(bHoldingJump);
 }
 
 void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
@@ -247,6 +265,11 @@ void ARCharacterBase::GravityUpdated(const FOnAttributeChangeData& ChangeData)
 	}
 
 	GetCharacterMovement()->GravityScale = ChangeData.NewValue;
+}
+
+void ARCharacterBase::ServerPlayAnimMontage_Implementation(UAnimMontage* montage)
+{
+	PlayAnimMontage(montage);
 }
 
 void ARCharacterBase::ClientPlayAnimMontage_Implementation(UAnimMontage* montage)

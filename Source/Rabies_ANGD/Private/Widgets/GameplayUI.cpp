@@ -9,6 +9,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "Components/Image.h"
 
 #include "Widgets/ChageBar.h"
@@ -33,14 +34,19 @@ void UGameplayUI::NativeConstruct()
 	{
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &UGameplayUI::HealthUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &UGameplayUI::MaxHealthUpdated);
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetScrapAttribute()).AddUObject(this, &UGameplayUI::ScrapUpdated);
 	}
 
 	OwnerAbilitySystemComponent = OwnerASC;
 
 	float playerHealth = GetAttributeValue(URAttributeSet::GetHealthAttribute());
 	float playerMaxHealth = GetAttributeValue(URAttributeSet::GetMaxHealthAttribute());
+	int scrap = GetAttributeValue(URAttributeSet::GetScrapAttribute());
 
 	PlayerHealth->SetHealth(playerHealth, playerMaxHealth);
+
+	FText Text = FText::Format(FText::FromString("Scrap: {0}"), scrap);
+	ScrapText->SetText(Text);
 
 	//GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	//GetWorld()->GetFirstPlayerController()->bEnableClickEvents = true;
@@ -70,6 +76,12 @@ void UGameplayUI::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 void UGameplayUI::MaxHealthUpdated(const FOnAttributeChangeData& ChangeData)
 {
 	PlayerHealth->SetHealth(GetAttributeValue(URAttributeSet::GetHealthAttribute()), ChangeData.NewValue);
+}
+
+void UGameplayUI::ScrapUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	FText Text = FText::Format(FText::FromString("Scrap: {0}"), FText::AsNumber((int)ChangeData.NewValue));
+	ScrapText->SetText(Text);
 }
 
 float UGameplayUI::GetAttributeValue(const FGameplayAttribute& Attribute) const

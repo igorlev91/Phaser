@@ -4,32 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
-#include "GA_EnemyMeleeAttack.generated.h"
+#include "GA_HoldingJump.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UGA_EnemyMeleeAttack : public UGA_AbilityBase
+class UGA_HoldingJump : public UGA_AbilityBase
 {
-	GENERATED_BODY()
-	
+
 public:
-	UGA_EnemyMeleeAttack();
+	UGA_HoldingJump();
 
 private:
+	GENERATED_BODY()
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UFUNCTION()
-	void TryCommitAttack(FGameplayEventData Payload);
-
-	UFUNCTION()
-	void HandleDamage(FGameplayEventData Payload);
-
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	TSubclassOf<class UGameplayEffect> AttackDamage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Anim")
-	UAnimMontage* AttackAnim;
+	void StopHoldingJump(FGameplayEventData Payload);
 };

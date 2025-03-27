@@ -22,6 +22,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Chest Detail")
 	class UStaticMeshComponent* ChestTopMesh;
 
+	UPROPERTY(VisibleAnywhere, Category = "ChestDetail")
+	class USphereComponent* SphereCollider;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -31,5 +34,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Chest Detail")
-	void OnOverlapBegin(AActor* overlappedActor, AActor* otherActor);
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable, Category = "Chest Detail")
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UPROPERTY(EditDefaultsOnly, Category = "InteractionWidget")
+	TSubclassOf<class UUserWidget> InteractionWidget;
+
+	UUserWidget* WidgetInstance;
 };

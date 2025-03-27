@@ -22,6 +22,9 @@ public:
 	FOnSelectedCharacterReplicated OnSelectedCharacterReplicated;
 
 	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_OnPossessPlayer(class ARPlayerBase* myPlayer);
+
+	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_CharacterSelected(URCharacterDefination* newSelectedCharacterDefination);
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -31,15 +34,19 @@ public:
 	void Server_UpdateSocketLocations(FVector rootAimingLoc, FVector rangedLoc);
 
 	UFUNCTION()
-	FRotator GetHitscanRotator();
+	FRotator GetHitscanRotator() { return hitscanRotation; }
 
 	UFUNCTION()
-	FVector GetRootAimingLocation();
+	FVector GetRootAimingLocation() { return RootAiming_SocketLocation; }
 
 	UFUNCTION()
-	FVector GetRangedLocation();
+	FVector GetRangedLocation() { return Ranged_SocketLocation; }
+
 	
 private:
+	UPROPERTY()
+	class ARPlayerBase* Player;
+
 	UPROPERTY(replicatedUsing = OnRep_SelectedCharacter)
 	class URCharacterDefination* SelectedCharacter;
 

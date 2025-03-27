@@ -3,6 +3,7 @@
 
 #include "AI/PatrollingComponent.h"
 #include "Engine/TargetPoint.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UPatrollingComponent::UPatrollingComponent()
@@ -12,6 +13,18 @@ UPatrollingComponent::UPatrollingComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	
+}
+
+void UPatrollingComponent::BeginPlay()
+{
+	TArray<AActor*> patrolPoints;
+	TArray<ATargetPoint*> newPoints;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATargetPoint::StaticClass(), patrolPoints);
+	for (AActor* point : patrolPoints)
+	{
+		newPoints.Add(Cast<ATargetPoint>(point));
+	}
+	PatrolPoints = newPoints;
 }
 
 const ATargetPoint* UPatrollingComponent::GetNextPatrolPoint()

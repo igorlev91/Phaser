@@ -4,6 +4,8 @@
 #include "Actors/ItemChest.h"
 #include "Player/RPlayerBase.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -24,13 +26,20 @@ AItemChest::AItemChest()
 	ChestTopMesh->SetupAttachment(GetRootComponent());
 	ChestTopMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
+	// sphere radius
+	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
+	SphereCollider->SetupAttachment(GetRootComponent());
+	SphereCollider->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+
+	SphereCollider->OnComponentBeginOverlap.AddDynamic(this, &AItemChest::OnOverlapBegin);
+	SphereCollider->OnComponentEndOverlap.AddDynamic(this, &AItemChest::OnOverlapEnd);
 }
 
 // Called when the game starts or when spawned
 void AItemChest::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -40,13 +49,31 @@ void AItemChest::Tick(float DeltaTime)
 
 }
 
-void AItemChest::OnOverlapBegin(AActor* overlappedActor, AActor* otherActor)
+void AItemChest::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ARPlayerBase* player = Cast<ARPlayerBase>(otherActor);
+	ARPlayerBase* player = Cast<ARPlayerBase>(OtherActor);
 	if (!player)
 	{
 		return;
 	}
 
+	if (InteractionWidget)
+	{
+		WidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InteractionWidget);
+		if (WidgetInstance)
+		{
+			WidgetInstance->AddToViewport();
+		}
+	}
+
+}
+
+void AItemChest::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	ARPlayerBase* player = Cast<ARPlayerBase>(OtherActor);
+	if (!player)
+	{
+		return;
+	}
 
 }

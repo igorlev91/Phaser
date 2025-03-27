@@ -21,7 +21,14 @@ public:
 	virtual void BeginPlay() override;
 	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const override;
 
+protected:
+	virtual void OnPossess(APawn* InPawn) override;
+	
+
 private:
+	UPROPERTY()
+	class AREnemyBase* Enemy;
+
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	FName AIVisionSocketName = "head";
 

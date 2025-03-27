@@ -39,10 +39,17 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Crosshair;
 
+	UPROPERTY(meta = (BindWidget))
+	class UImage* ScrapIcon;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* ScrapText;
+
 	bool crosshairState;
 
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
+	void ScrapUpdated(const FOnAttributeChangeData& ChangeData);
 
 	float GetAttributeValue(const FGameplayAttribute& Attribute) const;
 
