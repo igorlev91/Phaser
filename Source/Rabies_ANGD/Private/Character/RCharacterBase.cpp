@@ -136,6 +136,11 @@ void ARCharacterBase::InitStatusHUD()
 	}
 }
 
+int ARCharacterBase::GetCurrentScrap()
+{
+	return AttributeSet->GetScrap();
+}
+
 UAbilitySystemComponent* ARCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;

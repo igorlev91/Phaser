@@ -12,6 +12,10 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+#include "Framework/RItemDataAsset.h"
+
+
+#include "Actors/ItemChest.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Animation/AnimInstance.h"
@@ -23,7 +27,11 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Components/SphereComponent.h"
+
 #include "Net/UnrealNetwork.h"
+
+#include "Actors/ItemPickup.h"
 
 #include "Framework/RGameMode.h"
 
@@ -48,6 +56,13 @@ ARPlayerBase::ARPlayerBase()
 	GetCharacterMovement()->RotationRate = FRotator(1080.f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 2.0f;
+
+	// sphere radius
+	ItemPickupCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Item Collider"));
+	ItemPickupCollider->SetupAttachment(GetRootComponent());
+	ItemPickupCollider->SetCollisionProfileName(TEXT("OverlapAll"));
+
+	ItemPickupCollider->OnComponentBeginOverlap.AddDynamic(this, &ARPlayerBase::OnOverlapBegin);
 
 	cameraClampMax = 10;
 	cameraClampMin = -60;
@@ -298,13 +313,8 @@ void ARPlayerBase::CancelActionTriggered()
 
 void ARPlayerBase::Interact()
 {
-	if (!canInteract)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("I cannot interact"));
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("I am interacting"));
+	PlayerInteraction.Broadcast();
+	ServerRequestInteraction(interactionChest); // if there's lag this might not work... Reconsider your options carefully
 }
 
 void ARPlayerBase::Pause()
@@ -381,14 +391,25 @@ void ARPlayerBase::TickCameraLocalOffset(FVector Goal)
 	CameraLerpHandle = GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ARPlayerBase::TickCameraLocalOffset, Goal));
 }
 
-void ARPlayerBase::SetInteraction(bool setInteract)
-{
-	canInteract = setInteract;
-}
-
 void ARPlayerBase::SetPausetoFalse()
 {
 	isPaused = false;
+}
+
+void ARPlayerBase::ServerRequestPickupItem_Implementation(AItemPickup* itemPickup, URItemDataAsset* itemAsset)
+{
+	if (itemPickup && itemAsset)
+	{
+		itemPickup->Server_PickupItem();
+	}
+}
+
+void ARPlayerBase::ServerRequestInteraction_Implementation(AItemChest* Chest)
+{
+	if (Chest)
+	{
+		Chest->Server_OpenChest();
+	}
 }
 
 void ARPlayerBase::SetPlayerState()
@@ -397,5 +418,29 @@ void ARPlayerBase::SetPlayerState()
 	if (EOSPlayerState)
 	{
 		EOSPlayerState->Server_OnPossessPlayer(this);
+	}
+}
+
+void ARPlayerBase::SetInteractionChest(AItemChest* chest)
+{
+	interactionChest = chest;
+}
+
+void ARPlayerBase::SetItemPickup(AItemPickup* itemPickup, URItemDataAsset* itemAsset)
+{
+	ServerRequestPickupItem(itemPickup, itemAsset);
+}
+
+void ARPlayerBase::AddNewItem_Implementation(URItemDataAsset* newItemAsset)
+{
+	playerController->AddNewItemToUI(newItemAsset);
+}
+
+void ARPlayerBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AItemPickup* newItem = Cast<AItemPickup>(OtherActor);
+	if (newItem)
+	{
+		newItem->PlayerPickupRequest(this);
 	}
 }

@@ -4,6 +4,8 @@
 #include "Player/RPlayerController.h"
 #include "Player/RPlayerBase.h"
 
+#include "Framework/RItemDataAsset.h"
+
 #include "Kismet/GameplayStatics.h"
 
 #include "Widgets/GameplayUI.h"
@@ -97,4 +99,15 @@ void ARPlayerController::ChangeTakeOffState(bool state, float charge)
 	}
 
 	GameplayUI->SetTakeOffBarState(state, charge);
+}
+
+void ARPlayerController::AddNewItemToUI(URItemDataAsset* newItemAsset)
+{
+	if (!IsLocalPlayerController() || GameplayUI == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("failed item"));
+		return;
+	}
+	GameplayUI->AddItem(newItemAsset);
+
 }

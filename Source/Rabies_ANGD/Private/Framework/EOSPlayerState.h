@@ -33,6 +33,9 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_UpdateSocketLocations(FVector rootAimingLoc, FVector rangedLoc);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_ProcessDotFly(ARPlayerBase* player);
+
 	UFUNCTION()
 	FRotator GetHitscanRotator() { return hitscanRotation; }
 

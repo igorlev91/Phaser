@@ -6,6 +6,10 @@
 #include "Player/RPlayerBase.h"
 #include "Framework/EOSGameState.h"
 #include "Framework/RCharacterDefination.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameplayAbilities/RAbilitySystemComponent.h"
+#include "GameplayAbilities/RAbilityGenericTags.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -76,6 +80,18 @@ bool AEOSPlayerState::Server_UpdateSocketLocations_Validate(FVector rootAimingLo
 void AEOSPlayerState::OnRep_SelectedCharacter()
 {
 	OnSelectedCharacterReplicated.Broadcast(SelectedCharacter);
+}
+
+void AEOSPlayerState::Server_ProcessDotFly_Implementation(ARPlayerBase* player)
+{
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(player, URAbilityGenericTags::GetApplyGravityJump(), eventData);
+	UE_LOG(LogTemp, Error, TEXT("%s Gravity jump implementaiton"), *GetName());
+}
+
+bool AEOSPlayerState::Server_ProcessDotFly_Validate(ARPlayerBase* player)
+{
+	return true;
 }
 
 void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

@@ -13,6 +13,7 @@ class UInputMappingContext;
 class UInputAction;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnClientHitScan, AActor* /*Hit Target*/, FVector /* Start Pos */, FVector /* End Pos */);
+DECLARE_MULTICAST_DELEGATE(FOnPlayerInteraction);
 /**
  * 
  */
@@ -26,6 +27,8 @@ public:
 
 public:
 	FOnClientHitScan ClientHitScan;
+
+	FOnPlayerInteraction PlayerInteraction;
 
 	UFUNCTION(NetMulticast, Unreliable, WithValidation)
 	void ClientHitScanResult(AActor* hitActor, FVector start, FVector end);
@@ -52,6 +55,24 @@ public:
 
 	UFUNCTION()
 	void SetPlayerState();
+
+	UFUNCTION()
+	void SetInteractionChest(class AItemChest* chest);
+
+	UFUNCTION()
+	void SetItemPickup(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);
+
+private:
+
+	UPROPERTY(VisibleAnywhere, Category = "Item Detail")
+	class USphereComponent* ItemPickupCollider;
+
+	class AItemChest* interactionChest;
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "Item Detail")
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private:
 
@@ -187,15 +208,7 @@ private:
 	float cameraClampMax;
 	bool bIsScoping;
 
-	/////////////////////////////////
-	/*          Interact           */
-	////////////////////////////////
-
-	bool canInteract;
-
 public:
-
-	void SetInteraction(bool setInteract);
 
 	/////////////////////////////////
 	/*          Pause	           */
@@ -227,4 +240,15 @@ private:
 
 	UPROPERTY()
 	class AEOSPlayerState* EOSPlayerState;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestInteraction(class AItemChest* Chest);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestPickupItem(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);
+
+	public:
+
+	UFUNCTION(Client, Reliable)
+	void AddNewItem(class URItemDataAsset* newItemAsset);
 };

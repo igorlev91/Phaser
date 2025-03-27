@@ -40,7 +40,5 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	EItemRarity ItemRarity;
 
-	// need the mesh for the item itself
-
 	
 };

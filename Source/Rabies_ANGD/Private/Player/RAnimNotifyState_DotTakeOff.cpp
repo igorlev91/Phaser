@@ -5,6 +5,8 @@
 #include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
+#include "Framework/EOSPlayerState.h"
+#include "GameFramework/PlayerState.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
 #include "AbilitySystemBlueprintLibrary.h"

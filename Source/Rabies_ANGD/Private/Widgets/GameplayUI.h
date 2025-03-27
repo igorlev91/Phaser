@@ -28,6 +28,9 @@ public:
 	UFUNCTION()
 	void SetTakeOffBarState(bool state, float charge);
 
+	UFUNCTION()
+	void AddItem(class URItemDataAsset* itemAsset);
+
 private:
 	//************************//
 	//        Health         //
@@ -44,6 +47,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ScrapText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerItemInventory* PlayerItemInventory;
 
 	bool crosshairState;
 

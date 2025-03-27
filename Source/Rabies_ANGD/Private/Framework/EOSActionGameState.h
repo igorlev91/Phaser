@@ -6,6 +6,10 @@
 #include "GameFramework/GameStateBase.h"
 #include "EOSActionGameState.generated.h"
 
+class AItemChest;
+class AItemPickup;
+class URItemDataAsset;
+
 /**
  * 
  */
@@ -15,6 +19,12 @@ class AEOSActionGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+
+	UFUNCTION()
+	void SelectChest(AItemChest* openedChest);
+
+	UFUNCTION()
+	void SelectItem(AItemPickup* selectedItem, class ARPlayerBase* targetingPlayer);
 
 private:
 
@@ -27,14 +37,29 @@ private:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SpawnEnemy(int EnemyIDToSpawn, FVector SpawnLocation);
 
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void OpenedChest(int chestID);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void PickedUpItem(int itemID, class ARPlayerBase* targetingPlayer);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Chest")
-	TSubclassOf<class AItemChest> ItemChestClass;
+	TSubclassOf<AItemChest> ItemChestClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Chest")
+	TSubclassOf<AItemPickup> ItemPickupClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Enemies")
 	TArray<TSubclassOf<class AREnemyBase>> EnemyLibrary;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TArray<URItemDataAsset*> ItemLibrary;
+
 	UPROPERTY(Replicated)
-	TArray<class AItemChest*> AllChests;
+	TArray<AItemChest*> AllChests;
+
+	UPROPERTY(Replicated)
+	TArray<AItemPickup*> AllItems;
 
 	UPROPERTY(Replicated)
 	TArray<class AREnemyBase*> AllEnemies;

@@ -116,15 +116,21 @@ void UGA_DotFlying::Hold(float timeRemaining)
 		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(FlyingSpeedClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
 		FlyingSpeedEffectHandle = ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
 
+		FGameplayEffectSpecHandle EffectSpec2 = MakeOutgoingGameplayEffectSpec(GravityJumpClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		GravityJumpEffectHandle = ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec2);
+
 		Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetUnActionableTag());
-		Player->PlayAnimMontage(TakeOffMontage);
-		Player->ClientPlayAnimMontage(TakeOffMontage);
+		Player->ServerPlayAnimMontage(TakeOffMontage);
+
+		GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
+		CurrentGravityDuration = 0;
+		GravityHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_DotFlying::GravityJump, CurrentGravityDuration));
 	}
 }
 
 void UGA_DotFlying::GravityJump(float timeRemaining)
 {
-	if (CurrentGravityDuration <= 0.3f)
+	if (CurrentGravityDuration <= 1.0f)
 	{
 		CurrentGravityDuration += GetWorld()->GetDeltaSeconds();
 		GravityHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_DotFlying::GravityJump, CurrentGravityDuration));
@@ -137,13 +143,6 @@ void UGA_DotFlying::GravityJump(float timeRemaining)
 
 void UGA_DotFlying::ApplyGravityJump(FGameplayEventData Payload)
 {
-	GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
-	CurrentGravityDuration = 0;
-	GravityHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_DotFlying::GravityJump, CurrentGravityDuration));
-
-	FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(GravityJumpClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-	GravityJumpEffectHandle = ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
-
 	Player->Jump();
 }
 
@@ -151,12 +150,7 @@ void UGA_DotFlying::RemoveGravityJump()
 {
 	Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetFlyingTag());
 	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
-
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-	if (ASC)
-	{
-		ASC->RemoveActiveGameplayEffect(GravityJumpEffectHandle);
-	}
+	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetUnActionableTag());
 }
 
 void UGA_DotFlying::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
@@ -168,9 +162,9 @@ void UGA_DotFlying::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 
 	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetFlyingTag());
+	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetUnActionableTag());
 
-	Player->PlayAnimMontage(HardLandingMontage);
-	Player->ClientPlayAnimMontage(HardLandingMontage);
+	Player->ServerPlayAnimMontage(HardLandingMontage);
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
 	if (ASC)

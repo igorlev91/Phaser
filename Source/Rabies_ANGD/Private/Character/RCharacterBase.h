@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	UFUNCTION()
+	int GetCurrentScrap();
+
 public:
 	FORCEINLINE bool IsScoping() const { return bIsScoping; }
 	FORCEINLINE bool IsFlying() const { return bIsFlying; }
