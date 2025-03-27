@@ -50,6 +50,10 @@ public:
 	void Hitscan(float range, class AEOSPlayerState* requestedPlayerState);
 
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void CharacterShootParticle(FVector startPos, FVector endPos, FRotator startForward);
+
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -68,6 +72,9 @@ public:
 
 	UFUNCTION()
 	int GetCurrentScrap();
+
+	UFUNCTION()
+	int GetReviveSpeed();
 
 	FName RangedAttackSocketName = TEXT("Ranged_Socket");
 	FName RootAimingSocketName = TEXT("RootAiming_Socket");

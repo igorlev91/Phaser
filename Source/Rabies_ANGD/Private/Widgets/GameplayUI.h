@@ -40,6 +40,23 @@ private:
 	//        Health         //
 	//************************//
 
+	UFUNCTION()
+	void DeadStatusUpdated(bool bIsDead);
+
+	UFUNCTION()
+	void DeadTimer(float timeRemaining);
+
+	UPROPERTY(meta = (BindWidget))
+	class UVerticalBox* DownTimeBox;
+
+	UPROPERTY(meta = (BindWidget))
+	class URadialSlider* DownTimeSlider;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* DownTimeText;
+
+	class APostProcessVolume* PostProcessVolume;
+
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* levelBar;
 
@@ -103,6 +120,10 @@ private:
 	//************************//
 	//        Abilites         //
 	//************************//
+
+	float CurrentDeathDuration;
+
+	FTimerHandle DeathHandle;
 
 	UPROPERTY(meta = (BindWidget))
 	class UChageBar* SuperJumpChargeBar;

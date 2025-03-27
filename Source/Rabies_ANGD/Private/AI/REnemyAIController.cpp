@@ -108,32 +108,34 @@ void AREnemyAIController::TargetPerceptionUpdated(AActor* Target, FAIStimulus St
 		return;
 	}
 
+	URAbilitySystemComponent* TargetASC = Cast<URAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target)); 
+	if(TargetASC->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		return;
+
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		if (!GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName))
 		{
+			player->OnDeadStatusChanged.AddUObject(this, &AREnemyAIController::PlayerDeadStatusUpdated);
 			Enemy->UpdateAITarget(Target);
 			GetBlackboardComponent()->SetValueAsObject(TargetBlackboardKeyName, Target);
 		}
 	}
 	else
 	{
-		if (URAbilitySystemComponent* TargetASC = Cast<URAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target)))
+		if (TargetASC)
 		{
-			if (TargetASC->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+			auto Iterator = PerceptionComponent->GetPerceptualDataIterator();
+			while (Iterator)
 			{
-				auto Iterator = PerceptionComponent->GetPerceptualDataIterator();
-				while (Iterator)
+				if (Iterator->Value.Target == Target)
 				{
-					if (Iterator->Value.Target == Target)
+					for (FAIStimulus& Stimi : Iterator->Value.LastSensedStimuli)
 					{
-						for (FAIStimulus& Stimi : Iterator->Value.LastSensedStimuli)
-						{
-							Stimi.SetStimulusAge(TNumericLimits<float>::Max());
-						}
+						Stimi.SetStimulusAge(TNumericLimits<float>::Max());
 					}
-					++Iterator;
 				}
+				++Iterator;
 			}
 		}
 	}
@@ -144,17 +146,39 @@ void AREnemyAIController::TargetForgotton(AActor* Target)
 	AActor* currentTarget = Cast<AActor>(GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName));
 	if (currentTarget == Target)
 	{
-		TArray<AActor*> OtherTargets;
-		PerceptionComponent->GetPerceivedHostileActors(OtherTargets);
-		if (OtherTargets.Num() != 0)
+		ProcessForgottonTarget(Target);
+	}
+}
+
+void AREnemyAIController::ProcessForgottonTarget(AActor* Target)
+{
+	TArray<AActor*> OtherTargets;
+	PerceptionComponent->GetPerceivedHostileActors(OtherTargets);
+	if (OtherTargets.Num() != 0)
+	{
+		Enemy->UpdateAITarget(OtherTargets[0]);
+		GetBlackboardComponent()->SetValueAsObject(TargetBlackboardKeyName, OtherTargets[0]);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Forgot player completely"));
+		Enemy->UpdateAITarget(nullptr);
+		GetBlackboardComponent()->ClearValue(TargetBlackboardKeyName);
+	}
+}
+
+void AREnemyAIController::PlayerDeadStatusUpdated(bool bIsDead)
+{
+	if (bIsDead)
+	{
+		AActor* currentTarget = Cast<AActor>(GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName));
+		ARPlayerBase* player = Cast<ARPlayerBase>(currentTarget);
+		if (player)
 		{
-			Enemy->UpdateAITarget(OtherTargets[0]);
-			GetBlackboardComponent()->SetValueAsObject(TargetBlackboardKeyName, OtherTargets[0]);
-		}
-		else
-		{
-			Enemy->UpdateAITarget(nullptr);
-			GetBlackboardComponent()->ClearValue(TargetBlackboardKeyName);
+			PerceptionComponent->ForgetActor(currentTarget);
+			ProcessForgottonTarget(currentTarget);
+			player->OnDeadStatusChanged.RemoveAll(this);
+
 		}
 	}
 }

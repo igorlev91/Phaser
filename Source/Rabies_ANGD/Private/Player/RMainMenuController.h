@@ -51,6 +51,8 @@ private:
 
 	void CreateMenuUI();
 
+	void CreateLobbyUI();
+
 	UFUNCTION()
 	void OnSequenceEnd();
 
@@ -58,7 +60,13 @@ private:
 	TSubclassOf<class UMainMenu> MenuUIClass;
 
 	UPROPERTY()
-	UMainMenu* MenuUI;
+	class UMainMenu* MenuUI;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class UCharacterSelect> CharacterSelectUIClass;
+
+	UPROPERTY()
+	class UCharacterSelect* CharacterSelectUI;
 
 	UPROPERTY()
 	class URCharacterDefination* CurrentlyHoveredCharacter;

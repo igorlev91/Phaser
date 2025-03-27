@@ -24,5 +24,14 @@ UGA_Death::UGA_Death()
 
 void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Applied Dead"));
 
+	UAbilityTask_WaitGameplayEvent* EndTakeOffEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetReviveTag());
+	EndTakeOffEvent->EventReceived.AddDynamic(this, &UGA_Death::StopDeath);
+	EndTakeOffEvent->ReadyForActivation();
+}
+
+void UGA_Death::StopDeath(FGameplayEventData Payload)
+{
+	K2_EndAbility();
 }

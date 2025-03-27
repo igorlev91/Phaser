@@ -15,8 +15,10 @@ public:
 	// Sets default values for this actor's properties
 	AEscapeToWin();
 
-protected:
 	bool bHasBeatenBoss = false;
+
+protected:
+	bool startGame = false;
 	bool bHasWonGame = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Escape")
@@ -28,17 +30,28 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "UI")
-	class UWidgetComponent* EscapeWidgetComp;
+	class UWidgetComponent* CanEscapeWidgetComp;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Escape")  //TSubclass of
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	class UWidgetComponent* CannotEscapeWidgetComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	class UWidgetComponent* GameWinWidgetComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	class UWidgetComponent* InitiateBossWidgetComp;
+
+	UPROPERTY()
 	class UCannotEscape* CannotEscapeWidgetUI;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Escape")
+	UPROPERTY()
 	class UCanEscape* CanEscapeWidgetUI;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Escape")
+	UPROPERTY()
 	class UGameWinUI* GameWinUI;
 
+	UPROPERTY()
+	class UInitiateBossFight* InitiateBossFightUI;
 	//Transient - Reference to the widget
 
 	class ARPlayerBase* player;
@@ -64,6 +77,9 @@ public:
 
 	UFUNCTION()
 	void SetUpEndUI();
+
+	UFUNCTION()
+	void SetUpBossUI();
 
 	UFUNCTION()
 	bool SetActivatingExit();

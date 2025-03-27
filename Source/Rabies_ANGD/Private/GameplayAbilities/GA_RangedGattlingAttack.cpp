@@ -94,6 +94,7 @@ void UGA_RangedGattlingAttack::EndAbility(const FGameplayAbilitySpecHandle Handl
 
 void UGA_RangedGattlingAttack::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos)
 {
+
 	if (K2_HasAuthority())
 	{
 		if (hitActor == nullptr) return;

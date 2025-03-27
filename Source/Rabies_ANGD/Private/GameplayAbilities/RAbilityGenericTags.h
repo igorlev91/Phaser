@@ -40,6 +40,7 @@ public:
 
 	static FGameplayTag GetScrapTag();
 	static FGameplayTag GetRevivingTag();
+	static FGameplayTag GetReviveTag();
 	static FGameplayTag GetEndRevivingTag();
 
 	static FGameplayTag GetLevelTag();

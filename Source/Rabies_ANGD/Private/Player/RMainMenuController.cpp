@@ -16,6 +16,7 @@
 #include "LevelSequenceCameraSettings.h"
 #include "GameFramework/GameStateBase.h"
 #include "Widgets/CharacterSelect.h"
+#include "Widgets/CharacterSelect.h"
 #include "Framework/RCharacterDefination.h"
 #include "LevelSequencePlayer.h"
 #include "MovieSceneSequence.h"
@@ -94,7 +95,6 @@ void ARMainMenuController::BeginPlay()
 	GetGameInstance<UEOSGameInstance>()->SessionJoined.AddUObject(this, &ARMainMenuController::JoinedSession);
 
 	CreateMenuUI();
-
 }
 
 void ARMainMenuController::ChangeOnlineMenuState(bool state)
@@ -179,8 +179,30 @@ void ARMainMenuController::CreateMenuUI()
 	}
 }
 
+void ARMainMenuController::CreateLobbyUI()
+{
+	if (!CharacterSelectUIClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s,  missing Gameplay UI class, Can't Spawn Gameplay UI"), *GetName());
+		return;
+	}
+
+	if (!IsLocalPlayerController())
+	{
+		return;
+	}
+
+	CharacterSelectUI = CreateWidget<UCharacterSelect>(this, CharacterSelectUIClass);
+	if (CharacterSelectUI)
+	{
+		CharacterSelectUI->AddToViewport();
+	}
+}
+
 void ARMainMenuController::OnSequenceEnd()
 {
+	CreateLobbyUI();
+
 	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
 	if (SequencePlayer)
 	{

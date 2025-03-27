@@ -113,6 +113,11 @@ FGameplayTag URAbilityGenericTags::GetRevivingTag()
 	return FGameplayTag::RequestGameplayTag("stat.reviving");
 }
 
+FGameplayTag URAbilityGenericTags::GetReviveTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.revive");
+}
+
 FGameplayTag URAbilityGenericTags::GetEndRevivingTag()
 {
 	return FGameplayTag::RequestGameplayTag("stat.endReviving");

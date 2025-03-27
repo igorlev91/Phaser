@@ -30,6 +30,11 @@ void URAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, flo
 	{
 		UltimateCooldownReduction = FMath::Clamp(NewValue, 0.1f, 1.0f);
 	}
+
+	if (Attribute == GetDownSurvivalTimeAttribute())
+	{
+		DownSurvivalTime = FMath::Clamp(NewValue, 0.1f, 1.0f);
+	}
 }
 
 void URAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)

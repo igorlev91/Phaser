@@ -17,6 +17,8 @@ UPatrollingComponent::UPatrollingComponent()
 
 void UPatrollingComponent::BeginPlay()
 {
+	Super::BeginPlay();
+	
 	TArray<AActor*> patrolPoints;
 	TArray<ATargetPoint*> newPoints;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATargetPoint::StaticClass(), patrolPoints);

@@ -19,6 +19,17 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class ULobbyDisplay* LobbyDisplay;
 
+	UPROPERTY(meta = (BindWidget))
+	class URButton* ReadyUpButton;
+
+	UFUNCTION()
+	void ReadyUp();
+
+	void LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> GameLevel;
+
 protected:
 	virtual void NativeConstruct() override;
 };

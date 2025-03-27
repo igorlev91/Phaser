@@ -8,7 +8,7 @@ void ARCenterChooseButton::OnActorClicked(AActor* TouchedActor, FKey ButtonPress
 {
 	if (CharacterSelectController)
 	{
-		CharacterSelectController->ConfirmCharacterChoice();
+		//CharacterSelectController->ConfirmCharacterChoice();
 	}
 
 	if (GEngine)

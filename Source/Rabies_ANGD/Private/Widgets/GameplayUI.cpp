@@ -15,6 +15,8 @@
 #include "GameplayAbilities/GA_AbilityBase.h"
 #include "Widgets/PlayerAbilityGauge.h"
 
+#include "Character/RCharacterBase.h"
+
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Button.h"
@@ -24,11 +26,21 @@
 #include "Widgets/ChageBar.h"
 #include "Components/ProgressBar.h"
 
+#include "Engine/World.h"
+#include "EngineUtils.h"
+
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Components/Slider.h"
+#include "Components/RadialSlider.h"
+#include "Kismet/KismetTextLibrary.h"
+
+#include "Engine/PostProcessVolume.h"
+
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
+#include "Components/VerticalBox.h"
 
 #include "GameplayAbilitySpec.h"
 
@@ -94,6 +106,12 @@ void UGameplayUI::NativeConstruct()
 	FText Text = FText::Format(FText::FromString("Scrap: {0}"), scrap);
 	ScrapText->SetText(Text);
 
+	ARCharacterBase* ownerCharacter = Cast<ARCharacterBase>(GetOwningPlayerPawn());
+	if (ownerCharacter)
+	{
+		ownerCharacter->OnDeadStatusChanged.AddUObject(this, &UGameplayUI::DeadStatusUpdated);
+	}
+
 	//GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	//GetWorld()->GetFirstPlayerController()->bEnableClickEvents = true;
 }
@@ -128,6 +146,70 @@ void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 		PlayerItemInventory->AddItem(itemAsset);
 	}
 }
+
+void UGameplayUI::DeadStatusUpdated(bool bIsDead)
+{
+	if (bIsDead)
+	{
+		for (TActorIterator<APostProcessVolume> It(GetWorld()); It; ++It)
+		{
+			PostProcessVolume = *It;
+		}
+
+		DownTimeBox->SetVisibility(ESlateVisibility::Visible);
+		CurrentDeathDuration = 1.0f;
+		DownTimeSlider->SetValue(1.0f);
+		DownTimeText->SetText(FText::FromString(""));
+		DeathHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGameplayUI::DeadTimer, CurrentDeathDuration));
+	}
+	else
+	{
+		if (PostProcessVolume)
+		{
+			FVector4 freshValue = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+			PostProcessVolume->Settings.ColorSaturation = freshValue;
+			PostProcessVolume->Settings.ColorContrast = freshValue;
+			PostProcessVolume->Settings.VignetteIntensity = 0;
+			PostProcessVolume->Settings.SceneFringeIntensity = 0;
+		}
+
+		GetWorld()->GetTimerManager().ClearTimer(DeathHandle);
+		DownTimeBox->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UGameplayUI::DeadTimer(float timeRemaining)
+{
+	if (CurrentDeathDuration > 0)
+	{
+		float rateOfChange = (0.0005f * GetAttributeValue(URAttributeSet::GetDownSurvivalTimeAttribute()));
+		float remainingTime = (CurrentDeathDuration / rateOfChange);
+		CurrentDeathDuration -= rateOfChange;
+		DownTimeSlider->SetValue(CurrentDeathDuration / 1.0f);
+		DownTimeText->SetText(FText::Format(FText::FromString("{0}"), FText::AsNumber(FMath::CeilToInt(remainingTime / 60.0f))));
+
+		if (PostProcessVolume)
+		{
+			float inverseValue = FMath::Abs(1.0f - (CurrentDeathDuration / 1.0f));
+			FVector4 newSaturation = FVector4(CurrentDeathDuration, CurrentDeathDuration, CurrentDeathDuration, 1.0f);
+			PostProcessVolume->Settings.ColorSaturation = newSaturation;
+			FVector4 newContrast = FVector4(1.0f, 1.0f, 1.0f, FMath::Lerp(1.0f, 1.2f, inverseValue));
+			PostProcessVolume->Settings.ColorContrast = newContrast;
+			PostProcessVolume->Settings.VignetteIntensity = inverseValue;
+			PostProcessVolume->Settings.SceneFringeIntensity = inverseValue * 5.0f;
+		}
+
+		DeathHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGameplayUI::DeadTimer, CurrentDeathDuration));
+
+	}
+	else
+	{
+		DownTimeText->SetText(FText::Format(FText::FromString("{0}"), FText::AsNumber(0)));
+		DownTimeBox->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+
 
 void UGameplayUI::LevelUpdated(const FOnAttributeChangeData& ChangeData)
 {

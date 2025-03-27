@@ -77,9 +77,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerDetail")
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-private:
-
 	bool bInRangeToRevive;
+	
+private:
 
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* ReviveUIWidgetComp;
@@ -257,7 +257,7 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerRequestPickupItem(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);
 
-	public:
+public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void ServerSetPlayerReviveState(bool state);

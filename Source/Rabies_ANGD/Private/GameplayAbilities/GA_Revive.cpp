@@ -14,7 +14,6 @@
 
 #include "Framework/EOSPlayerState.h"
 
-#include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 
@@ -65,32 +64,44 @@ void UGA_Revive::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGame
 
 void UGA_Revive::Hold(float timeRemaining)
 {
+
 	if (CurrentHoldDuration <= 5)
 	{
-		CurrentHoldDuration += GetWorld()->GetDeltaSeconds();
+		CurrentHoldDuration += (GetWorld()->GetDeltaSeconds() * Player->GetReviveSpeed());
 		bool visible = (CurrentHoldDuration >= 1 / 8.0f) ? true : false;
 		Player->playerController->ChangeRevivalState(visible, CurrentHoldDuration);
 		ReviveHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_Revive::Hold, CurrentHoldDuration));
+		return;
 	}
 	else
 	{
 		TArray<AActor*> playersRevived = Player->nearbyFaintedActors;
+		EndHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_Revive::EndDelay));
 		for (AActor* player : playersRevived)
 		{
-			UE_LOG(LogTemp, Error, TEXT("%s Reviving"), *player->GetName());
 
 			FGameplayEventData Payload = FGameplayEventData();
 			Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(player);
 
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(player, URAbilityGenericTags::GetReviveTag(), FGameplayEventData());
+
 			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(ReviveEffectClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
 			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
+
+			Cast<ARPlayerBase>(player)->ServerSetPlayerReviveState(false);
+			UE_LOG(LogTemp, Error, TEXT("%s Reviving"), *player->GetName());
 		}
-		K2_EndAbility();
+		Player->bInRangeToRevive = false;
 		//process revive
 	}
 }
 
 void UGA_Revive::StopHoldingRevive(FGameplayEventData Payload)
+{
+	K2_EndAbility();
+}
+
+void UGA_Revive::EndDelay()
 {
 	K2_EndAbility();
 }

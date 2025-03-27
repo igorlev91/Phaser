@@ -27,6 +27,10 @@ protected:
 	
 
 private:
+
+	UFUNCTION()
+	void PlayerDeadStatusUpdated(bool bIsDead);
+
 	UPROPERTY()
 	class AREnemyBase* Enemy;
 
@@ -56,6 +60,9 @@ private:
 
 	UFUNCTION()
 	void TargetForgotton(AActor* Target);
+
+	UFUNCTION()
+	void ProcessForgottonTarget(AActor* Target);
 
 	void PawnDeathStatusChanged(bool bIsDead);
 };

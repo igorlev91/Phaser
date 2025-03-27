@@ -24,6 +24,7 @@ private:
 	float CurrentHoldDuration;
 
 	FTimerHandle ReviveHandle;
+	FTimerHandle EndHandle;
 
 	void Hold(float timeRemaining);
 
@@ -35,4 +36,7 @@ private:
 
 	UFUNCTION()
 	void StopHoldingRevive(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void EndDelay();
 };

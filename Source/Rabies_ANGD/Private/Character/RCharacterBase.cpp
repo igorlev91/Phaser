@@ -58,6 +58,7 @@ ARCharacterBase::ARCharacterBase()
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMovementSpeedAttribute()).AddUObject(this, &ARCharacterBase::MovementSpeedUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetGravityAttribute()).AddUObject(this, &ARCharacterBase::GravityUpdated);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &ARCharacterBase::ScopingTagChanged);
+	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetDeadTag()).AddUObject(this, &ARCharacterBase::DeathTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &ARCharacterBase::FlyingTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetTakeOffDelayTag()).AddUObject(this, &ARCharacterBase::TakeOffDelayTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetHoldingJump()).AddUObject(this, &ARCharacterBase::HoldingJumpTagChanged);
@@ -162,6 +163,11 @@ int ARCharacterBase::GetCurrentScrap()
 	return AttributeSet->GetScrap();
 }
 
+int ARCharacterBase::GetReviveSpeed()
+{
+	return AttributeSet->GetReviveSpeed();
+}
+
 void ARCharacterBase::Hitscan(float range, AEOSPlayerState* requestedPlayerState)
 {
 	FVector startPos = FVector(0, 0, 0);
@@ -186,6 +192,7 @@ void ARCharacterBase::Hitscan(float range, AEOSPlayerState* requestedPlayerState
 	{
 		FVector weaponStart = (requestedPlayerState == nullptr) ? startPos : requestedPlayerState->GetRangedLocation();
 		FVector hitEnd = hitResult.ImpactPoint;
+		CharacterShootParticle(weaponStart, hitEnd, (hitEnd - weaponStart).GetSafeNormal().Rotation() + FRotator(0, -90, 0)); // this gets the point towards the hit
 		ClientHitScanResult(hitResult.GetActor(), weaponStart, hitEnd);
 	}
 }
@@ -193,7 +200,7 @@ void ARCharacterBase::Hitscan(float range, AEOSPlayerState* requestedPlayerState
 void ARCharacterBase::ClientHitScanResult_Implementation(AActor* hitActor, FVector start, FVector end)
 {
 	FString actorName = hitActor->GetName();
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
+	//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
 	DrawDebugLine(GetWorld(), start, end, FColor::Green);
 	ClientHitScan.Broadcast(hitActor, start, end);
 }
@@ -224,7 +231,7 @@ void ARCharacterBase::StartDeath()
 {
 	//PlayMontage(DeathMontage);
 	//AbilitySystemComponent->ApplyGameplayEffect(DeathEffect);
-	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Dead);
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Dead); // this does not apply the dead tag sadly to enemies I believe
 	//AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetDeadTag());
 	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -340,6 +347,11 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 		return;
 	}
 
+	if (ChangeData.OldValue >= 1)
+	{
+		bHasDied = false;
+	}
+
 	if (HealthBar)
 	{
 		HealthBar->SetHealth(ChangeData.NewValue, AttributeSet->GetMaxHealth());
@@ -433,6 +445,11 @@ void ARCharacterBase::LevelUpUpgrade(int level, bool setLevel)
 		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 	}
 
+}
+
+void ARCharacterBase::CharacterShootParticle_Implementation(FVector startPos, FVector endPos, FRotator startForward)
+{
+	///
 }
 
 
