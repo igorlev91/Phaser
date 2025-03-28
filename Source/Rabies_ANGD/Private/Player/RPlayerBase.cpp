@@ -73,18 +73,19 @@ ARPlayerBase::ARPlayerBase()
 void ARPlayerBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
 	
-	if (EOSPlayerState)
+	if (EOSPlayerState && IsLocallyControlled())
 	{
+		//UE_LOG(LogTemp, Error, TEXT(""), *GetName());
+		viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
 		EOSPlayerState->Server_UpdateSocketLocations(GetMesh()->GetSocketLocation(RootAimingSocketName), GetMesh()->GetSocketLocation(RangedAttackSocketName));
+
+		if (bIsScoping)
+		{
+			RotatePlayer(DeltaTime);
+		}
 	}
-	
-	if (bIsScoping)
-	{
-		RotatePlayer(DeltaTime);
-	}
+
 }
 
 void ARPlayerBase::BeginPlay()
@@ -147,6 +148,7 @@ void ARPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		enhancedInputComp->BindAction(AbilityCancelAction, ETriggerEvent::Triggered, this, &ARPlayerBase::CancelActionTriggered);
 		enhancedInputComp->BindAction(InteractInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Interact);
 		enhancedInputComp->BindAction(PausingInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Pause);
+		enhancedInputComp->BindAction(LoadDebugInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::LoadDebug);
 	}
 }
 
@@ -193,8 +195,9 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 
 	newRot.Pitch = FMath::ClampAngle(newRot.Pitch, cameraClampMin, cameraClampMax);
 
-	if (EOSPlayerState) {
-		EOSPlayerState->Server_UpdateHitscanRotator(newRot);
+	if (EOSPlayerState && IsLocallyControlled()) 
+	{
+		EOSPlayerState->Server_UpdateHitscanRotator(newRot, viewPivot->GetRelativeLocation());
 	}
 	viewPivot->SetWorldRotation(newRot);
 }
@@ -207,6 +210,11 @@ void ARPlayerBase::SetRabiesPlayerController(ARPlayerController* newController)
 
 void ARPlayerBase::StartJump()
 {
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
+
 	if (bInRangeToRevive)
 	{
 		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Revive);
@@ -226,6 +234,11 @@ void ARPlayerBase::StartJump()
 
 void ARPlayerBase::ReleaseJump()
 {
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
+
 	FGameplayEventData eventData;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndTakeOffChargeTag(), eventData);
 
@@ -336,6 +349,16 @@ void ARPlayerBase::Pause()
 	}*/
 }
 
+void ARPlayerBase::LoadDebug()
+{
+	UWorld* World = GetWorld();
+	
+	if (World)
+	{
+		UGameplayStatics::OpenLevel(World, TEXT("EndGameTestRoom"));
+	}
+}
+
 FVector ARPlayerBase::GetMoveFwdDir() const
 {
 	FVector CamerFwd = viewCamera->GetForwardVector();
@@ -415,7 +438,7 @@ void ARPlayerBase::ServerSetPlayerReviveState_Implementation(bool state)
 	}
 	else 
 	{
-		ReviveUI->SetVisibility(ESlateVisibility::Hidden);
+		ReviveUI->SetVisibility(ESlateVisibility::Collapsed);// do collasped instead of hidden
 	}
 }
 
@@ -444,7 +467,7 @@ void ARPlayerBase::SetPlayerState()
 	}
 }
 
-AEOSPlayerState* ARPlayerBase::GetPlayerBaseState()
+AEOSPlayerState* ARPlayerBase::GetPlayerBaseState() // this will crash if someone other than the player calls. Other players do not have this replicated.
 {
 	return EOSPlayerState;
 }

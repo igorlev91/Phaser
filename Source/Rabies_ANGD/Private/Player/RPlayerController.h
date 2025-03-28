@@ -33,6 +33,9 @@ public:
 	UFUNCTION()
 	void AddNewItemToUI(class URItemDataAsset* newItemAsset);
 
+	UFUNCTION(Server, Reliable)
+	void Server_RequestRevive(AEOSPlayerState* TargetPlayerState);
+
 private:
 	void PostPossessionSetup(APawn* NewPawn);
 

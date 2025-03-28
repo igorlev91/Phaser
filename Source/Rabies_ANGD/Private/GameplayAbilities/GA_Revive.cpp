@@ -4,15 +4,17 @@
 #include "GameplayAbilities/GA_Revive.h"
 
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
+#include "Framework/EOSPlayerState.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 #include "Player/RPlayerController.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/PlayerState.h"
+#include "AbilitySystemComponent.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
-
-#include "Framework/EOSPlayerState.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
@@ -77,19 +79,32 @@ void UGA_Revive::Hold(float timeRemaining)
 	{
 		TArray<AActor*> playersRevived = Player->nearbyFaintedActors;
 		EndHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_Revive::EndDelay));
+		AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>();
+
 		for (AActor* player : playersRevived)
 		{
+			//FGameplayEventData Payload = FGameplayEventData();
+			//Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(EOSPlayeState->GetPlayer());
 
-			FGameplayEventData Payload = FGameplayEventData();
-			Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(player);
+			//FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(ReviveEffectClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+			//ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
 
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(player, URAbilityGenericTags::GetReviveTag(), FGameplayEventData());
+			const TArray<APlayerState*>& PlayerArray = GameState->PlayerArray;
 
-			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(ReviveEffectClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
-
-			Cast<ARPlayerBase>(player)->ServerSetPlayerReviveState(false);
-			UE_LOG(LogTemp, Error, TEXT("%s Reviving"), *player->GetName());
+			ARPlayerBase* playerBase = Cast<ARPlayerBase>(player);
+            // Iterate through the PlayerArray
+            for (APlayerState* PlayerState : PlayerArray)
+            {
+				AEOSPlayerState* EOSPlayeState = Cast<AEOSPlayerState>(PlayerState);
+                if (EOSPlayeState && playerBase)
+                {
+					if (EOSPlayeState->GetPlayer() == playerBase)
+					{
+						Player->playerController->Server_RequestRevive(EOSPlayeState);
+						UE_LOG(LogTemp, Error, TEXT("%s Reviving"), *player->GetName());
+					}
+                }
+            }
 		}
 		Player->bInRangeToRevive = false;
 		//process revive

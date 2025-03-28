@@ -102,6 +102,9 @@ private:
 	UAnimMontage* DeathMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	UAnimMontage* ReviveMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
 	TSubclassOf<UGameplayEffect> DeathEffect;
 
 	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);

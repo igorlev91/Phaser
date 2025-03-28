@@ -3,6 +3,7 @@
 
 #include "Player/RPlayerController.h"
 #include "Player/RPlayerBase.h"
+#include "Framework/EOSPlayerState.h"
 
 #include "Framework/RItemDataAsset.h"
 
@@ -120,4 +121,12 @@ void ARPlayerController::AddNewItemToUI(URItemDataAsset* newItemAsset)
 	}
 	GameplayUI->AddItem(newItemAsset);
 
+}
+
+void ARPlayerController::Server_RequestRevive_Implementation(AEOSPlayerState* TargetPlayerState)
+{
+	if (TargetPlayerState)
+	{
+		TargetPlayerState->Server_RevivePlayer();
+	}
 }

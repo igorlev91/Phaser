@@ -20,6 +20,16 @@ AEOSPlayerState::AEOSPlayerState()
 
 }
 
+void AEOSPlayerState::Server_RevivePlayer_Implementation()
+{
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetReviveTag(), eventData);
+
+	Player->ServerSetPlayerReviveState(false);
+	UE_LOG(LogTemp, Warning, TEXT("Getting revived"));
+}
+
+
 void AEOSPlayerState::Server_OnPossessPlayer_Implementation(ARPlayerBase* myPlayer)
 {
 	Player = myPlayer;
@@ -54,13 +64,14 @@ bool AEOSPlayerState::Server_CharacterSelected_Validate(URCharacterDefination* n
 	return true;
 }
 
-void AEOSPlayerState::Server_UpdateHitscanRotator_Implementation(FRotator newRot)
+void AEOSPlayerState::Server_UpdateHitscanRotator_Implementation(FRotator newRot, FVector newLocation)
 {
 	//On server
+	hitscanLocation = newLocation;
 	hitscanRotation = newRot;
 }
 
-bool AEOSPlayerState::Server_UpdateHitscanRotator_Validate(FRotator newRot)
+bool AEOSPlayerState::Server_UpdateHitscanRotator_Validate(FRotator newRot, FVector newLocation)
 {
 	return true;
 }
@@ -77,9 +88,21 @@ bool AEOSPlayerState::Server_UpdateSocketLocations_Validate(FVector rootAimingLo
 	return true;
 }
 
+ARPlayerBase* AEOSPlayerState::GetPlayer()
+{
+	return Player;
+}
+
 void AEOSPlayerState::OnRep_SelectedCharacter()
 {
 	OnSelectedCharacterReplicated.Broadcast(SelectedCharacter);
+}
+
+void AEOSPlayerState::OnRep_HitScanLocation()
+{
+	if (Player == nullptr)
+		return;
+	Player->viewPivot->SetRelativeLocation(hitscanLocation);
 }
 
 void AEOSPlayerState::Server_ProcessDotFly_Implementation(ARPlayerBase* player)
@@ -98,9 +121,13 @@ void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, Player, COND_None);
+
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, SelectedCharacter, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, hitscanRotation, COND_None);
+	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, hitscanLocation, COND_None, REPNOTIFY_Always);
+
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, Ranged_SocketLocation, COND_None);
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, RootAiming_SocketLocation, COND_None);
 }

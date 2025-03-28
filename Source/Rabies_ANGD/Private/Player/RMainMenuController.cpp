@@ -169,7 +169,7 @@ void ARMainMenuController::OnSequenceEnd()
 	if (SequencePlayer)
 	{
 		FMovieSceneSequencePlaybackParams playbackParams;
-		playbackParams.Frame = FFrameNumber(45);
+		playbackParams.Frame = FFrameNumber(40);
 
 		SequencePlayer->SetPlaybackPosition(playbackParams);
 

@@ -244,7 +244,7 @@ void ARCharacterBase::DeathTagChanged(const FGameplayTag TagChanged, int32 NewSt
 {
 	if (NewStackCount == 0) // for getting revived
 	{
-		//StopAnimMontage(DeathMontage);
+		PlayAnimMontage(ReviveMontage);
 		//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		AbilitySystemComponent->ApplyFullStat();
 		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);

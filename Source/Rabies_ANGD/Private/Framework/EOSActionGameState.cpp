@@ -147,7 +147,7 @@ void AEOSActionGameState::SpawnEnemyWave(int amountOfEnemies)
 
     for (int i = 0; i < amountOfEnemies; i++)
     {
-        float randomSpawn = FMath::RandRange(0, spawnLocations.Num() - 1);
+        float randomSpawn = FMath::RandRange(1, spawnLocations.Num() - 2);
         SpawnEnemy(1, spawnLocations[randomSpawn]->GetActorLocation());
         spawnLocations.RemoveAt(randomSpawn);
     }
