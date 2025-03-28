@@ -109,6 +109,12 @@ private:
 	FVector AimCameraLocalOffset;
 
 	UPROPERTY(EditDefaultsOnly, Category = "View")
+	FVector AbilityCameraLocalOffset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "View")
+	FVector UltimateCameraLocalOffset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "View")
 	FVector DefaultCameraLocal;
 
 	UPROPERTY(EditDefaultsOnly, Category = "View")
@@ -146,12 +152,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* ultimateAttackAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* AbilityConfirmAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* AbilityCancelAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* QuitOutAction;
@@ -205,13 +205,14 @@ private:
 	void TryActivateSpecialAttack();
 
 	UFUNCTION()
+	void FinishSpecialAttack();
+
+	UFUNCTION()
 	void TryActivateUltimateAttack();
-
+	
 	UFUNCTION()
-	void ConfirmActionTriggered();
+	void FinishUltimateAttack();
 
-	UFUNCTION()
-	void CancelActionTriggered();
 
 	UFUNCTION()
 	void Interact();

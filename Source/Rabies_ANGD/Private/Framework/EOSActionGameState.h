@@ -36,12 +36,24 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void StartBossFight(int enemyID);
 
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void LeaveLevel();
+
 private:
 
 	UPROPERTY()
 	FVector deadlockPos;
 
 	FTimerHandle WaveHandle;
+
+	void LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> GameLevel;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> SelectLevel;
+
 
 	UPROPERTY()
 	class AEscapeToWin* EscapeToWin;

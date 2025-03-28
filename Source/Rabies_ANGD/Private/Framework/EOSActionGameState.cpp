@@ -131,6 +131,11 @@ void AEOSActionGameState::SelectItem(AItemPickup* selectedItem, ARPlayerBase* ta
     }
 }
 
+void AEOSActionGameState::LeaveLevel_Implementation()
+{
+    LoadMapAndListen(SelectLevel);
+}
+
 void AEOSActionGameState::AwardEnemyKill_Implementation(TSubclassOf<class UGameplayEffect> rewardEffect)
 {
     if (HasAuthority())
@@ -154,8 +159,8 @@ void AEOSActionGameState::WaveSpawn(float timeToNextWave)
     if (timeToNextWave >= WaveTime)
     {
         WaveLevel += PlayerArray.Num();
-        int enemiesToSpawn = WaveLevel;
-        enemiesToSpawn = FMath::Clamp(enemiesToSpawn, 1, 12);
+        int enemiesToSpawn = WaveLevel * 3;
+        enemiesToSpawn = FMath::Clamp(enemiesToSpawn, 3, 6);
         SpawnEnemyWave(enemiesToSpawn);
         WaveHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &AEOSActionGameState::WaveSpawn, 0.0f));
     }
@@ -280,6 +285,20 @@ bool AEOSActionGameState::GetKeyCard()
     }
 
     return false;
+}
+
+void AEOSActionGameState::LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad)
+{
+    if (!levelToLoad.IsValid())
+    {
+        levelToLoad.LoadSynchronous();
+    }
+
+    if (levelToLoad.IsValid())
+    {
+        const FName levelName = FName(*FPackageName::ObjectPathToPackageName(levelToLoad.ToString()));
+        GetWorld()->ServerTravel(levelName.ToString() + "?listen");
+    }
 }
 
 void AEOSActionGameState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

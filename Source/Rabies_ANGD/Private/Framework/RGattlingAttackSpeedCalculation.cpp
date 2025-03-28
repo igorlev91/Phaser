@@ -9,7 +9,7 @@
 
 float URGattlingAttackSpeedCalculation::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
 {
-    float BaseMagnitude = 0.5f;
+    float BaseMagnitude = 0.25f;
 
     const UAbilitySystemComponent* SourceASC = Spec.GetContext().GetOriginalInstigatorAbilitySystemComponent();
 

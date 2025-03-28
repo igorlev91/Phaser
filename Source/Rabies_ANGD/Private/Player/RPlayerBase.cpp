@@ -144,10 +144,10 @@ void ARPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		enhancedInputComp->BindAction(scopeInputAction, ETriggerEvent::Started, this, &ARPlayerBase::EnableScoping);
 		enhancedInputComp->BindAction(scopeInputAction, ETriggerEvent::Completed, this, &ARPlayerBase::DisableScoping);
 		enhancedInputComp->BindAction(scrollInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Scroll);
-		enhancedInputComp->BindAction(specialAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::TryActivateSpecialAttack);
-		enhancedInputComp->BindAction(ultimateAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::TryActivateUltimateAttack);
-		enhancedInputComp->BindAction(AbilityConfirmAction, ETriggerEvent::Triggered, this, &ARPlayerBase::ConfirmActionTriggered);
-		enhancedInputComp->BindAction(AbilityCancelAction, ETriggerEvent::Triggered, this, &ARPlayerBase::CancelActionTriggered);
+		enhancedInputComp->BindAction(specialAttackAction, ETriggerEvent::Started, this, &ARPlayerBase::TryActivateSpecialAttack);
+		enhancedInputComp->BindAction(specialAttackAction, ETriggerEvent::Completed, this, &ARPlayerBase::TryActivateSpecialAttack);
+		enhancedInputComp->BindAction(ultimateAttackAction, ETriggerEvent::Started, this, &ARPlayerBase::TryActivateUltimateAttack);
+		enhancedInputComp->BindAction(ultimateAttackAction, ETriggerEvent::Completed, this, &ARPlayerBase::TryActivateUltimateAttack);
 		enhancedInputComp->BindAction(InteractInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Interact);
 		enhancedInputComp->BindAction(PausingInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Pause);
 		enhancedInputComp->BindAction(LoadDebugInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::LoadDebug);
@@ -308,23 +308,25 @@ void ARPlayerBase::Scroll(const FInputActionValue& InputActionVal)
 
 void ARPlayerBase::TryActivateSpecialAttack()
 {
+	GetWorldTimerManager().ClearTimer(CameraLerpHandle);
 
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::SpecialAttack);
+}
+
+void ARPlayerBase::FinishSpecialAttack()
+{
+	//GetAbilitySystemComponent()->InputConfirm();
 }
 
 void ARPlayerBase::TryActivateUltimateAttack()
 {
-
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::UltimateAttack);
 }
 
-void ARPlayerBase::ConfirmActionTriggered()
+void ARPlayerBase::FinishUltimateAttack()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Confirmed"));
 	//GetAbilitySystemComponent()->InputConfirm();
-}
 
-void ARPlayerBase::CancelActionTriggered()
-{
-	//UE_LOG(LogTemp, Warning, TEXT("Cancelled"));
 	//GetAbilitySystemComponent()->InputCancel();
 }
 

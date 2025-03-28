@@ -177,13 +177,18 @@ void AEscapeToWin::UseKeycard_Implementation()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Door is opened, you escaped!"));
-		ChangeText("Access Granted.\nLeave the Facility?\n[F]", FLinearColor::Green);
+		ChangeText("Access Granted.\nLeaveing the Facility\n", FLinearColor::Green);
+
+		AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
+		if (!gameState)
+			return;
+
+		gameState->LeaveLevel();
 		
 		player->PlayerInteraction.Clear();
-		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::EndGame);
+		//player->PlayerInteraction.AddUObject(this, &AEscapeToWin::EndGame);
 	}
 }
-
 
 
 

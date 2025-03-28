@@ -119,6 +119,9 @@ void AItemChest::Server_OpenChest_Implementation()
 {
 	if (HasAuthority())
 	{
+		if (player == nullptr)
+			return;
+
 		if (ScrapPrice > player->GetCurrentScrap())
 		{
 			UE_LOG(LogTemp, Error, TEXT("Not Enough Scrap"));

@@ -21,7 +21,7 @@ URCharacterDefination* AEOSGameState::GetDefinationFromIndex(int index)
 
 void AEOSGameState::TryLoadIntoGame()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Loading..."));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Waiting for players..."));
 	if (PlayerArray.Num() >= 2)
 	{
 		LoadMapAndListen();
@@ -72,7 +72,6 @@ void AEOSGameState::NetMulticast_UpdateCharacterSelection_Implementation(const U
 
 void AEOSGameState::LoadMapAndListen_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Trying load into game"));
 	if (HasAuthority())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Loading into game"));
