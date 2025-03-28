@@ -18,7 +18,6 @@ void ARPlayerController::OnPossess(APawn* NewPawn)
 	PostPossessionSetup(NewPawn);
 	if (PlayerBase)
 	{
-		
 		//PlayerCharacter->InitAbilities();
 	}
 }

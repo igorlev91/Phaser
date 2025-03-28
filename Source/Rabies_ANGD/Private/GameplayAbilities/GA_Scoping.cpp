@@ -17,6 +17,12 @@
 UGA_Scoping::UGA_Scoping()
 {
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetScopingTag());
+
+	CancelAbilitiesWithTag.AddTag(URAbilityGenericTags::GetSpecialAttackActivationTag());
+	CancelAbilitiesWithTag.AddTag(URAbilityGenericTags::GetSpecialAttackAimingTag());
+
+	CancelAbilitiesWithTag.AddTag(URAbilityGenericTags::GetUltimateAttackActivationTag());
+	CancelAbilitiesWithTag.AddTag(URAbilityGenericTags::GetUltimateAttackAimingTag());
 }
 
 void UGA_Scoping::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

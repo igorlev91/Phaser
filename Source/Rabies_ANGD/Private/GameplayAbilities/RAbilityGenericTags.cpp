@@ -38,9 +38,29 @@ FGameplayTag URAbilityGenericTags::GetSpecialAttackActivationTag()
 	return FGameplayTag::RequestGameplayTag("ability.special.activate");
 }
 
+FGameplayTag URAbilityGenericTags::GetSpecialAttackAimingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.special.aiming");
+}
+
+FGameplayTag URAbilityGenericTags::GetSpecialAttackCooldown()
+{
+	return FGameplayTag::RequestGameplayTag("ability.special.cooldown");
+}
+
 FGameplayTag URAbilityGenericTags::GetUltimateAttackActivationTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.ultimate.activate");
+}
+
+FGameplayTag URAbilityGenericTags::GetUltimateAttackAimingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.ultimate.aiming");
+}
+
+FGameplayTag URAbilityGenericTags::GetUltimateAttackCooldown()
+{
+	return FGameplayTag::RequestGameplayTag("ability.ultimate.cooldown");
 }
 
 FGameplayTag URAbilityGenericTags::GetEndScopingTag()

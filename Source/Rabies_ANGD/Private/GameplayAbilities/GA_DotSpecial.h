@@ -32,10 +32,22 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	UAnimMontage* CastingMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
+	TSubclassOf<class ARTargetActor_DotSpecial> targetActorClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TArray<TSubclassOf<class UGameplayEffect>> AttackDamages;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim")
 	UAnimMontage* Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	TSubclassOf<class ARDot_SpecialProj> DotProjectile;
+
+	UFUNCTION()
+	void SendOffAttack(FGameplayEventData Payload);
+
+	UPROPERTY()
+	class ARPlayerBase* Player;
 };

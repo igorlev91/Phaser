@@ -71,6 +71,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
 	bool IsDead() const { return bDead; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool IsSpecialAiming() const { return bSpecialAiming; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool IsUltimateAiming() const { return bUltimateAiming; }
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
@@ -102,6 +108,9 @@ private:
 
 	bool bIsScoping;
 
+	bool bSpecialAiming;
+	bool bUltimateAiming;
+
 	bool bAttacking;
 	bool bDead;
 	bool bFlying;
@@ -109,6 +118,8 @@ private:
 
 	void AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	void SpecialAimingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	void UltimateAimingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void TiredFlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);

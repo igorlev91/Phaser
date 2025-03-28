@@ -33,6 +33,8 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 		if (OwnerASC)
 		{
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &URAnimInstanceBase::ScopingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetSpecialAttackAimingTag()).AddUObject(this, &URAnimInstanceBase::SpecialAimingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetUltimateAttackAimingTag()).AddUObject(this, &URAnimInstanceBase::UltimateAimingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAttackingTag()).AddUObject(this, &URAnimInstanceBase::AttackingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &URAnimInstanceBase::FlyingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetTiredFlyingTag()).AddUObject(this, &URAnimInstanceBase::TiredFlyingTagChanged);
@@ -84,6 +86,16 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 void URAnimInstanceBase::ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
 	bIsScoping = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::SpecialAimingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bSpecialAiming = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::UltimateAimingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bUltimateAiming = NewStackCount != 0;
 }
 
 void URAnimInstanceBase::FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)

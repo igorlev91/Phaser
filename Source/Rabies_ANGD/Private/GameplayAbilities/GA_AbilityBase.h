@@ -25,4 +25,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Visual")
 	UTexture2D* IconTexture;
+
+
 };

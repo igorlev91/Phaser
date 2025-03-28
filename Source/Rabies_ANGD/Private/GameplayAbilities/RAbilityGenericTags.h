@@ -24,7 +24,11 @@ public:
 	static FGameplayTag GetMeleeAttackCooldown();
 	static FGameplayTag GetRangedAttackCooldown();
 	static FGameplayTag GetSpecialAttackActivationTag();
+	static FGameplayTag GetSpecialAttackAimingTag();
+	static FGameplayTag GetSpecialAttackCooldown();
 	static FGameplayTag GetUltimateAttackActivationTag();
+	static FGameplayTag GetUltimateAttackAimingTag();
+	static FGameplayTag GetUltimateAttackCooldown();
 	static FGameplayTag GetScopingTag();
 	static FGameplayTag GetEndScopingTag();
 	static FGameplayTag GetAttackingTag();
