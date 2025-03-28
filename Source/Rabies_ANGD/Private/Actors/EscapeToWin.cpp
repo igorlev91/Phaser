@@ -169,7 +169,7 @@ void AEscapeToWin::CheckKeyCard_Implementation()
 
 void AEscapeToWin::UseKeycard_Implementation()
 {
-	if (!bHasBeatenBoss)
+	if (hasBeatenBoss <= 1)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Door is locked, defeat the boss."));
 		ChangeText("Access Denied.\nDeadlock Security - Online", FLinearColor::Red);
@@ -185,9 +185,11 @@ void AEscapeToWin::UseKeycard_Implementation()
 }
 
 
+
+
 void AEscapeToWin::SetActivatingExit()
 {
-	bHasBeatenBoss = true;
+	hasBeatenBoss = 0;
 }
 
 void AEscapeToWin::EndGame()
@@ -201,10 +203,15 @@ void AEscapeToWin::EndGame()
 	ChangeText("CONGRATULATIONS!\nYou have beaten the game!", FLinearColor::White);
 }
 
+void AEscapeToWin::UpdateEscapeToWin_Implementation()
+{
+	hasBeatenBoss += 1;
+}
+
 void AEscapeToWin::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(AEscapeToWin, bHasBeatenBoss, COND_None);
+	DOREPLIFETIME_CONDITION(AEscapeToWin, hasBeatenBoss, COND_None);
 	DOREPLIFETIME_CONDITION(AEscapeToWin, bStartBoss, COND_None);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(AEscapeToWin, currentUIText, COND_None, REPNOTIFY_Always);

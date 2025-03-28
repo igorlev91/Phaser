@@ -185,7 +185,7 @@ public:
 	void UpdateAITarget(AActor* newTargetActor);
 
 	UFUNCTION(NetMulticast, Unreliable, WithValidation)
-	void ClientHitScanResult(AActor* hitActor, FVector start, FVector end);
+	void ClientHitScanResult(AActor* hitActor, FVector start, FVector end, bool enemy);
 
 private:
 

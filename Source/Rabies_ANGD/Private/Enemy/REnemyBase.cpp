@@ -105,7 +105,7 @@ void AREnemyBase::DeadStatusUpdated(bool bIsDead)
 	if (bIsDead)
 	{
 		PlayAnimMontage(DeathMontage);
-		GetWorld()->GetTimerManager().SetTimer(DeathHandle, this, &AREnemyBase::DelayServerDeathRequest, 1.2f, false);
+		GetWorld()->GetTimerManager().SetTimer(DeathHandle, this, &AREnemyBase::DelayServerDeathRequest, deathTimer, false);
 	}
 }
 
@@ -116,7 +116,7 @@ void AREnemyBase::DelayServerDeathRequest()
 		AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
 		if (gameState == GetOwner())
 		{
-			gameState->SelectEnemy(this, bIsDeadlock);
+			gameState->SelectEnemy(this, bIsDeadlock, bIsDeadlockComponent);
 		}
 	}
 }

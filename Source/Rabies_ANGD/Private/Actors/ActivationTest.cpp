@@ -76,6 +76,6 @@ void AActivationTest::SetActivationCard()
 
 void AActivationTest::SetDefeatBoss()
 {
-	EscapeGame->bHasBeatenBoss = true;
+	EscapeGame->hasBeatenBoss = 2;
 }
 

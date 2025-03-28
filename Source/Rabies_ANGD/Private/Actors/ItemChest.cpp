@@ -158,6 +158,7 @@ void AItemChest::Server_OpenChest_Implementation()
 void AItemChest::UpdateChestOpened_Implementation()
 {
 	InteractWidget->SetVisibility(ESlateVisibility::Hidden);
+	ChestTopMesh->SetVisibility(false);
 	bWasOpened = true;
 }
 

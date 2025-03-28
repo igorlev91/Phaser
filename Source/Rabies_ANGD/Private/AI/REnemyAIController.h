@@ -22,6 +22,11 @@ public:
 	virtual void BeginPlay() override;
 	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const override;
 
+	UFUNCTION()
+	void TargetPerceptionUpdated(AActor* Target, FAIStimulus Stimulus);
+
+	bool bAutoSense;
+
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	
@@ -54,9 +59,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	FName TargetBlackboardKeyName = "Target";
-
-	UFUNCTION()
-	void TargetPerceptionUpdated(AActor* Target, FAIStimulus Stimulus);
 
 	UFUNCTION()
 	void TargetForgotton(AActor* Target);

@@ -33,6 +33,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	bool bIsDeadlock;
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	bool bIsDeadlockComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	float deathTimer = 1.2f;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "AI")
 	class UAIPerceptionStimuliSourceComponent* AIPerceptionSourceComp;
 

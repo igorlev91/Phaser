@@ -16,7 +16,7 @@ public:
 	AEscapeToWin();
 
 	UPROPERTY(Replicated)
-	bool bHasBeatenBoss = false;
+	int hasBeatenBoss = 0;
 
 	bool bHasKeyCard = false;
 
@@ -94,6 +94,9 @@ public:
 
 	UFUNCTION()
 	void EndGame();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void UpdateEscapeToWin();
 
 private:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; // need this when doing Replicated things

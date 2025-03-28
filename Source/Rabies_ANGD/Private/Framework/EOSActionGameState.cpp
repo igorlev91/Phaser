@@ -27,15 +27,12 @@ void AEOSActionGameState::BeginPlay()
 {
 	// this will be on server side
 
-    TArray<AActor*> EscapeToWin;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEscapeToWin::StaticClass(), EscapeToWin);
-    for (AActor* escape : EscapeToWin)
+    TArray<AActor*> EscapeToWinObj;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEscapeToWin::StaticClass(), EscapeToWinObj);
+    EscapeToWin = Cast<AEscapeToWin>(EscapeToWinObj[0]);
+    if (EscapeToWin)
     {
-        AEscapeToWin* escapeToWin = Cast<AEscapeToWin>(EscapeToWin[0]);
-        if (escapeToWin)
-        {
-            escapeToWin->SetOwner(this);
-        }
+        EscapeToWin->SetOwner(this);
     }
 
     TArray<AActor*> spawnLocations;
@@ -74,7 +71,12 @@ void AEOSActionGameState::SpawnEnemy_Implementation(int EnemyIDToSpawn, FVector 
     {
         FActorSpawnParameters SpawnParams;
         AREnemyBase* newEnemy = GetWorld()->SpawnActor<AREnemyBase>(EnemyLibrary[EnemyIDToSpawn], SpawnLocation, FRotator::ZeroRotator, SpawnParams);
-        newEnemy->SetOwner(this);
+        if (newEnemy == nullptr || this == nullptr)
+        {
+            
+            return;
+        }
+        newEnemy->SetOwner(this);             
         UAbilitySystemComponent* ASC = newEnemy->GetAbilitySystemComponent();
         ASC->SetOwnerActor(newEnemy);
         newEnemy->InitLevel(WaveLevel);
@@ -82,9 +84,11 @@ void AEOSActionGameState::SpawnEnemy_Implementation(int EnemyIDToSpawn, FVector 
     }
 }
 
-void AEOSActionGameState::SelectEnemy(AREnemyBase* selectedEnemy, bool isDeadlock)
+void AEOSActionGameState::SelectEnemy(AREnemyBase* selectedEnemy, bool isDeadlock, bool bIsDeadlockComponent)
 {
-    FVector deadlockLoc = selectedEnemy->GetActorLocation();
+    deadlockPos = selectedEnemy->GetActorLocation();
+    if (bIsDeadlockComponent)
+        EscapeToWin->UpdateEscapeToWin();
 
     for (int i = 0; i < AllEnemies.Num(); i++)
     {
@@ -180,7 +184,10 @@ void AEOSActionGameState::SpawnEnemyWave(int amountOfEnemies)
 
 void AEOSActionGameState::StartBossFight_Implementation(int enemyID)
 {
-    SpawnEnemy(enemyID, FVector(0, 0, 0));
+    if (enemyID == 1)
+        deadlockPos.X += 300;
+
+    SpawnEnemy(enemyID, deadlockPos);
     
     for (APlayerState* playerState : PlayerArray)
     {

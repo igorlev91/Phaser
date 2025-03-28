@@ -114,7 +114,7 @@ void AREnemyAIController::TargetPerceptionUpdated(AActor* Target, FAIStimulus St
 	if(TargetASC->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
 		return;
 
-	if (Stimulus.WasSuccessfullySensed())
+	if (Stimulus.WasSuccessfullySensed() || bAutoSense)
 	{
 		if (!GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName))
 		{
