@@ -5,6 +5,8 @@
 #include "Player/RPlayerBase.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
 #include "Framework/RItemDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/GameplayAbility.h"
@@ -76,6 +78,14 @@ void AItemPickup::PlayerPickupRequest_Implementation(ARPlayerBase* player)
 void AItemPickup::UpdateItemPickedup_Implementation()
 {
 	UE_LOG(LogTemp, Error, TEXT("Player picked up item"));
+	
+	Player->PickupAudio = ItemAsset->ItemAudio;
+
+	if (Player->PickupAudio)
+	{
+		Player->PlayPickupAudio();
+	}
+
 	//Player->AddItem(ItemAsset);
 	Destroy();
 }

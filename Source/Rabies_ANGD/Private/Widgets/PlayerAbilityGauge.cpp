@@ -29,7 +29,7 @@ void UPlayerAbilityGauge::SetupOwningAbilityCDO(const UGA_AbilityBase* OwningAbi
 		}
 
 		CooldownDuration = URAbilitySystemBlueprintLibrary::GetAbilityStaticCooldownDuration(AbilityCDO, OwnerASC);
-		UE_LOG(LogTemp, Error, TEXT("Setting up %f"), CooldownDuration);
+		//UE_LOG(LogTemp, Error, TEXT("Setting up %f"), CooldownDuration);
 
 		FNumberFormattingOptions formattingOptions;
 		formattingOptions.MaximumFractionalDigits = 2;

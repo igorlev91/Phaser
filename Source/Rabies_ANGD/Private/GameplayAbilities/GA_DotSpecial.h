@@ -50,4 +50,7 @@ private:
 
 	UPROPERTY()
 	class ARPlayerBase* Player;
+
+	UPROPERTY()
+	class UAbilityTask_PlayMontageAndWait* playTargettingMontageTask;
 };

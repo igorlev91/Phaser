@@ -3,17 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
-#include "GameplayEffectExecutionCalculation.h"
-
 #include "GameplayModMagnitudeCalculation.h"
-#include "RGattlingAttackSpeedCalculation.generated.h"
+#include "GameplayEffectExecutionCalculation.h"
+#include "AttributeSet.h"
+#include "RTex_Special_Cooldown.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class URGattlingAttackSpeedCalculation : public UGameplayModMagnitudeCalculation
+class URTex_Special_Cooldown : public UGameplayModMagnitudeCalculation
 {
 	GENERATED_BODY()
 	

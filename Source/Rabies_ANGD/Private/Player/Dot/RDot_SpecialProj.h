@@ -15,8 +15,14 @@ class ARDot_SpecialProj : public ARProjectileBase
 	GENERATED_BODY()
 
 private:
-	void HitCharacter(class ARCharacterBase* hitCharacter, bool isEnemy, int hitNumber);
+	void HitCharacter(class ARCharacterBase* usingCharacter, class ARCharacterBase* hitCharacter, bool isEnemy, int hitNumber);
+
+	TArray<TSubclassOf<class UGameplayEffect>> EffectsToApply;
+
+	TArray<class ARCharacterBase*> AlreadyHitCharacters;
+
+	void ApplyEffect(int whichEffect, ARCharacterBase* usingCharacter, ARCharacterBase* hitCharacter);
 	
 public:
-	void Init(class UGameplayEffect effectToApply);
+	void Init(TArray<TSubclassOf<class UGameplayEffect>> effectsToApply);
 };

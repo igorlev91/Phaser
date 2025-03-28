@@ -32,6 +32,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* InteractWidgetComp;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* InvalidScrapAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* ChestOpenAudio;
 
 	UPROPERTY()
 	class UChestInteractUI* InteractWidget;

@@ -280,4 +280,20 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void AddNewItem(class URItemDataAsset* newItemAsset);
+
+	/////////////////////////////////
+	/*           Audio             */
+	////////////////////////////////
+
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* JumpAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* PickupAudio;
+
+	void PlayPickupAudio();
+
 };

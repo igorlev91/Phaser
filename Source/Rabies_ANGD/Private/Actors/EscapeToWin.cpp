@@ -8,8 +8,10 @@
 #include "Framework/EOSPlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/WidgetComponent.h"
+#include "Components/AudioComponent.h"
 #include "Character/RCharacterBase.h"
 #include "Widgets/EndGameWidget.h"
+#include "Sound/SoundCue.h"
 #include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -37,6 +39,10 @@ AEscapeToWin::AEscapeToWin()
 
 	EndGameWidgetComp = CreateDefaultSubobject<UWidgetComponent>("End Game Widget Comp");
 	EndGameWidgetComp->SetupAttachment(GetRootComponent());
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->SetupAttachment(GetRootComponent());
+	AudioComp->bAutoActivate = false;
 
 }
 
@@ -99,6 +105,10 @@ void AEscapeToWin::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 
 	ChangeText("Insert Keycard?\n[F]", FLinearColor::White);
 
+	canPlay = true;
+
+	UE_LOG(LogTemp, Warning, TEXT("canPlay: %s"), canPlay ? TEXT("True") : TEXT("False"));
+	
 	player->PlayerInteraction.AddUObject(this, &AEscapeToWin::Interact);
 }
 
@@ -159,11 +169,26 @@ void AEscapeToWin::CheckKeyCard_Implementation()
 		player->PlayerInteraction.Clear();
 
 		ChangeText("ERROR!\nAccess Overrided.", FLinearColor::Red);
+
+		if (AudioComp && BossSpawnAudio && canPlay)
+		{
+			AudioComp->SetSound(BossSpawnAudio);
+			AudioComp->Play();
+		}
+
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("No keycard"));
 		ChangeText("No Keycard Detected.\nAccessed Denied.", FLinearColor::Red);
+
+		if (AudioComp && NoCardAudio && canPlay)
+		{
+			AudioComp->SetSound(NoCardAudio);
+			AudioComp->Play();
+		}
+
+		canPlay = false;
 	}
 }
 
@@ -173,11 +198,23 @@ void AEscapeToWin::UseKeycard_Implementation()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Door is locked, defeat the boss."));
 		ChangeText("Access Denied.\nDeadlock Security - Online", FLinearColor::Red);
+
+		if (AudioComp && BossNotDefeatedAudio && canPlay)
+		{
+			AudioComp->SetSound(BossNotDefeatedAudio);
+			AudioComp->Play();
+		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Door is opened, you escaped!"));
 		ChangeText("Access Granted.\nLeaveing the Facility\n", FLinearColor::Green);
+
+		if (AudioComp && BossDefeatedAudio && canPlay)
+		{
+			AudioComp->SetSound(BossDefeatedAudio);
+			AudioComp->Play();
+		}
 
 		AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
 		if (!gameState)
@@ -188,6 +225,8 @@ void AEscapeToWin::UseKeycard_Implementation()
 		player->PlayerInteraction.Clear();
 		//player->PlayerInteraction.AddUObject(this, &AEscapeToWin::EndGame);
 	}
+
+	canPlay = false;
 }
 
 

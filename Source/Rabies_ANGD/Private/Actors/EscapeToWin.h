@@ -43,9 +43,27 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* EndGameWidgetComp;
 
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
+
 	/*	Widgets	 */
 	UPROPERTY(Replicated)
 	class UEndGameWidget* EndGameUI;
+
+	/*	 Audio	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* NoCardAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* BossSpawnAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* BossNotDefeatedAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* BossDefeatedAudio;
+
+	bool canPlay;
 
 	//Transient - Reference to the widget
 

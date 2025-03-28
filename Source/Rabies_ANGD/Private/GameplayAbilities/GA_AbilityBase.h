@@ -18,13 +18,24 @@ public:
 	UGA_AbilityBase();
 
 	UTexture2D* GetIconTexture() const { return IconTexture; }
+	USoundCue* GetAbilityAudio() const { return AbilityAudio; }
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	TSubclassOf<class UGameplayModMagnitudeCalculation> CooldownCalculationClass;
 
 protected:
 	void SignalDamageStimuliEvent(FGameplayAbilityTargetDataHandle TargetHandle);
 	void ExecuteSpawnVFXCue(UParticleSystem* VFXToSpawn, float Size, const FVector& Location);
 
+
 	UPROPERTY(EditDefaultsOnly, Category = "Visual")
 	UTexture2D* IconTexture;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* AbilityAudio;
+
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
 
 
 };

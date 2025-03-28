@@ -88,12 +88,32 @@ void UGameplayUI::NativeConstruct()
 	if (RAbilitySystemComp)
 	{
 		TArray<const UGA_AbilityBase*> GrantedAbilities = RAbilitySystemComp->GetNonGenericAbilityCDOs();
+		int whichAttribute = 0;
 		for (const UGA_AbilityBase* GrantedAbility : GrantedAbilities)
 		{
 			UPlayerAbilityGauge* newAbilityGague = CreateWidget<UPlayerAbilityGauge>(this, AbilityGaugeClass);
 			UHorizontalBoxSlot* AbilitySlot = AbilityHorizontalBox->AddChildToHorizontalBox(newAbilityGague);
 			newAbilityGague->SetupOwningAbilityCDO(GrantedAbility, OwnerASC);
-			OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetRangedAttackCooldownReductionAttribute()).AddUObject(newAbilityGague, &UPlayerAbilityGauge::CooldownUpdate);
+			switch (whichAttribute)
+			{
+				default:
+					OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMeleeAttackCooldownReductionAttribute()).AddUObject(newAbilityGague, &UPlayerAbilityGauge::CooldownUpdate);
+					break;
+
+				case 1:
+					OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetRangedAttackCooldownReductionAttribute()).AddUObject(newAbilityGague, &UPlayerAbilityGauge::CooldownUpdate);
+					break;
+
+				case 2:
+					OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetAbilityCooldownReductionAttribute()).AddUObject(newAbilityGague, &UPlayerAbilityGauge::CooldownUpdate);
+					break;
+
+				case 3:
+					OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetUltimateCooldownReductionAttribute()).AddUObject(newAbilityGague, &UPlayerAbilityGauge::CooldownUpdate);
+					break;
+
+			}
+			whichAttribute++;
 			AbilitySlot->SetPadding(FMargin(5));
 		}
 	}

@@ -9,10 +9,15 @@
 #include "Particles/ParticleSystem.h"
 #include "Perception/AISense_Damage.h"
 
+#include "Components/AudioComponent.h"
+
 UGA_AbilityBase::UGA_AbilityBase()
 {
 	ActivationBlockedTags.AddTag(URAbilityGenericTags::GetDeadTag());
 	ActivationBlockedTags.AddTag(URAbilityGenericTags::GetUnActionableTag());
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->bAutoActivate = false;
 }
 
 void UGA_AbilityBase::SignalDamageStimuliEvent(FGameplayAbilityTargetDataHandle TargetHandle)

@@ -25,6 +25,7 @@
 
 void AEOSActionGameState::BeginPlay()
 {
+    Super::BeginPlay();
 	// this will be on server side
 
     TArray<AActor*> EscapeToWinObj;

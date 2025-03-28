@@ -6,6 +6,8 @@
 #include "Character/RCharacterBase.h"
 #include "Player/RPlayerBase.h"
 
+#include "Particles/ParticleSystem.h"
+#include "Perception/AISense_Damage.h"
 #include "Framework/EOSActionGameState.h"
 
 #include "GameplayAbilities/GA_AbilityBase.h"
@@ -40,6 +42,12 @@ ARProjectileBase::ARProjectileBase()
 	NiagaraEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraEffect"));
 	NiagaraEffect->SetupAttachment(ProjMesh);
 
+	// sphere radius
+	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
+	SphereCollider->SetupAttachment(GetRootComponent());
+	SphereCollider->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+
+
 	ProjectileComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComponent"));
 	ProjectileComponent->SetUpdatedComponent(ProjMesh);
 
@@ -51,6 +59,10 @@ ARProjectileBase::ARProjectileBase()
 void ARProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SphereCollider->OnComponentBeginOverlap.AddDynamic(this, &ARProjectileBase::OnOverlapBegin);
+	SphereCollider->OnComponentEndOverlap.AddDynamic(this, &ARProjectileBase::OnOverlapEnd);
+
 	if (bHasPhysics)
 	{
 		ProjectileComponent->ProjectileGravityScale = bGravityScale;
@@ -66,6 +78,16 @@ void ARProjectileBase::BeginPlay()
 	{
 		NiagaraEffect->Activate();
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(DestroyHandle, this, &ARProjectileBase::DestroySelf, lifeTime, false);
+}
+
+void ARProjectileBase::DestroySelf()
+{
+	if (IsValid(this)) // Ensure the actor is valid before destroying it
+	{
+		Destroy();
+	}
 }
 
 // Called every frame
@@ -73,15 +95,34 @@ void ARProjectileBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bShouldAccelerate == false)
+		return;
+
+	// Get the current velocity
+	FVector CurrentVelocity = ProjectileComponent->Velocity;
+
+	// Normalize the velocity to get the direction
+	FVector Direction = CurrentVelocity.GetSafeNormal();
+
+	// Calculate the force or impulse
+	FVector Force = Direction * accelerationStrength;
+	ProjectileComponent->Velocity += Force;
 }
 
 void ARProjectileBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	//UE_LOG(LogTemp, Error, TEXT("%s Hit Target"), *OverlappedComponent->GetName());
 	ARCharacterBase* hitCharacter = Cast<ARCharacterBase>(OtherActor);
 	if (!hitCharacter)
 	{
 		return;
 	}
+
+	if (!OwnedPlayer)
+		return;
+
+	if (!OwnedPlayer->HasAuthority())
+		return;
 
 	bool isEnemy = false;
 
@@ -89,9 +130,14 @@ void ARProjectileBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, 
 	if (hitEnemy)
 		isEnemy = true;
 
-	OnHitCharacter.Broadcast(hitCharacter, isEnemy, hitCharacters);
+	OnHitCharacter.Broadcast(OwnedPlayer, hitCharacter, isEnemy, hitCharacters);
 
 	hitCharacters++;
+
+	if (bDestroyOnhit)
+	{
+		DestroySelf();
+	}
 }
 
 void ARProjectileBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -103,4 +149,9 @@ void ARProjectileBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AA
 	}
 
 
+}
+
+void ARProjectileBase::InitOwningCharacter(ARCharacterBase* owningCharacter)
+{
+	OwnedPlayer = owningCharacter;
 }

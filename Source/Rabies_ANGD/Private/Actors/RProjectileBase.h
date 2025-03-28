@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "RProjectileBase.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHitCharacter, class ARCharacterBase* /*Hit Target*/, bool /* isEnemy */, int /* #target hit */);
+DECLARE_MULTICAST_DELEGATE_FourParams(FOnHitCharacter, class ARCharacterBase*, /*Using character*/ class ARCharacterBase* /*Hit Target*/, bool /* isEnemy */, int /* #target hit */);
 
 UCLASS()
 class ARProjectileBase : public AActor
@@ -14,6 +14,9 @@ class ARProjectileBase : public AActor
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(VisibleAnywhere, Category = "ChestDetail")
+	class USphereComponent* SphereCollider;
+
 	UPROPERTY(VisibleAnywhere, Category = "ProjectileStats")
 	class UStaticMeshComponent* ProjMesh;
 
@@ -32,7 +35,21 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "ProjectileStats")
 	float maxSpeed;
 
+	UPROPERTY(EditDefaultsOnly, Category = "ProjectileStats")
+	float accelerationStrength;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ProjectileStats")
+	bool bShouldAccelerate;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ProjectileStats")
+	bool bDestroyOnhit;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ProjectileStats")
+	float lifeTime;
+
 	int hitCharacters = 0;
+
+	FTimerHandle DestroyHandle;
 	
 public:	
 	FOnHitCharacter OnHitCharacter;
@@ -48,9 +65,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chest Detail")
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION(BlueprintCallable, Category = "ProjectileStats")
+	void InitOwningCharacter(class ARCharacterBase* owningCharacter);
+
+	class ARCharacterBase* OwnedPlayer;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void DestroySelf();
 
 public:	
 	// Called every frame

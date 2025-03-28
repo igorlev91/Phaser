@@ -41,5 +41,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	EItemRarity ItemRarity;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	class USoundCue* ItemAudio;
 	
 };

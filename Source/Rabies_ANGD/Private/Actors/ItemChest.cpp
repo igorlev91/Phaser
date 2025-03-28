@@ -25,6 +25,9 @@
 #include "Widgets/ChestInteractUI.h"
 #include "Components/WidgetComponent.h"
 
+#include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h"
+
 // Sets default values
 AItemChest::AItemChest()
 {
@@ -54,6 +57,10 @@ AItemChest::AItemChest()
 
 	InteractWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
 	InteractWidgetComp->SetupAttachment(GetRootComponent());
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->SetupAttachment(GetRootComponent());
+	AudioComp->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -125,12 +132,20 @@ void AItemChest::Server_OpenChest_Implementation()
 		if (ScrapPrice > player->GetCurrentScrap())
 		{
 			UE_LOG(LogTemp, Error, TEXT("Not Enough Scrap"));
+			
+			if (AudioComp && InvalidScrapAudio)
+			{
+				AudioComp->SetSound(InvalidScrapAudio);
+				AudioComp->Play();
+			}
+
 			return;
 		}
 
 		if (bWasOpened)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Already Opened"));
+
 			return;
 		}
 
@@ -162,6 +177,13 @@ void AItemChest::UpdateChestOpened_Implementation()
 {
 	InteractWidget->SetVisibility(ESlateVisibility::Hidden);
 	ChestTopMesh->SetVisibility(false);
+
+	if (AudioComp && ChestOpenAudio)
+	{
+		AudioComp->SetSound(ChestOpenAudio);
+		AudioComp->Play();
+	}
+
 	bWasOpened = true;
 }
 

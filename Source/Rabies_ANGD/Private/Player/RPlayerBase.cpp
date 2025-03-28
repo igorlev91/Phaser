@@ -42,6 +42,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SceneComponent.h"
 
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+
 ARPlayerBase::ARPlayerBase()
 {
 	viewPivot = CreateDefaultSubobject<USceneComponent>("Camera Pivot");
@@ -60,6 +63,10 @@ ARPlayerBase::ARPlayerBase()
 
 	ReviveUIWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Revive Widget Comp");
 	ReviveUIWidgetComp->SetupAttachment(GetRootComponent());
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->SetupAttachment(GetRootComponent());
+	AudioComp->bAutoActivate = false;
 
 	// sphere radius
 	ItemPickupCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Item Collider"));
@@ -246,6 +253,12 @@ void ARPlayerBase::ReleaseJump()
 
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndRevivingTag(), eventData);
 
+	if (AudioComp && JumpAudio)
+	{
+		AudioComp->SetSound(JumpAudio);
+		AudioComp->Play();
+	}
+
 	if (bInstantJump) return;
 
 	if (!IsFlying())
@@ -315,19 +328,17 @@ void ARPlayerBase::TryActivateSpecialAttack()
 
 void ARPlayerBase::FinishSpecialAttack()
 {
-	GetAbilitySystemComponent()->InputConfirm();
+	GetAbilitySystemComponent()->TargetConfirm();
 }
 
 void ARPlayerBase::TryActivateUltimateAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("stopping special attack"));
-	GetAbilitySystemComponent()->InputCancel();
-	//GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::UltimateAttack);
+	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::UltimateAttack);
 }
 
 void ARPlayerBase::FinishUltimateAttack()
 {
-	//GetAbilitySystemComponent()->InputConfirm();
+	GetAbilitySystemComponent()->TargetConfirm();
 
 	//GetAbilitySystemComponent()->InputCancel();
 }
@@ -425,6 +436,14 @@ void ARPlayerBase::TickCameraLocalOffset(FVector Goal)
 void ARPlayerBase::SetPausetoFalse()
 {
 	isPaused = false;
+}
+
+void ARPlayerBase::PlayPickupAudio()
+{
+	if (AudioComp && PickupAudio)
+	{
+		AudioComp->Play();
+	}
 }
 
 void ARPlayerBase::ServerSetPlayerReviveState_Implementation(bool state)

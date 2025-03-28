@@ -3,17 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
-#include "GameplayEffectExecutionCalculation.h"
-
 #include "GameplayModMagnitudeCalculation.h"
-#include "RDotSpecialCooldownCalculation.generated.h"
+#include "GameplayEffectExecutionCalculation.h"
+#include "AttributeSet.h"
+#include "RDot_RangedAttack_Cooldown.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class URDotSpecialCooldownCalculation : public UGameplayModMagnitudeCalculation
+class URDot_RangedAttack_Cooldown : public UGameplayModMagnitudeCalculation
 {
 	GENERATED_BODY()
 	
