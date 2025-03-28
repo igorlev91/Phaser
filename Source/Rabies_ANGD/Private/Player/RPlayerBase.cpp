@@ -8,6 +8,7 @@
 #include "Player/RPlayerController.h"
 #include "Framework/EOSPlayerState.h"
 
+#include "Actors/EscapeToWin.h"
 #include "Widgets/ReviveUI.h"
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
@@ -55,7 +56,7 @@ ARPlayerBase::ARPlayerBase()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(1080.f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 2.0f;
+	GetCharacterMovement()->AirControl = 1.0f;
 
 	ReviveUIWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Revive Widget Comp");
 	ReviveUIWidgetComp->SetupAttachment(GetRootComponent());
@@ -78,6 +79,7 @@ void ARPlayerBase::Tick(float DeltaTime)
 	{
 		//UE_LOG(LogTemp, Error, TEXT(""), *GetName());
 		viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
+		EOSPlayerState->Server_UpdatePlayerVelocity(GetCharacterMovement()->Velocity);
 		EOSPlayerState->Server_UpdateSocketLocations(GetMesh()->GetSocketLocation(RootAimingSocketName), GetMesh()->GetSocketLocation(RangedAttackSocketName));
 
 		if (bIsScoping)
@@ -329,7 +331,7 @@ void ARPlayerBase::CancelActionTriggered()
 void ARPlayerBase::Interact()
 {
 	PlayerInteraction.Broadcast();
-	ServerRequestInteraction(interactionChest); // if there's lag this might not work... Reconsider your options carefully
+	ServerRequestInteraction(interactionChest, escapeToWin); // if there's lag this might not work... Reconsider your options carefully
 }
 
 void ARPlayerBase::Pause()
@@ -450,11 +452,23 @@ void ARPlayerBase::ServerRequestPickupItem_Implementation(AItemPickup* itemPicku
 	}
 }
 
-void ARPlayerBase::ServerRequestInteraction_Implementation(AItemChest* Chest)
+void ARPlayerBase::ServerRequestInteraction_Implementation(AItemChest* Chest, AEscapeToWin* winPoint)
 {
 	if (Chest)
 	{
 		Chest->Server_OpenChest();
+	}
+
+	if (winPoint)
+	{
+		if (!winPoint->bStartBoss)
+		{
+			winPoint->CheckKeyCard();
+		}
+		else
+		{
+			winPoint->UseKeycard();
+		}
 	}
 }
 
@@ -475,6 +489,11 @@ AEOSPlayerState* ARPlayerBase::GetPlayerBaseState() // this will crash if someon
 void ARPlayerBase::SetInteractionChest(AItemChest* chest)
 {
 	interactionChest = chest;
+}
+
+void ARPlayerBase::SetInteractionWin(AEscapeToWin* winPoint)
+{
+	escapeToWin = winPoint;
 }
 
 void ARPlayerBase::SetItemPickup(AItemPickup* itemPickup, URItemDataAsset* itemAsset)

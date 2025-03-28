@@ -6,7 +6,8 @@
 #include "Framework/EOSPlayerState.h"
 
 #include "Framework/RItemDataAsset.h"
-
+#include "Enemy/REnemyBase.h"
+#include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Widgets/GameplayUI.h"
@@ -28,6 +29,19 @@ void ARPlayerController::AcknowledgePossession(APawn* NewPawn)
 	if (!HasAuthority())
 	{
 		PostPossessionSetup(NewPawn);
+	}
+}
+
+void ARPlayerController::AddBossEnemy(int level, AREnemyBase* bossEnemy)
+{
+	ImplimentBossEnemy(level, bossEnemy);
+}
+
+void ARPlayerController::ImplimentBossEnemy_Implementation(int level, AREnemyBase* bossEnemy)
+{
+	if (GameplayUI)
+	{
+		GameplayUI->AddEnemyBossHealth(level, bossEnemy);
 	}
 }
 

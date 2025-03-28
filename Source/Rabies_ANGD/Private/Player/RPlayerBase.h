@@ -51,6 +51,9 @@ public:
 	void SetInteractionChest(class AItemChest* chest);
 
 	UFUNCTION()
+	void SetInteractionWin(class AEscapeToWin* winPoint);
+
+	UFUNCTION()
 	void SetItemPickup(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);
 
 	UFUNCTION()
@@ -59,12 +62,14 @@ public:
 	UPROPERTY()
 	TArray<AActor*> nearbyFaintedActors;
 
+	class AEscapeToWin* escapeToWin;
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "PlayerDetail")
 	class USphereComponent* ItemPickupCollider;
 
 	class AItemChest* interactionChest;
+
 
 	UFUNCTION()
 	void DeadStatusUpdated(bool bIsDead);
@@ -78,6 +83,11 @@ public:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	bool bInRangeToRevive;
+
+	float DotFlyStamina = 1.0f;
+
+	UPROPERTY()
+	FVector PlayerVelocity;
 	
 	UPROPERTY(VisibleAnywhere, Category = "View")
 	USceneComponent* viewPivot;
@@ -257,7 +267,7 @@ private:
 	class AEOSPlayerState* EOSPlayerState;
 
 	UFUNCTION(Server, Reliable)
-	void ServerRequestInteraction(class AItemChest* Chest);
+	void ServerRequestInteraction(class AItemChest* Chest, class AEscapeToWin* winPoint);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestPickupItem(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);

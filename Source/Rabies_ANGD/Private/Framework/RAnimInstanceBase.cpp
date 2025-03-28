@@ -35,6 +35,7 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &URAnimInstanceBase::ScopingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAttackingTag()).AddUObject(this, &URAnimInstanceBase::AttackingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &URAnimInstanceBase::FlyingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetTiredFlyingTag()).AddUObject(this, &URAnimInstanceBase::TiredFlyingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetHoldingJump()).AddUObject(this, &URAnimInstanceBase::HoldingJumpTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetDeadTag()).AddUObject(this, &URAnimInstanceBase::DeathTagChanged);
 		}
@@ -52,6 +53,7 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	if (OwnerCharacter && OwnerMovementComp)
 	{
 		Speed = OwnerCharacter->GetVelocity().Length();
+		DotFlyStamina = Cast<ARPlayerBase>(OwnerCharacter)->DotFlyStamina;
 
 		FVector airVelocity = OwnerCharacter->GetVelocity();
 		airVelocity.Z = 0;
@@ -87,6 +89,11 @@ void URAnimInstanceBase::ScopingTagChanged(const FGameplayTag TagChanged, int32 
 void URAnimInstanceBase::FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
 	bFlying = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::TiredFlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bTiredFlying = NewStackCount != 0;
 }
 
 void URAnimInstanceBase::HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)

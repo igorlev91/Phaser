@@ -151,6 +151,11 @@ void ARCharacterBase::InitStatusHUD()
 		UE_LOG(LogTemp, Error, TEXT("%s NO ATTRIBUTE SET"), *GetName());
 	}
 
+	if (bBossHealthBar)
+	{
+		HealthBar->SetVisibility(ESlateVisibility::Hidden);
+	}
+
 	if (IsLocallyControlled())
 	{
 		if (GetController() && GetController()->IsPlayerController())
@@ -166,6 +171,14 @@ int ARCharacterBase::GetCurrentScrap()
 int ARCharacterBase::GetReviveSpeed()
 {
 	return AttributeSet->GetReviveSpeed();
+}
+
+bool ARCharacterBase::GetKeyCard()
+{
+	if (AttributeSet->GetKeyCard() >= 1)
+		return true;
+
+	return false;
 }
 
 void ARCharacterBase::Hitscan(float range, AEOSPlayerState* requestedPlayerState)
@@ -230,7 +243,6 @@ void ARCharacterBase::PlayMontage(UAnimMontage* MontageToPlay)
 
 void ARCharacterBase::StartDeath()
 {
-	//PlayMontage(DeathMontage);
 	//AbilitySystemComponent->ApplyGameplayEffect(DeathEffect);
 	GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Dead); // this does not apply the dead tag sadly to enemies I believe
 	//AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetDeadTag());
@@ -351,6 +363,18 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 	if (ChangeData.OldValue >= 1)
 	{
 		bHasDied = false;
+	}
+
+	if (ChangeData.NewValue > 0 && ChangeData.NewValue < ChangeData.OldValue && FlinchMontage != nullptr && AirFlinchMontage != nullptr)
+	{
+		if (bIsFlying)
+		{
+			ServerPlayAnimMontage(AirFlinchMontage);
+		}
+		else
+		{
+			ServerPlayAnimMontage(FlinchMontage);
+		}
 	}
 
 	if (HealthBar)

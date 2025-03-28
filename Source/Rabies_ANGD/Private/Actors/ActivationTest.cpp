@@ -30,7 +30,7 @@ void AActivationTest::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	SetUpEndGame();
+	SetUp();
 }
 
 // Called every frame
@@ -59,7 +59,7 @@ void AActivationTest::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 	}
 }
 
-void AActivationTest::SetUpEndGame()
+void AActivationTest::SetUp()
 {
 	EscapeGame = Cast<AEscapeToWin>(UGameplayStatics::GetActorOfClass(GetWorld(), AEscapeToWin::StaticClass()));
 

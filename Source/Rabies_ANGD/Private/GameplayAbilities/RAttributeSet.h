@@ -28,6 +28,7 @@ public:
 	ATTRIBUTE_ACCESSORS(URAttributeSet, NextLevelExp)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, PrevLevelExp)
 
+
 	ATTRIBUTE_ACCESSORS(URAttributeSet, Health)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, MaxHealth)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, MeleeAttackStrength)
@@ -58,6 +59,7 @@ public:
 	ATTRIBUTE_ACCESSORS(URAttributeSet, FuelCoolantEffectChance)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, HeaterEffectChance)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, UraniumEffectChance)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, KeyCard)
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
@@ -164,6 +166,10 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_UraniumEffectChance)
 	FGameplayAttributeData UraniumEffectChance;
+
+	UPROPERTY(ReplicatedUsing = OnRep_KeyCard)
+	FGameplayAttributeData KeyCard;
+
 	UFUNCTION()
 	void OnRep_Level(const FGameplayAttributeData& OldValue);
 
@@ -264,6 +270,10 @@ private:
 
 	UFUNCTION()
 	void OnRep_UraniumEffectChance(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_KeyCard(const FGameplayAttributeData& OldValue);
+
 
 	virtual void GetLifetimeReplicatedProps(TArray< class FLifetimeProperty >& OutLifetimeProps) const override;
 };

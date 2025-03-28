@@ -83,6 +83,11 @@ FGameplayTag URAbilityGenericTags::GetFlyingTag()
 	return FGameplayTag::RequestGameplayTag("ability.passive.flying");
 }
 
+FGameplayTag URAbilityGenericTags::GetTiredFlyingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.tiredFlying");
+}
+
 FGameplayTag URAbilityGenericTags::GetTakeOffDelayTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.passive.TakeOffDelay");

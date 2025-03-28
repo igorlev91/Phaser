@@ -26,6 +26,7 @@ void UPatrollingComponent::BeginPlay()
 	{
 		newPoints.Add(Cast<ATargetPoint>(point));
 	}
+	RandomizeArray(newPoints);
 	PatrolPoints = newPoints;
 }
 
@@ -36,3 +37,18 @@ const ATargetPoint* UPatrollingComponent::GetNextPatrolPoint()
 
 	return NextPatrolPoint;
 }
+
+void UPatrollingComponent::RandomizeArray(TArray<ATargetPoint*>& Array)
+{
+	const int32 LastIndex = Array.Num() - 1;
+
+	for (int32 i = LastIndex; i > 0; --i)
+	{
+		// Get a random index in the range [0, i]
+		int32 RandomIndex = FMath::RandRange(0, i);
+
+		// Swap the current element with the random element
+		Array.Swap(i, RandomIndex);
+	}
+}
+

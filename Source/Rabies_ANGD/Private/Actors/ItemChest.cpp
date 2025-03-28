@@ -32,7 +32,7 @@ AItemChest::AItemChest()
 	PrimaryActorTick.bCanEverTick = false;
 
 	bReplicates = true;
-	SetReplicates(true);
+	//SetReplicates(true);
 
 	ChestBottomMesh = CreateDefaultSubobject<UStaticMeshComponent>("Chest Bottom Mesh");
 	ChestBottomMesh->SetupAttachment(GetRootComponent());
@@ -95,7 +95,7 @@ void AItemChest::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* 
 	}
 
 	bWithinInteraction = false;
-	InteractWidget->SetVisibility(ESlateVisibility::Hidden);
+	InteractWidget->SetVisibility(ESlateVisibility::Collapsed);
 
 	player->PlayerInteraction.Clear();
 }
@@ -104,7 +104,7 @@ void AItemChest::SetUpUI(bool SetInteraction)
 {
 	InteractWidget = Cast<UChestInteractUI>(InteractWidgetComp->GetUserWidgetObject());
 	InteractWidget->SetCostText(ScrapPrice);
-	InteractWidget->SetVisibility(ESlateVisibility::Hidden);
+	InteractWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void AItemChest::Interact()

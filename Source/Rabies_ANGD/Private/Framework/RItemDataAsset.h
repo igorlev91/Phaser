@@ -11,7 +11,8 @@ enum class EItemRarity : uint8
 {
 	Common, // yellow stat changers
 	Uncommon, // green
-	Rare // blue
+	Rare, // blue
+	Unique
 };
 
 /**

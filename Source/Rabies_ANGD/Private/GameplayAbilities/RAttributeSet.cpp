@@ -222,6 +222,11 @@ void URAttributeSet::OnRep_UraniumEffectChance(const FGameplayAttributeData& Old
 	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, UraniumEffectChance, OldValue);
 }
 
+void URAttributeSet::OnRep_KeyCard(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, KeyCard, OldValue);
+}
+
 void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -230,6 +235,7 @@ void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Exp, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, NextLevelExp, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, PrevLevelExp, COND_None, REPNOTIFY_Always);
+
 
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
@@ -266,4 +272,6 @@ void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, FuelCoolantEffectChance, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, HeaterEffectChance, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, UraniumEffectChance, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, KeyCard, COND_None, REPNOTIFY_Always);
 }

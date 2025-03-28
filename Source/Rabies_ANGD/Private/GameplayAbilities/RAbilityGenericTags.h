@@ -33,6 +33,7 @@ public:
 	static FGameplayTag GetEndAttackTag();
 	static FGameplayTag GetUnActionableTag();
 	static FGameplayTag GetFlyingTag();
+	static FGameplayTag GetTiredFlyingTag();
 	static FGameplayTag GetTakeOffDelayTag();
 	static FGameplayTag GetEndTakeOffChargeTag();
 	static FGameplayTag GetApplyGravityJump();

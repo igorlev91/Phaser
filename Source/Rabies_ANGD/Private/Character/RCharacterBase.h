@@ -53,6 +53,11 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void CharacterShootParticle(FVector startPos, FVector endPos, FRotator startForward);
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	bool bBossHealthBar;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName bBossName;
 
 protected:
 
@@ -76,6 +81,9 @@ public:
 	UFUNCTION()
 	int GetReviveSpeed();
 
+	UFUNCTION()
+	bool GetKeyCard();
+
 	FName RangedAttackSocketName = TEXT("Ranged_Socket");
 	FName RootAimingSocketName = TEXT("RootAiming_Socket");
 
@@ -84,6 +92,12 @@ public:
 	FORCEINLINE bool IsFlying() const { return bIsFlying; }
 	FORCEINLINE bool IsTakeOffDelay() const { return bTakeOffDelay; }
 	FORCEINLINE bool IsHoldingJump() const { return bHoldingJump; }
+
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	UAnimMontage* DeathMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	UAnimMontage* ReviveMontage;
 
 private:
 	bool bHasDied;
@@ -98,11 +112,12 @@ private:
 	void StartDeath();
 	void DeathTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 
-	UPROPERTY(EditDefaultsOnly, Category = "Death")
-	UAnimMontage* DeathMontage;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Death")
-	UAnimMontage* ReviveMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Damaged")
+	UAnimMontage* FlinchMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damaged")
+	UAnimMontage* AirFlinchMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
 	TSubclassOf<UGameplayEffect> DeathEffect;

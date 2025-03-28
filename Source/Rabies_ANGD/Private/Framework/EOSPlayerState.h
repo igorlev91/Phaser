@@ -36,8 +36,17 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_ProcessDotFly(ARPlayerBase* player);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_ProcessDotFlyingStamina(float newValue);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_UpdatePlayerVelocity(FVector velocity);
+
+	UFUNCTION(Client, Reliable)
 	void Server_RevivePlayer();
+
+	UFUNCTION(Server, Reliable)
+	void Server_CreateBossHealth(int level, class AREnemyBase* enemy);
 
 	UFUNCTION()
 	FRotator GetHitscanRotator() { return hitscanRotation; }
@@ -67,9 +76,21 @@ private:
 
 	UPROPERTY(Replicated)
 	FRotator hitscanRotation;
+
+	UPROPERTY(replicatedUsing = OnRep_PlayerVelocity)
+	FVector playerVelocity;
+
+	UFUNCTION()
+	void OnRep_PlayerVelocity();
 	
 	UPROPERTY(replicatedUsing = OnRep_HitScanLocation)
 	FVector hitscanLocation;
+
+	UPROPERTY(replicatedUsing = OnRep_DotFlyStamina)
+	float dotFlyStamina = 1.0f;
+
+	UFUNCTION()
+	void OnRep_DotFlyStamina();
 
 	UPROPERTY(Replicated)
 	FVector RootAiming_SocketLocation;

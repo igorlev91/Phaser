@@ -34,6 +34,12 @@ public:
 	UFUNCTION()
 	void AddItem(class URItemDataAsset* itemAsset);
 
+	UFUNCTION()
+	void AddEnemyBossHealth(int level, class AREnemyBase* bossEnemy);
+
+	UFUNCTION()
+	void RemoveBossHealthFromUI(class UBossHealthBar* barToRemove);
+
 private:
 
 	//************************//
@@ -45,6 +51,15 @@ private:
 
 	UFUNCTION()
 	void DeadTimer(float timeRemaining);
+
+	UPROPERTY(meta = (BindWidget))
+	class UVerticalBox* BossVerticalBox;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Lobby")
+	TSubclassOf<class UBossHealthBar> BossHealthClass;
+
+	UPROPERTY()
+	TArray<class UBossHealthBar*> BossHealthBars;
 
 	UPROPERTY(meta = (BindWidget))
 	class UVerticalBox* DownTimeBox;

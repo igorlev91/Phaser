@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 
 #include "Widgets/PlayerItemInventory.h"
+#include "Widgets/BossHealthBar.h"
 
 #include "Framework/RItemDataAsset.h"
 
@@ -25,7 +26,7 @@
 
 #include "Widgets/ChageBar.h"
 #include "Components/ProgressBar.h"
-
+#include "Enemy/REnemyBase.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 
@@ -146,6 +147,20 @@ void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 		PlayerItemInventory->AddItem(itemAsset);
 	}
 }
+
+void UGameplayUI::AddEnemyBossHealth(int level, AREnemyBase* bossEnemy)
+{
+	UBossHealthBar* enemyBoss = CreateWidget<UBossHealthBar>(this, BossHealthClass);
+	enemyBoss->Init(this, level, bossEnemy);
+	BossVerticalBox->AddChild(enemyBoss);
+}
+
+void UGameplayUI::RemoveBossHealthFromUI(UBossHealthBar* barToRemove)
+{
+	BossVerticalBox->RemoveChild(barToRemove);
+	barToRemove = nullptr;
+}
+
 
 void UGameplayUI::DeadStatusUpdated(bool bIsDead)
 {

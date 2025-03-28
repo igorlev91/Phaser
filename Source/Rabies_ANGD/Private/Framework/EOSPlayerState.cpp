@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Player/RPlayerBase.h"
 #include "Framework/EOSGameState.h"
+#include "Player/RPlayerController.h"
 #include "Framework/RCharacterDefination.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
@@ -88,6 +89,19 @@ bool AEOSPlayerState::Server_UpdateSocketLocations_Validate(FVector rootAimingLo
 	return true;
 }
 
+void AEOSPlayerState::Server_CreateBossHealth_Implementation(int level, class AREnemyBase* enemy)
+{
+	if (HasAuthority())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Has Auth"));
+		if (Player == nullptr)
+			return;
+
+		UE_LOG(LogTemp, Error, TEXT("Getting in"));
+		Player->playerController->AddBossEnemy(level, enemy);
+	}
+}
+
 ARPlayerBase* AEOSPlayerState::GetPlayer()
 {
 	return Player;
@@ -102,8 +116,15 @@ void AEOSPlayerState::OnRep_HitScanLocation()
 {
 	if (Player == nullptr)
 		return;
+
 	Player->viewPivot->SetRelativeLocation(hitscanLocation);
 }
+
+void AEOSPlayerState::OnRep_PlayerVelocity()
+{
+	Player->PlayerVelocity = playerVelocity;
+}
+
 
 void AEOSPlayerState::Server_ProcessDotFly_Implementation(ARPlayerBase* player)
 {
@@ -117,11 +138,55 @@ bool AEOSPlayerState::Server_ProcessDotFly_Validate(ARPlayerBase* player)
 	return true;
 }
 
+void AEOSPlayerState::Server_ProcessDotFlyingStamina_Implementation(float newValue)
+{
+	if (Player == nullptr)
+		return;
+
+	dotFlyStamina = newValue;
+	Player->DotFlyStamina = dotFlyStamina;
+}
+
+bool AEOSPlayerState::Server_ProcessDotFlyingStamina_Validate(float newValue)
+{
+	return true;
+}
+
+void AEOSPlayerState::OnRep_DotFlyStamina()
+{
+	if (Player == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s Getting player"), *GetName());
+		Player = Cast<ARPlayerBase>(GetPawn());
+		return;
+	}
+
+	Player->DotFlyStamina = dotFlyStamina;
+}
+
+void AEOSPlayerState::Server_UpdatePlayerVelocity_Implementation(FVector velocity)
+{
+	if (Player == nullptr)
+		return;
+
+	playerVelocity = velocity;
+	Player->PlayerVelocity = playerVelocity;
+}
+
+bool AEOSPlayerState::Server_UpdatePlayerVelocity_Validate(FVector velocity)
+{
+	return true;
+}
+
+
 void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, Player, COND_None);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, playerVelocity, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, dotFlyStamina, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, SelectedCharacter, COND_None, REPNOTIFY_Always);
 

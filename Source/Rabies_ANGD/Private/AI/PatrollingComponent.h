@@ -23,6 +23,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Patrolling")
 	TArray<ATargetPoint*> PatrolPoints;
 
+	void RandomizeArray(TArray<ATargetPoint*>& Array);
+
 	int NextPatrolPointIndex = 0;
 
 protected:

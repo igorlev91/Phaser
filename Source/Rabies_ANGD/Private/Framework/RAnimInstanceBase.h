@@ -61,6 +61,9 @@ public:
 	bool GetFlying() const { return bFlying && bIsJumping; }
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool GetTiredFlying() const { return DotFlyStamina <= 0 && bIsJumping; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
 	bool IsMovingInAir() const { return AirSpeed >= 300; }
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
@@ -85,6 +88,7 @@ private:
 	const UCharacterMovementComponent* OwnerMovementComp;
 
 	float Speed;
+	float DotFlyStamina;
 	float AirSpeed;
 	bool bIsJumping;
 	bool bHoldingJump;
@@ -101,10 +105,12 @@ private:
 	bool bAttacking;
 	bool bDead;
 	bool bFlying;
+	bool bTiredFlying;
 
 	void AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	void TiredFlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void HoldingJumpTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void DeathTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 };

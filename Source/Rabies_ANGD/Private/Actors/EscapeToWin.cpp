@@ -5,16 +5,24 @@
 #include "Player/RPlayerBase.h"
 #include "Components/SphereComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Framework/EOSPlayerState.h"
+#include "Net/UnrealNetwork.h"
 #include "Components/WidgetComponent.h"
+#include "Character/RCharacterBase.h"
 #include "Widgets/EndGameWidget.h"
+#include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Framework/EOSActionGameState.h"
 
 // Sets default values
 AEscapeToWin::AEscapeToWin()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+
+	bReplicates = true;
+	//SetReplicates(true);
 
 	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
 	RootComponent = SphereCollider;
@@ -32,12 +40,43 @@ AEscapeToWin::AEscapeToWin()
 
 }
 
+void AEscapeToWin::Interact()
+{
+	if (player == nullptr)
+		return;
+
+	player->SetInteractionWin(this);
+}
+
 // Called when the game starts or when spawned
 void AEscapeToWin::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetUpEndGame();
+}
+
+void AEscapeToWin::OnRep_CurrentText()
+{
+	EndGameUI->UpdateText(FText::FromString(currentUIText));
+}
+
+void AEscapeToWin::OnRep_CurrentColor()
+{
+	EndGameUI->UpdateTextColor(currentUIColor);
+}
+
+void AEscapeToWin::ChangeText_Implementation(const FString& newText, FLinearColor newColor)
+{
+	if (EndGameUI == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No UI"));
+		return;
+	}
+	currentUIText = newText;
+	currentUIColor = newColor;
+	EndGameUI->UpdateText(FText::FromString(currentUIText));
+	EndGameUI->UpdateTextColor(currentUIColor);
 }
 
 // Called every frame
@@ -55,21 +94,12 @@ void AEscapeToWin::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Try to Escape?"));
-	EndGameUI->SetVisibility(ESlateVisibility::Visible);
-	EndGameUI->UpdateText(FText::FromString("Insert Keycard?\n[F]"));
-	EndGameUI->UpdateTextColor(FLinearColor::White);
+	if(EndGameUI)
+		EndGameUI->SetVisibility(ESlateVisibility::Visible);
 
-	if (!bStartBoss)
-	{
-		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::CheckKeyCard);
-		return;
-	}
-	else
-	{
-		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::UseKeycard);
-		return;
-	}
+	ChangeText("Insert Keycard?\n[F]", FLinearColor::White);
+
+	player->PlayerInteraction.AddUObject(this, &AEscapeToWin::Interact);
 }
 
 void AEscapeToWin::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -81,62 +111,79 @@ void AEscapeToWin::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 		return;
 	}
 
-	EndGameUI->SetVisibility(ESlateVisibility::Collapsed);
+	if (EndGameUI)
+		EndGameUI->SetVisibility(ESlateVisibility::Collapsed);
+
 	player->PlayerInteraction.Clear();
 }
 
-void AEscapeToWin::SetUpEndGame()
+void AEscapeToWin::SetUpEndGame_Implementation()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Set up"));
 	EndGameUI = Cast<UEndGameWidget>(EndGameWidgetComp->GetUserWidgetObject());
 	EndGameUI->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void AEscapeToWin::CheckKeyCard()
+void AEscapeToWin::CheckKeyCard_Implementation()
 {
 	//Check to see if player has keycard
+	AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
+	if (!gameState)
+		return;
+
+	if (bHasKeyCard == false)
+	{
+		for (APlayerState* playerState : gameState->PlayerArray)
+		{
+			if (playerState && playerState->GetPawn())
+			{
+				ARPlayerBase* checkingPlayer = Cast<ARPlayerBase>(playerState->GetPawn());
+				if (checkingPlayer)
+				{
+					if (checkingPlayer->GetKeyCard())
+					{
+						bHasKeyCard = true;
+						break;
+					}
+
+				}
+			}
+		}
+	}
 
 	if (bHasKeyCard == true)
 	{
-		SpawnBoss();
+		gameState->StartBossFight(0);
+		bStartBoss = true;
+
+		player->PlayerInteraction.Clear();
+
+		ChangeText("ERROR!\nAccess Overrided.", FLinearColor::Red);
 	}
 	else
 	{
-		EndGameUI->UpdateText(FText::FromString("No Keycard Detected.\nAccessed Denied."));
-		EndGameUI->UpdateTextColor(FLinearColor::Red);
+		UE_LOG(LogTemp, Error, TEXT("No keycard"));
+		ChangeText("No Keycard Detected.\nAccessed Denied.", FLinearColor::Red);
 	}
 }
 
-void AEscapeToWin::SpawnBoss()
-{
-	UE_LOG(LogTemp, Error, TEXT("Spawning Boss"));
-	bStartBoss = true;
-
-	player->PlayerInteraction.Clear();
-
-	EndGameUI->UpdateText(FText::FromString("ERROR!\nAccess Overrided."));
-	EndGameUI->UpdateTextColor(FLinearColor::Red);
-	
-	//Spawn Boss into the world
-}
-
-void AEscapeToWin::UseKeycard()
+void AEscapeToWin::UseKeycard_Implementation()
 {
 	if (!bHasBeatenBoss)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Door is locked, defeat the boss."));
-		EndGameUI->UpdateText(FText::FromString("Access Denied.\nDeadlock Security - Online"));
-		EndGameUI->UpdateTextColor(FLinearColor::Red);
+		ChangeText("Access Denied.\nDeadlock Security - Online", FLinearColor::Red);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Door is opened, you escaped!"));
-		EndGameUI->UpdateText(FText::FromString("Access Granted.\nLeave the Facility?\n[F]"));
-		EndGameUI->UpdateTextColor(FLinearColor::Green);
+		ChangeText("Access Granted.\nLeave the Facility?\n[F]", FLinearColor::Green);
 		
 		player->PlayerInteraction.Clear();
 		player->PlayerInteraction.AddUObject(this, &AEscapeToWin::EndGame);
 	}
 }
+
 
 void AEscapeToWin::SetActivatingExit()
 {
@@ -151,6 +198,16 @@ void AEscapeToWin::EndGame()
 	player->PlayerInteraction.Clear();
 
 	//Whatever needs to be done for the ending, I am not sure exactly what they want
-	EndGameUI->UpdateText(FText::FromString("CONGRATULATIONS!\nYou have beaten the game!"));
-	EndGameUI->UpdateTextColor(FLinearColor::White);
+	ChangeText("CONGRATULATIONS!\nYou have beaten the game!", FLinearColor::White);
+}
+
+void AEscapeToWin::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AEscapeToWin, bHasBeatenBoss, COND_None);
+	DOREPLIFETIME_CONDITION(AEscapeToWin, bStartBoss, COND_None);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(AEscapeToWin, currentUIText, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AEscapeToWin, currentUIColor, COND_None, REPNOTIFY_Always);
+
 }

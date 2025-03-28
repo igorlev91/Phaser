@@ -15,11 +15,15 @@ public:
 	// Sets default values for this actor's properties
 	AEscapeToWin();
 
+	UPROPERTY(Replicated)
 	bool bHasBeatenBoss = false;
+
 	bool bHasKeyCard = false;
 
-protected:
+	UPROPERTY(Replicated)
 	bool bStartBoss = false;
+
+protected:
 	bool bHasWonGame = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Escape")
@@ -30,13 +34,17 @@ protected:
 
 
 private:
+	UFUNCTION()
+	void Interact();
+
+
 
 	/*	Widget Compositions	 */
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* EndGameWidgetComp;
 
 	/*	Widgets	 */
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	class UEndGameWidget* EndGameUI;
 
 	//Transient - Reference to the widget
@@ -46,9 +54,30 @@ private:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(replicatedUsing = OnRep_CurrentText)
+	FString currentUIText;
+
+	UPROPERTY(replicatedUsing = OnRep_CurrentColor)
+	FLinearColor currentUIColor;
+
+	UFUNCTION()
+	void OnRep_CurrentText();
+
+	UFUNCTION()
+	void OnRep_CurrentColor();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void ChangeText(const FString& newText, FLinearColor newColor);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
+	void UseKeycard();
+
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
+	void CheckKeyCard();
 
 	UFUNCTION(BlueprintCallable, Category = "Escape")
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -57,17 +86,8 @@ public:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	/*	UI Setup  */
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Client, Unreliable)
 	void SetUpEndGame();
-
-	UFUNCTION()
-	void CheckKeyCard();
-
-	UFUNCTION()
-	void SpawnBoss();
-
-	UFUNCTION()
-	void UseKeycard();
 
 	UFUNCTION()
 	void SetActivatingExit();
@@ -75,5 +95,7 @@ public:
 	UFUNCTION()
 	void EndGame();
 
+private:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; // need this when doing Replicated things
 
 };

@@ -30,6 +30,8 @@ public:
 
 private:
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	bool bIsDeadlock;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "AI")
 	class UAIPerceptionStimuliSourceComponent* AIPerceptionSourceComp;

@@ -63,6 +63,7 @@ void AREnemyBase::InitLevel_Implementation(int level)
 	if (HasAuthority())
 	{
 		AILevel = level;
+		ServerPlayAnimMontage(ReviveMontage);
 		GetWorld()->GetTimerManager().SetTimer(LevelHandle, this, &AREnemyBase::CommitLevel, 0.1f, false);
 	}
 }
@@ -103,7 +104,8 @@ void AREnemyBase::DeadStatusUpdated(bool bIsDead)
 
 	if (bIsDead)
 	{
-		GetWorld()->GetTimerManager().SetTimer(DeathHandle, this, &AREnemyBase::DelayServerDeathRequest, 0.5f, false);
+		PlayAnimMontage(DeathMontage);
+		GetWorld()->GetTimerManager().SetTimer(DeathHandle, this, &AREnemyBase::DelayServerDeathRequest, 1.2f, false);
 	}
 }
 
@@ -114,7 +116,7 @@ void AREnemyBase::DelayServerDeathRequest()
 		AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
 		if (gameState == GetOwner())
 		{
-			gameState->SelectEnemy(this);
+			gameState->SelectEnemy(this, bIsDeadlock);
 		}
 	}
 }

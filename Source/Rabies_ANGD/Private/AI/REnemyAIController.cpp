@@ -63,7 +63,9 @@ void AREnemyAIController::BeginPlay()
 	SetGenericTeamId(254);
 
 	if (BehaviorTree)
+	{
 		RunBehaviorTree(BehaviorTree);
+	}
 
 	AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AREnemyAIController::TargetPerceptionUpdated);
 	AIPerceptionComponent->OnTargetPerceptionForgotten.AddDynamic(this, &AREnemyAIController::TargetForgotton);

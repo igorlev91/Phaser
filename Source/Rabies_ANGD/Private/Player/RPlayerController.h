@@ -36,10 +36,16 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_RequestRevive(AEOSPlayerState* TargetPlayerState);
 
+	UFUNCTION()
+	void AddBossEnemy(int level, class AREnemyBase* bossEnemy);
+
 private:
 	void PostPossessionSetup(APawn* NewPawn);
 
 	void CreateGameplayUI();
+
+	UFUNCTION(Client, Reliable)
+	void ImplimentBossEnemy(int level, class AREnemyBase* bossEnemy);
 
 	UPROPERTY()
 	class ARPlayerBase* PlayerBase;

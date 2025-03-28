@@ -25,6 +25,9 @@ private:
 	TSubclassOf<class UGameplayEffect> FlyingSpeedClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> GravityFallClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> GravityJumpClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim")
@@ -32,6 +35,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim")
 	UAnimMontage* HardLandingMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Anim")
+	UAnimMontage* TiredFall;
+
+	bool inFall;
 
 	UFUNCTION()
 	void StopFlying();
@@ -62,5 +70,6 @@ private:
 	class ARPlayerBase* Player;
 
 	FActiveGameplayEffectHandle FlyingSpeedEffectHandle;
+	FActiveGameplayEffectHandle GravityFallEffectHandle;
 	FActiveGameplayEffectHandle GravityJumpEffectHandle;
 };
