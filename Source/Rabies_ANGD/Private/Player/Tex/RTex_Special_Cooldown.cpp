@@ -9,7 +9,7 @@
 
 float URTex_Special_Cooldown::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
 {
-    float baseSpeed = 1.0f;
+    float baseSpeed = 12.0f;
 
     const UAbilitySystemComponent* SourceASC = Spec.GetContext().GetOriginalInstigatorAbilitySystemComponent();
 

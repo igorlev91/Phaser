@@ -93,16 +93,15 @@ void UGA_TexRanged::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVe
 
 void UGA_TexRanged::Fire()
 {
-	if (CheckCooldown(cooldownHandle, actorInfo))
+	if (K2_HasAuthority())
 	{
-		if (K2_HasAuthority())
+		if (Player)
 		{
-			if (Player)
-			{
-				Player->Hitscan(6000, Player->GetPlayerBaseState());
+			Player->Hitscan(6000, Player->GetPlayerBaseState());
 
-				StartDurationAudioEffect();
-			}
+			StartDurationAudioEffect();
+
+			K2_EndAbility();
 		}
 	}
 }

@@ -35,6 +35,9 @@ private:
 	UPROPERTY()
 	FGameplayAbilitySpecHandle cooldownHandle;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* ShootingMontage;
+
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> RangedDamage;
