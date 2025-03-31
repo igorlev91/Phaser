@@ -20,7 +20,7 @@
 
 #include "GameplayAbilities/RAbilitySystemBlueprintLibrary.h"
 
-void UPlayerAbilityGauge::SetupOwningAbilityCDO(const UGA_AbilityBase* OwningAbilityCDO, UAbilitySystemComponent* OwnerASC)
+void UPlayerAbilityGauge::SetupOwningAbilityCDO(const UGA_AbilityBase* OwningAbilityCDO, UAbilitySystemComponent* OwnerASC, UTexture* inputButton)
 {
 	AbilityCDO = OwningAbilityCDO;
 	MyOwnerASC = OwnerASC;
@@ -37,6 +37,10 @@ void UPlayerAbilityGauge::SetupOwningAbilityCDO(const UGA_AbilityBase* OwningAbi
 
 		CooldownDuration = URAbilitySystemBlueprintLibrary::GetAbilityStaticCooldownDuration(AbilityCDO, OwnerASC);
 		//UE_LOG(LogTemp, Error, TEXT("Setting up %f"), CooldownDuration);
+
+		FSlateBrush brush;
+		brush.SetResourceObject(inputButton);
+		ButtonInputImage->SetBrush(brush);
 
 		FNumberFormattingOptions formattingOptions;
 		formattingOptions.MaximumFractionalDigits = 2;

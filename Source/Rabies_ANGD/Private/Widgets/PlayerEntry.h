@@ -22,4 +22,12 @@ protected:
 private:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* PlayerName;
+
+	UPROPERTY()
+	FString playerNameCheck;
+
+public:
+	UFUNCTION()
+	FString GetPlayerName();
+
 };

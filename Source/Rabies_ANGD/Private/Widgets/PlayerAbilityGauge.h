@@ -21,7 +21,7 @@ class UPlayerAbilityGauge : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void SetupOwningAbilityCDO(const UGA_AbilityBase* OwningAbilityCDO, class UAbilitySystemComponent* OwnerASC);
+	void SetupOwningAbilityCDO(const UGA_AbilityBase* OwningAbilityCDO, class UAbilitySystemComponent* OwnerASC, UTexture* inputButton);
 	void SetupAbilityDelegates();
 	void CooldownUpdate(const FOnAttributeChangeData& ChangeData);
 
@@ -36,6 +36,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CooldownCounterText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* ButtonInputImage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Cooldown")
 	FName CooldownPercentMaterialParamName = "Percent";

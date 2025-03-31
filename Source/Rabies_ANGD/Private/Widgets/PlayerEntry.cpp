@@ -12,6 +12,12 @@ void UPlayerEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 	AEOSPlayerState* playerState = Cast<AEOSPlayerState>(ListItemObject);
 	if (playerState)
 	{
-		PlayerName->SetText(FText::FromString(playerState->GetPlayerName()));
+		playerNameCheck = playerState->GetPlayerName();
+		PlayerName->SetText(FText::FromString(playerNameCheck));
 	}
+}
+
+FString UPlayerEntry::GetPlayerName()
+{
+	return playerNameCheck;
 }
