@@ -6,8 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "EOSPlayerState.generated.h"
 
-class URCharacterDefination;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedCharacterReplicated, const URCharacterDefination*, newSelection);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPickedCharacterReplicated, const class URCharacterDefination*, newPick);
 /**
  * 
  */
@@ -16,16 +15,35 @@ class AEOSPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
+	// Character select
+
+private:
+	UPROPERTY(replicatedUsing = OnRep_PickedCharacter, VisibleAnywhere, Category = "Character")
+	class URCharacterDefination* PickedCharacter;
+
+	UFUNCTION()
+	void OnRep_PickedCharacter();
+
 public:
+	FOnPickedCharacterReplicated OnPickedCharacterReplicated;
+
+	UFUNCTION()
+	class URCharacterDefination* GetCharacterDefination() const;
+	 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_IssueCharacterPick(class URCharacterDefination* newPickedCharacterDefination);
+
+
+	/** Copy properties which need to be saved in inactive PlayerState */
+	virtual void CopyProperties(APlayerState* PlayerState) override;
+
+
+public:
+	// Gameplay
 	AEOSPlayerState();
-	
-	FOnSelectedCharacterReplicated OnSelectedCharacterReplicated;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_OnPossessPlayer(class ARPlayerBase* myPlayer);
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_CharacterSelected(URCharacterDefination* newSelectedCharacterDefination);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_UpdateHitscanRotator(FRotator newRot, FVector newLocation);
@@ -64,12 +82,6 @@ public:
 private:
 	UPROPERTY(Replicated)
 	class ARPlayerBase* Player;
-
-	UPROPERTY(replicatedUsing = OnRep_SelectedCharacter)
-	class URCharacterDefination* SelectedCharacter;
-
-	UFUNCTION()
-	void OnRep_SelectedCharacter();
 
 	UFUNCTION()
 	void OnRep_HitScanLocation();

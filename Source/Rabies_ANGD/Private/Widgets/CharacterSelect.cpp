@@ -19,16 +19,9 @@ void UCharacterSelect::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ReadyUpButton->RabiesButton->OnClicked.AddDynamic(this, &UCharacterSelect::ReadyUp);
 }
 
 void UCharacterSelect::SetPlayerController(ARMainMenuController* menuController)
 {
 	MenuController = menuController;
-}
-
-void UCharacterSelect::ReadyUp()
-{
-	// do your checks here
-	UE_LOG(LogTemp, Warning, TEXT("Ready up"));
 }

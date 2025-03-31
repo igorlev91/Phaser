@@ -15,6 +15,7 @@ class ARGameMode : public AGameModeBase
 	GENERATED_BODY()
 	
 public:
+	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* Controller) override;
 	UPROPERTY(EditAnywhere, Category = "Config")
 	TSubclassOf<UUserWidget> DeathWidget;
 

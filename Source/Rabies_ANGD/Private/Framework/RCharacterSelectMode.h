@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "RCharacterSelectMode.generated.h"
 
+
+class URCharacterDefination;
 /**
  * 
  */
@@ -16,4 +18,25 @@ class ARCharacterSelectMode : public AGameModeBase
 	
 protected:
 	virtual void InitGameState() override;
+
+private:
+
+	UPROPERTY(EditDefaultsOnly, Category = "CagedCharacter")
+	FVector ShownCage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CagedCharacter")
+	FVector OffScreen;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CagedCharacter")
+	FVector Sideline;
+
+	UPROPERTY(VisibleAnywhere, Category = "CagedCharacter")
+	TArray<class ACagedCharacter*> CagedCharacters;
+
+	void GetCagedCharacters();
+
+public:
+
+	UFUNCTION()
+	URCharacterDefination* NextCharacter();
 };

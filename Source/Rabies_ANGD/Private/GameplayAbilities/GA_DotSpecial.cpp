@@ -47,11 +47,15 @@ void UGA_DotSpecial::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 		return;
 	}
 
+	Player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
+	if (Player == nullptr)
+		return;
+
 	UAbilityTask_WaitGameplayEvent* sendOffAttack = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetSpecialAttackActivationTag());
 	sendOffAttack->EventReceived.AddDynamic(this, &UGA_DotSpecial::SendOffAttack);
 	sendOffAttack->ReadyForActivation();
 
-	playTargettingMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, TargettingMontage);
+	playTargettingMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, Player->IsFlying() ? TargettingMontageAir : TargettingMontage);
 	playTargettingMontageTask->OnBlendOut.AddDynamic(this, &UGA_DotSpecial::K2_EndAbility);
 	playTargettingMontageTask->OnInterrupted.AddDynamic(this, &UGA_DotSpecial::K2_EndAbility);
 	playTargettingMontageTask->OnCompleted.AddDynamic(this, &UGA_DotSpecial::K2_EndAbility);
@@ -62,10 +66,6 @@ void UGA_DotSpecial::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 	waitTargetDataTask->ValidData.AddDynamic(this, &UGA_DotSpecial::TargetAquired);
 	waitTargetDataTask->Cancelled.AddDynamic(this, &UGA_DotSpecial::TargetCancelled);
 	waitTargetDataTask->ReadyForActivation();
-
-	Player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
-	//if (Player == nullptr)
-	//	return;
 
 	AGameplayAbilityTargetActor* spawnedTargetActor;
 	waitTargetDataTask->BeginSpawningActor(this, targetActorClass, spawnedTargetActor);
@@ -115,7 +115,7 @@ void UGA_DotSpecial::TargetAquired(const FGameplayAbilityTargetDataHandle& Data)
 
 	//UE_LOG(LogTemp, Error, TEXT("Doing Anim"));
 	//Player->ServerPlayAnimMontage(CastingMontage);
-	UAbilityTask_PlayMontageAndWait* playFinishMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, CastingMontage);
+	UAbilityTask_PlayMontageAndWait* playFinishMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, Player->IsFlying() ? CastingMontageAir : CastingMontage);
 	playFinishMontageTask->OnBlendOut.AddDynamic(this, &UGA_DotSpecial::K2_EndAbility);
 	playFinishMontageTask->OnInterrupted.AddDynamic(this, &UGA_DotSpecial::K2_EndAbility);
 	playFinishMontageTask->OnCompleted.AddDynamic(this, &UGA_DotSpecial::K2_EndAbility);

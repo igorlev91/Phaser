@@ -5,6 +5,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Player/RCharacterSelectController.h"
 #include "Engine/Engine.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/World.h"
 
 // Sets default values
@@ -17,6 +19,14 @@ ARPhysicalButtonBase::ARPhysicalButtonBase()
 	RootComponent = MyMeshComponent;
 
 	MyMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	SpotLightComponent = CreateDefaultSubobject<USpotLightComponent>(TEXT("SpotLightComponent"));
+	SpotLightComponent->SetupAttachment(MyMeshComponent); // Attach to SkeletalMeshComponent
+
+	TextRenderComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TextRenderComponent"));
+	TextRenderComponent->SetupAttachment(MyMeshComponent); // Attach to SkeletalMeshComponent
+	TextRenderComponent->SetHorizontalAlignment(EHTA_Center);
+	TextRenderComponent->SetWorldSize(50.f);
 
 	this->SetActorEnableCollision(true);
 	this->SetActorTickEnabled(true);
@@ -44,6 +54,11 @@ void ARPhysicalButtonBase::OnActorClicked(AActor* TouchedActor, FKey ButtonPress
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Button Clicked!"));
 	}
+}
+
+void ARPhysicalButtonBase::SetLight(bool state)
+{
+	SpotLightComponent->SetVisibility(state);
 }
 
 void ARPhysicalButtonBase::NotifyActorOnClicked(FKey ButtonPressed)

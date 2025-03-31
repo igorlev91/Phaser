@@ -19,6 +19,7 @@ class AEOSGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+
 	FOnSessionNameReplicated OnSessionNameReplicated;
 	FOnCharacterSelectionReplicated OnCharacterSelectionReplicated;
 
@@ -32,15 +33,15 @@ public:
 	void UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected);
 
 	URCharacterDefination* GetDefinationFromIndex(int index);
+
+	UFUNCTION(NetMulticast, Reliable) // this function calls on both server and client if it's called from the server.
+	void ReadyUp();
 	
 private:
 	UFUNCTION(NetMulticast, Reliable) // this function calls on both server and client if it's called from the server.
 	void LoadMapAndListen();
 
-
-	void TryLoadIntoGame();
-
-	FTimerHandle TryLoadIntoGameTimer;
+	FTimerHandle TryReadupGameTimer;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_SessionName)
 	FName SessionName;

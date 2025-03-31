@@ -60,6 +60,7 @@ ARPlayerBase::ARPlayerBase()
 	GetCharacterMovement()->RotationRate = FRotator(1080.f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 1.0f;
+	
 
 	ReviveUIWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Revive Widget Comp");
 	ReviveUIWidgetComp->SetupAttachment(GetRootComponent());
@@ -76,6 +77,10 @@ ARPlayerBase::ARPlayerBase()
 	cameraClampMax = 10;
 	cameraClampMin = -60;
 	bIsScoping = false;
+
+	GroundCheckComp = CreateDefaultSubobject<USphereComponent>("Ground Check Comp");
+	GroundCheckComp->SetupAttachment(GetRootComponent());
+	GroundCheckComp->OnComponentBeginOverlap.AddDynamic(this, &ARPlayerBase::GroundCheckCompOverlapped);
 }
 
 void ARPlayerBase::Tick(float DeltaTime)
@@ -253,16 +258,16 @@ void ARPlayerBase::ReleaseJump()
 
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetEndRevivingTag(), eventData);
 
-	if (AudioComp && JumpAudio)
-	{
-		AudioComp->SetSound(JumpAudio);
-		AudioComp->Play();
-	}
-
 	if (bInstantJump) return;
 
 	if (!IsFlying())
 	{
+		if (AudioComp && JumpAudio)
+		{
+			AudioComp->SetSound(JumpAudio);
+			AudioComp->Play();
+		}
+
 		Jump();
 	}
 }
@@ -280,6 +285,10 @@ void ARPlayerBase::DoBasicAttack()
 {
 	if (IsScoping())
 	{
+		//if (AudioComp->!IsPlaying())
+		//{
+
+		//}
 		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
 	}
 }
@@ -443,6 +452,21 @@ void ARPlayerBase::PlayPickupAudio()
 	if (AudioComp && PickupAudio)
 	{
 		AudioComp->Play();
+	}
+}
+
+void ARPlayerBase::GroundCheckCompOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != this && GetCharacterMovement()->IsFalling())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Grounded"));
+		
+		if (AudioComp && LandAudio)
+		{
+			AudioComp->SetSound(LandAudio);
+			AudioComp->Play();
+		}
+
 	}
 }
 

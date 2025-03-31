@@ -11,6 +11,8 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "LevelSequenceActor.h"
+#include "Engine/SpotLight.h"                // For ASpotLight
+#include "Components/SpotLightComponent.h"
 #include "CineCameraActor.h"
 #include "LevelSequence.h"
 #include "LevelSequenceCameraSettings.h"
@@ -58,10 +60,11 @@ void ARMainMenuController::BeginPlay()
 	for (TActorIterator<ACineCameraActor> It(GetWorld()); It; ++It)
 	{
 		CineCamera = *It;
+		SetViewTarget(CineCamera);
 		break;
 	}
 
-	for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
+	/*for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
 	{
 		MainMenuSequence = *It;
 		break;
@@ -78,7 +81,7 @@ void ARMainMenuController::BeginPlay()
 		SequencePlayer->SetPlaybackPosition(playbackParams);
 	}
 
-	SetViewTarget(CineCamera);
+	*/
 
 	GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
 	if (!GameState)
@@ -86,11 +89,59 @@ void ARMainMenuController::BeginPlay()
 		return;
 	}
 
-	CurrentlyHoveredCharacter = GameState->GetDefinationFromIndex(0);
-
 	GetGameInstance<UEOSGameInstance>()->SetMenuController(this);
 
 	GetGameInstance<UEOSGameInstance>()->SessionJoined.AddUObject(this, &ARMainMenuController::JoinedSession);
+
+
+	GetWorldTimerManager().SetTimer(BacklightTimerHandle, this, &ARMainMenuController::EnableBacklights, 1.5f, false);
+	GetWorldTimerManager().SetTimer(FrontlightTimerHandle, this, &ARMainMenuController::EnableFrontlights, 3.0f, false);
+	GetWorldTimerManager().SetTimer(FinalTimerHandle, this, &ARMainMenuController::EnableComputer, 4.0f, false);
+}
+
+void ARMainMenuController::EnableLights(UWorld* world, FName Tag)
+{
+	if (!world) return;
+
+	for (TActorIterator<AActor> It(world); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (Actor->Tags.Contains(Tag))
+		{
+			ASpotLight* SpotLight = Cast<ASpotLight>(Actor);
+			if (SpotLight)
+			{
+				SpotLight->GetLightComponent()->SetVisibility(true);
+			}
+		}
+	}
+}
+
+void ARMainMenuController::EnableBacklights()
+{
+	EnableLights(GetWorld(), "backlight");
+}
+
+void ARMainMenuController::EnableFrontlights()
+{
+	EnableLights(GetWorld(), "frontlight");
+}
+
+void ARMainMenuController::EnableComputer()
+{
+	FName monitorTag = "Monitor";
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		if (It->ActorHasTag(monitorTag))
+		{
+			UStaticMeshComponent* MeshComponent = It->FindComponentByClass<UStaticMeshComponent>();
+			if (MeshComponent)
+			{
+				// Set the material at the specified index
+				MeshComponent->SetMaterial(1, ComputerMaterial);
+			}
+		}
+	}
 
 	CreateMenuUI();
 }
@@ -111,23 +162,6 @@ void ARMainMenuController::ChangeMainMenuState(bool state)
 	}
 }
 
-void ARMainMenuController::ConfirmCharacterChoice()
-{
-	if (!IsLocalPlayerController())
-		return;
-
-	AEOSPlayerState* playerState = Cast<AEOSPlayerState>(PlayerState);
-	if (playerState == nullptr)
-	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Playerstate was found!"));
-		}
-		return;
-	}
-	playerState->Server_CharacterSelected(CurrentlyHoveredCharacter);
-}
-
 void ARMainMenuController::PostPossessionSetup(APawn* NewPawn)
 {
 
@@ -135,12 +169,12 @@ void ARMainMenuController::PostPossessionSetup(APawn* NewPawn)
 
 void ARMainMenuController::JoinedSession()
 {
-	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
+	/*ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
 	if (SequencePlayer)
 	{
 		SequencePlayer->Play();
 		SequencePlayer->OnFinished.AddDynamic(this, &ARMainMenuController::OnSequenceEnd);
-	}
+	}*/
 }
 
 void ARMainMenuController::CreateMenuUI()
@@ -165,7 +199,7 @@ void ARMainMenuController::CreateMenuUI()
 
 void ARMainMenuController::OnSequenceEnd()
 {
-	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
+	/*ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
 	if (SequencePlayer)
 	{
 		FMovieSceneSequencePlaybackParams playbackParams;
@@ -174,5 +208,5 @@ void ARMainMenuController::OnSequenceEnd()
 		SequencePlayer->SetPlaybackPosition(playbackParams);
 
 		//SequencePlayer->OnFinished.AddDynamic(this, &ARMainMenuController::OnSequenceEnd);
-	}
+	}*/
 }

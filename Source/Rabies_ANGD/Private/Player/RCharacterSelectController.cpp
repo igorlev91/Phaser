@@ -30,7 +30,6 @@ void ARCharacterSelectController::OnRep_PlayerState()
 	if (IsLocalController() && CharacterSelectUI == nullptr) //maybe also check if they have authority?
 	{
 		CreateCharacterSelectUI();
-		myPlayerID = GetPlayerID();
 	}
 }
 
@@ -59,10 +58,11 @@ void ARCharacterSelectController::BeginPlay()
 	for (TActorIterator<ACineCameraActor> It(GetWorld()); It; ++It)
 	{
 		CineCamera = *It;
+		SetViewTarget(CineCamera);
 		break;
 	}
 
-	for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
+	/*for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
 	{
 		MainMenuSequence = *It;
 		break;
@@ -71,7 +71,6 @@ void ARCharacterSelectController::BeginPlay()
 	if (!CineCamera || !MainMenuSequence)
 		return;
 
-	SetViewTarget(CineCamera);
 	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
 	if (SequencePlayer)
 	{
@@ -81,7 +80,7 @@ void ARCharacterSelectController::BeginPlay()
 
 		SequencePlayer->Play();
 		SequencePlayer->OnFinished.AddDynamic(this, &ARCharacterSelectController::OnSequenceEnd);
-	}
+	}*/
 
 	GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
 	if (!GameState)
@@ -106,21 +105,13 @@ void ARCharacterSelectController::ConfirmCharacterChoice()
 		}
 		return;
 	}
-	playerState->Server_CharacterSelected(CurrentlyHoveredCharacter);
+	playerState->Server_IssueCharacterPick_Implementation(CurrentlyHoveredCharacter);
+	GameState->ReadyUp();
 }
 
-int ARCharacterSelectController::GetPlayerID()
+void ARCharacterSelectController::SetCurrentlyHoveredCharacter(URCharacterDefination* currentlyHoveredCharacter)
 {
-	for (int i = 0; i < GameState->PlayerArray.Num(); i++)
-	{
-		//AEOSPlayerState* currentPlayer = Cast<AEOSPlayerState>(GameState->PlayerArray[i]);
-		//if (myPlayerID == GameState->PlayerArray[i].)
-		//{
-		//	return i;
-		//}
-	}
-
-	return 1;
+	CurrentlyHoveredCharacter = currentlyHoveredCharacter;
 }
 
 void ARCharacterSelectController::PostPossessionSetup(APawn* NewPawn)
@@ -128,7 +119,6 @@ void ARCharacterSelectController::PostPossessionSetup(APawn* NewPawn)
 	if (IsLocalController() && CharacterSelectUI == nullptr) //maybe also check if they have authority?
 	{
 		CreateCharacterSelectUI();
-		myPlayerID = GetPlayerID();
 	}
 }
 
@@ -154,7 +144,7 @@ void ARCharacterSelectController::CreateCharacterSelectUI()
 
 void ARCharacterSelectController::OnSequenceEnd()
 {
-	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
+	/*ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
 	if (SequencePlayer)
 	{
 		FMovieSceneSequencePlaybackParams playbackParams;
@@ -163,5 +153,5 @@ void ARCharacterSelectController::OnSequenceEnd()
 		SequencePlayer->SetPlaybackPosition(playbackParams);
 
 		//SequencePlayer->OnFinished.AddDynamic(this, &ARMainMenuController::OnSequenceEnd);
-	}
+	}*/
 }

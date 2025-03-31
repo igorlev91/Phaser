@@ -33,12 +33,13 @@ public:
 	UFUNCTION()
 	void ConfirmCharacterChoice();
 
-	int GetPlayerID();
+	UFUNCTION()
+	void SetCurrentlyHoveredCharacter(class URCharacterDefination* currentlyHoveredCharacter);
 
 private:
 	class ACineCameraActor* CineCamera;
 
-	class ALevelSequenceActor* MainMenuSequence;
+	//class ALevelSequenceActor* MainMenuSequence;
 
 	void PostPossessionSetup(APawn* NewPawn);
 
@@ -47,7 +48,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<class UCharacterSelect> CharacterSelectUIClass;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = "Character")
 	class URCharacterDefination* CurrentlyHoveredCharacter;
 
 	UFUNCTION()
@@ -58,6 +59,4 @@ private:
 
 	UPROPERTY()
 	UCharacterSelect* CharacterSelectUI;
-
-	int myPlayerID;
 };

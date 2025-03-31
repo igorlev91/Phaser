@@ -21,8 +21,32 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	UTexture* CharacterIcon;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Character Piece")
-	TSubclassOf<class UAnimInstance> CharacterAnimationInstance;
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	UTexture* MeleeIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FText MeleeText;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	UTexture* RangedIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FText RangedText;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	UTexture* SpecialIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FText SpecialText;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	UTexture* UltimateIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FText UltimateText;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FText PassiveText;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Character Piece")
 	TSubclassOf<class ACharacter> CharacterClass;

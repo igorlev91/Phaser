@@ -3,7 +3,27 @@
 
 #include "Framework/RGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/Controller.h"
+#include "Framework/EOSPlayerState.h"
+#include "Framework/RCharacterDefination.h"
+#include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
+
+UClass* ARGameMode::GetDefaultPawnClassForController_Implementation(AController* Controller)
+{
+	const AEOSPlayerState* PlayerState = Controller->GetPlayerState<AEOSPlayerState>();
+
+	if (PlayerState == nullptr)
+		return Super::GetDefaultPawnClassForController_Implementation(Controller);
+
+	if(PlayerState->GetCharacterDefination() == nullptr)
+		return Super::GetDefaultPawnClassForController_Implementation(Controller);
+
+	if (PlayerState->GetCharacterDefination()->CharacterClass == nullptr)
+		return Super::GetDefaultPawnClassForController_Implementation(Controller);
+
+	return PlayerState->GetCharacterDefination()->CharacterClass;
+}
 
 void ARGameMode::GameOver()
 {

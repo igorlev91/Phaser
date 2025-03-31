@@ -32,6 +32,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	UAnimMontage* CastingMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* TargettingMontageAir;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* CastingMontageAir;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	TSubclassOf<class ARTargetActor_DotSpecial> targetActorClass;

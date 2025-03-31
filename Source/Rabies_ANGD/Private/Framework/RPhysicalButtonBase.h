@@ -28,9 +28,19 @@ public:
 	UPROPERTY()
 	class ARCharacterSelectController* CharacterSelectController;
 
+	UFUNCTION()
+	void SetLight(bool state);
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh")
 	class UStaticMeshComponent* MyMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Mesh")
+	class USpotLightComponent* SpotLightComponent;
+
+	// Text Render Component
+	UPROPERTY(VisibleAnywhere, Category = "Mesh")
+	class UTextRenderComponent* TextRenderComponent;
 
 protected:
 	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;

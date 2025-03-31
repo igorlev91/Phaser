@@ -35,14 +35,11 @@ public:
 	UFUNCTION()
 	void ChangeMainMenuState(bool state);
 
-	UFUNCTION()
-	void ConfirmCharacterChoice();
-
 
 private:
 	class ACineCameraActor* CineCamera;
 
-	class ALevelSequenceActor* MainMenuSequence;
+	//class ALevelSequenceActor* MainMenuSequence;
 
 	void PostPossessionSetup(APawn* NewPawn);
 
@@ -66,4 +63,21 @@ private:
 	class AEOSGameState* GameState;
 
 	int myPlayerID;
+
+	void EnableLights(UWorld* world, FName Tag);
+
+	void EnableBacklights();
+
+	FTimerHandle BacklightTimerHandle;
+
+	void EnableFrontlights();
+
+	FTimerHandle FrontlightTimerHandle;
+
+	void EnableComputer();
+
+	FTimerHandle FinalTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category = "ComputerMaterial")
+	UMaterialInterface* ComputerMaterial;
 };

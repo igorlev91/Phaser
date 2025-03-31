@@ -292,8 +292,19 @@ public:
 	class USoundCue* JumpAudio;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* LandAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* WalkAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
 	class USoundCue* PickupAudio;
 
 	void PlayPickupAudio();
 
+	UPROPERTY(VisibleDefaultsOnly)
+	class USphereComponent* GroundCheckComp;
+
+	UFUNCTION()
+	void GroundCheckCompOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

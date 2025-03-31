@@ -22,12 +22,6 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class ULobbyDisplay* LobbyDisplay;
 
-	UPROPERTY(meta = (BindWidget))
-	class URButton* ReadyUpButton;
-
-	UFUNCTION()
-	void ReadyUp();
-
 	class ARMainMenuController* MenuController;
 
 	UPROPERTY(EditDefaultsOnly)

@@ -14,4 +14,10 @@ class ARLeftButton : public ARPhysicalButtonBase
 {
 	GENERATED_BODY()
 	
+public:
+
+	void OnActorClicked(AActor* TouchedActor, FKey ButtonPressed);
+
+protected:
+	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
 };

@@ -4,14 +4,13 @@
 #include "Framework/EOSGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "Framework/RCharacterDefination.h"
-#include "Framework/EOSPlayerState.h"
 #include "Player/RCharacterSelectController.h"
 
 void AEOSGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetWorld()->GetTimerManager().SetTimer(TryLoadIntoGameTimer, this, &AEOSGameState::TryLoadIntoGame, 3.0f, true);
+	//GetWorld()->GetTimerManager().SetTimer(TryLoadIntoGameTimer, this, &AEOSGameState::TryLoadIntoGame, 3.0f, true);
 }
 
 URCharacterDefination* AEOSGameState::GetDefinationFromIndex(int index)
@@ -19,12 +18,12 @@ URCharacterDefination* AEOSGameState::GetDefinationFromIndex(int index)
 	return Characters[index];
 }
 
-void AEOSGameState::TryLoadIntoGame()
+void AEOSGameState::ReadyUp_Implementation()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Waiting for players..."));
-	if (PlayerArray.Num() >= 2)
+	if (PlayerArray.Num() == 1)
 	{
-		LoadMapAndListen();
+		GetWorld()->GetTimerManager().SetTimer(TryReadupGameTimer, this, &AEOSGameState::LoadMapAndListen, 1.0f, false);
 	}
 }
 

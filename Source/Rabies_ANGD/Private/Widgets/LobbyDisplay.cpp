@@ -63,7 +63,7 @@ void ULobbyDisplay::CharacterSelectionReplicated(const URCharacterDefination* se
 
 	if (selected != nullptr && playerSelectControler != nullptr)
 	{
-		UCharacterEntry* characterEntry = Cast<UCharacterEntry>(CharacterListIcon->GetDisplayedEntryWidgets()[playerSelectControler->GetPlayerID()]);
+		UCharacterEntry* characterEntry = Cast<UCharacterEntry>(CharacterListIcon->GetDisplayedEntryWidgets()[0]);
 		if (characterEntry)
 		{
 			characterEntry->SetCharacterIcon(selected);

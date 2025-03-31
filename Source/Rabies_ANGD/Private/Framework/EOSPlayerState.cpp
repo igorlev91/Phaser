@@ -14,6 +14,44 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+void AEOSPlayerState::OnRep_PickedCharacter()
+{
+	OnPickedCharacterReplicated.Broadcast(PickedCharacter);
+}
+
+URCharacterDefination* AEOSPlayerState::GetCharacterDefination() const
+{
+	return PickedCharacter;
+}
+
+void AEOSPlayerState::Server_IssueCharacterPick_Implementation(URCharacterDefination* newPickedCharacterDefination)
+{
+	if (newPickedCharacterDefination == PickedCharacter)
+		return;
+
+	AEOSGameState* gameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
+	if (!gameState)
+		return;
+
+	gameState->UpdateCharacterSelection(newPickedCharacterDefination, PickedCharacter);
+	PickedCharacter = newPickedCharacterDefination;
+	OnPickedCharacterReplicated.Broadcast(PickedCharacter);
+}
+
+bool AEOSPlayerState::Server_IssueCharacterPick_Validate(URCharacterDefination* newPickedCharacterDefination)
+{
+	return true;
+}
+
+void AEOSPlayerState::CopyProperties(APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Copied Updated Character"));
+	AEOSPlayerState* NewPlayerState = Cast<AEOSPlayerState>(PlayerState);
+	NewPlayerState->PickedCharacter = PickedCharacter;
+}
+
 AEOSPlayerState::AEOSPlayerState()
 {
 	bReplicates = true;
@@ -37,30 +75,6 @@ void AEOSPlayerState::Server_OnPossessPlayer_Implementation(ARPlayerBase* myPlay
 }
 
 bool AEOSPlayerState::Server_OnPossessPlayer_Validate(ARPlayerBase* myPlayer)
-{
-	return true;
-}
-
-void AEOSPlayerState::Server_CharacterSelected_Implementation(URCharacterDefination* newSelectedCharacterDefination)
-{
-	//On server
-	if (newSelectedCharacterDefination == SelectedCharacter)
-	{
-		return; // you're chillin, already have that character
-	}
-
-	AEOSGameState* GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
-	if (!GameState)
-	{
-		return;
-	}
-
-	GameState->UpdateCharacterSelection(newSelectedCharacterDefination, SelectedCharacter);
-	SelectedCharacter = newSelectedCharacterDefination;
-	OnSelectedCharacterReplicated.Broadcast(SelectedCharacter);
-}
-
-bool AEOSPlayerState::Server_CharacterSelected_Validate(URCharacterDefination* newSelectedCharacterDefination)
 {
 	return true;
 }
@@ -105,11 +119,6 @@ void AEOSPlayerState::Server_CreateBossHealth_Implementation(int level, class AR
 ARPlayerBase* AEOSPlayerState::GetPlayer()
 {
 	return Player;
-}
-
-void AEOSPlayerState::OnRep_SelectedCharacter()
-{
-	OnSelectedCharacterReplicated.Broadcast(SelectedCharacter);
 }
 
 void AEOSPlayerState::OnRep_HitScanLocation()
@@ -185,10 +194,10 @@ void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, Player, COND_None);
 
+	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, PickedCharacter, COND_None, REPNOTIFY_Always);
+
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, playerVelocity, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, dotFlyStamina, COND_None, REPNOTIFY_Always);
-
-	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, SelectedCharacter, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, hitscanRotation, COND_None);
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, hitscanLocation, COND_None, REPNOTIFY_Always);

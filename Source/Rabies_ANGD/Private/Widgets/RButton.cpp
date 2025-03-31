@@ -47,8 +47,8 @@ void URButton::OnHoverButton()
 
 	RabiesCanvasSlot->SetSize(DefaultScale * HoverScale);
 
-	float rotationRadius = FMath::DegreesToRadians(HoverRotation);
-	RabiesButton->RenderTransform.Angle = rotationRadius;
+	//float rotationRadius = FMath::DegreesToRadians(HoverRotation);
+	//RabiesButton->RenderTransform.Angle = rotationRadius;
 }
 
 void URButton::OnUnhoverButton()
@@ -58,6 +58,6 @@ void URButton::OnUnhoverButton()
 
 	RabiesCanvasSlot->SetSize(DefaultScale);
 
-	float rotationRadius = FMath::DegreesToRadians(DefaultRotation);
-	RabiesButton->RenderTransform.Angle = rotationRadius;
+	//float rotationRadius = FMath::DegreesToRadians(DefaultRotation);
+	//RabiesButton->RenderTransform.Angle = rotationRadius;
 }
