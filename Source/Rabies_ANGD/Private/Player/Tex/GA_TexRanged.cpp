@@ -6,6 +6,7 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
 
+
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
@@ -18,6 +19,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 
+#include "Enemy/REnemyBase.h"
 #include "Character/RCharacterBase.h"
 #include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -76,11 +78,25 @@ void UGA_TexRanged::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVe
 		if (hitActor == nullptr) return;
 		if (hitActor != Player)
 		{
+			ARCharacterBase* hitEnemy = Cast<ARCharacterBase>(hitActor);
+			if (hitEnemy == nullptr)
+				return;
+
+			bool hitCrit = false;
+
+			FVector hitPointVector = hitEnemy->GetMesh()->GetSocketLocation(hitEnemy->WeakpointSocketName);
+			UE_LOG(LogTemp, Warning, TEXT("Value is: %f"), FVector::Dist(endPos, hitPointVector));
+
+			/*if (FVector::Dist(hitPointVector, endPos) <= hitEnemy->WeakpointPrecision)
+			{
+				hitCrit = true;
+			}*/
+
 			FGameplayEventData Payload = FGameplayEventData();
 
 			Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(hitActor);
 
-			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(RangedDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec((hitCrit) ? CritRangedDamage : RangedDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
 			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
 
 			if (ARCharacterBase* hitCharacter = Cast<ARCharacterBase>(hitActor))

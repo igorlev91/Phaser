@@ -42,6 +42,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> RangedDamage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> CritRangedDamage;
+
 	FDelegateHandle ClientHitScanHandle;
 
 	UPROPERTY()

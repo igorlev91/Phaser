@@ -39,13 +39,13 @@ AItemChest::AItemChest()
 
 	ChestBottomMesh = CreateDefaultSubobject<UStaticMeshComponent>("Chest Bottom Mesh");
 	ChestBottomMesh->SetupAttachment(GetRootComponent());
-	ChestBottomMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	ChestBottomMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	RootComponent = ChestBottomMesh;
 	
 	ChestTopMesh = CreateDefaultSubobject<UStaticMeshComponent>("Chest Top Mesh");
 	ChestTopMesh->SetupAttachment(GetRootComponent());
-	ChestTopMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	ChestTopMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// sphere radius
 	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));

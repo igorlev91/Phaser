@@ -25,8 +25,22 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> ScopeSlowdownClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	bool bSniperMode;
+
 	UFUNCTION()
 	void StopScoping(FGameplayEventData Payload);
 
 	FActiveGameplayEffectHandle ScopeSlowDownEffectHandle;
+
+	FTimerHandle ScopingHandle;
+
+	UPROPERTY()
+	class ARPlayerBase* Player;
+
+	UPROPERTY(VisibleAnywhere, Category = "Damage")
+	TArray<class ARCharacterBase*> VisibleCharacters;
+
+	UFUNCTION()
+	void HoldingScope();
 };

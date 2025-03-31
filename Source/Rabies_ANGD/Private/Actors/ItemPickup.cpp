@@ -35,19 +35,22 @@ AItemPickup::AItemPickup()
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>("Item Mesh");
 	ItemMesh->SetupAttachment(GetRootComponent());
-	ItemMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
+	ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	ItemMesh->SetSimulatePhysics(true);
 	RootComponent = ItemMesh;
 
 	// sphere radius
 	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
 	SphereCollider->SetupAttachment(GetRootComponent());
 	SphereCollider->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
-
-	RootComponent = ItemMesh;
+	SphereCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
 
 	SphereStyle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere Mesh"));
 	SphereStyle->SetupAttachment(ItemMesh);
+	SphereStyle->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SphereStyle->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
+
 }
 
 // Called when the game starts or when spawned
@@ -101,11 +104,26 @@ void AItemPickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bRotate)
+	{
+		FRotator CurrentRotation = ItemMesh->GetComponentRotation();
+		FRotator NewRotation = CurrentRotation + FRotator(0.f, 30 * DeltaTime, 0.f); // Rotate around Y axis (yaw)
+
+		ItemMesh->SetWorldRotation(NewRotation);
+	}
 }
 
 void AItemPickup::SetupItem_Implementation(URItemDataAsset* newItemAsset)
 {
 	ItemAsset = newItemAsset;
+	if (newItemAsset->OutlineInstance != nullptr)
+	{
+		ItemMesh->SetOverlayMaterial(newItemAsset->OutlineInstance);
+	}
+	if (newItemAsset->OrbInstance != nullptr)
+	{
+		SphereStyle->SetMaterial(0, newItemAsset->OrbInstance);
+	}
 
 	if (newItemAsset->ItemMesh == nullptr)
 	{
@@ -116,5 +134,15 @@ void AItemPickup::SetupItem_Implementation(URItemDataAsset* newItemAsset)
 		ItemMesh->SetStaticMesh(newItemAsset->ItemMesh);
 	}
 
-	ItemMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	float x = FMath::RandRange(-100, 100);
+	float y = FMath::RandRange(-100, 100);
+	FVector ForceDirection = FVector(x, y, 600.f); // Adjust the Z value to set how much it pops up
+	ItemMesh->AddImpulse(ForceDirection, NAME_None, true);
+	GetWorld()->GetTimerManager().SetTimer(FallTimerHandle, this, &AItemPickup::StartRotatingItem, 1.2f, false);
+}
+
+void AItemPickup::StartRotatingItem_Implementation()
+{
+	ItemMesh->SetSimulatePhysics(false);
+	bRotate = true;
 }

@@ -37,7 +37,10 @@ private:
 
 	class ARPlayerBase* Player;
 
+	bool bRotate;
+
 public:
+
 	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void Server_PickupItem();
 
@@ -49,6 +52,11 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "ItemEffect")
 	URItemDataAsset* ItemAsset;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void StartRotatingItem();
+
+	FTimerHandle FallTimerHandle;
 
 public:	
 	// Called every frame

@@ -27,6 +27,7 @@
 #include "Math/Color.h"
 #include "Math/UnrealMathUtility.h"
 
+#include "Widgets/WeakpointUI.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
@@ -78,11 +79,22 @@ ARCharacterBase::ARCharacterBase()
 	HealthBarWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
 	HealthBarWidgetComp->SetupAttachment(GetRootComponent());
 
+	WeakpointWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Weakpoint Widget Comp");
+	WeakpointWidgetComp->SetupAttachment(GetRootComponent());
+
 	AttackingBoxComponent = CreateDefaultSubobject<URAttackingBoxComponent>("Attacking Box Component");
 	AttackingBoxComponent->SetupAttachment(GetMesh());
 
 	PushingBoxComponent = CreateDefaultSubobject<URPushBoxComponent>("Pushing Box Component");
 	PushingBoxComponent->SetupAttachment(GetMesh());
+
+	WeakpointCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HitCapsule"));
+	WeakpointCollider->SetupAttachment(RootComponent); // Default to root, attach later
+
+	WeakpointCollider->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	WeakpointCollider->SetCollisionObjectType(ECC_GameTraceChannel2);
+	WeakpointCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
+	WeakpointCollider->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Block);
 
 	PrimaryActorTick.bRunOnAnyThread = false; // prevents crash??
 }
@@ -106,6 +118,46 @@ void ARCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	InitStatusHUD();
+
+	if (WeakpointCollider)
+	{
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		WeakpointCollider->AttachToComponent(GetMesh(), AttachmentRules, WeakpointSocketName);
+	}
+
+	WeakpointWidgetComp->SetWidgetClass(WeakpointClass);
+	WeakpointUI = CreateWidget<UWeakpointUI>(GetWorld(), WeakpointWidgetComp->GetWidgetClass());
+	if (WeakpointUI)
+	{
+		
+		WeakpointWidgetComp->SetWidget(WeakpointUI);
+		WeakpointWidgetComp->SetDrawAtDesiredSize(true);
+		WeakpointUI->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void ARCharacterBase::SetAndShowWeakpointUI(ARCharacterBase* ScopingCharacter)
+{
+	if (WeakpointUI)
+	{
+		WeakpointUI->SetVisibility(ESlateVisibility::Visible);
+
+		float Distance = FVector::Dist(ScopingCharacter->GetActorLocation(), GetActorLocation());
+		//UE_LOG(LogTemp, Warning, TEXT("Value is: %f"), Distance);
+		float BaseSize = 250.f; // Default UI size
+		float SizeFactor = BaseSize / Distance;
+		WeakpointUI->SetRenderScale(FVector2D(SizeFactor, SizeFactor));
+
+	}
+
+}
+
+void ARCharacterBase::HideWeakpointUI(ARCharacterBase* ScopingCharacter)
+{
+	if (WeakpointUI)
+	{
+		WeakpointUI->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 
@@ -114,6 +166,7 @@ void ARCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	WeakpointWidgetComp->SetWorldLocation(GetMesh()->GetSocketLocation(WeakpointSocketName));
 }
 
 void ARCharacterBase::PossessedBy(AController* NewController)

@@ -263,7 +263,9 @@ void AEOSActionGameState::OpenedChest_Implementation(int chestID)
             newData = KeyCard;
 
         FActorSpawnParameters SpawnParams;
-        AItemPickup* newitem = GetWorld()->SpawnActor<AItemPickup>(ItemPickupClass, AllChests[chestID]->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+        FVector spawnAdjustment = AllChests[chestID]->GetActorLocation();
+        spawnAdjustment.Z += 40;
+        AItemPickup* newitem = GetWorld()->SpawnActor<AItemPickup>(ItemPickupClass, spawnAdjustment, FRotator::ZeroRotator, SpawnParams);
         AllItems.Add(newitem); // make sure that the chest has bReplicates to true]
         AllChests.RemoveAt(chestID);
         newitem->SetOwner(this);

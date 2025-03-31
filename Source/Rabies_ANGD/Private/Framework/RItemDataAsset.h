@@ -43,5 +43,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	class USoundCue* ItemAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	class UMaterialInstance* OutlineInstance;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	class UMaterialInstance* OrbInstance;
 };
