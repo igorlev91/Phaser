@@ -9,11 +9,18 @@
 
 #include "Framework/RGameMode.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/Character.h"
 #include "Framework/EOSActionGameState.h"
+
+#include "Player/RPlayerBase.h"
+#include "Enemy/REnemyBase.h"
 
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
+
+#include "Framework/RPushBoxComponent.h"
 
 #include "Framework/EOSPlayerState.h"
 
@@ -73,6 +80,9 @@ ARCharacterBase::ARCharacterBase()
 	AttackingBoxComponent = CreateDefaultSubobject<URAttackingBoxComponent>("Attacking Box Component");
 	AttackingBoxComponent->SetupAttachment(GetMesh());
 
+	PushingBoxComponent = CreateDefaultSubobject<URPushBoxComponent>("Pushing Box Component");
+	PushingBoxComponent->SetupAttachment(GetMesh());
+
 	PrimaryActorTick.bRunOnAnyThread = false; // prevents crash??
 }
 
@@ -122,6 +132,9 @@ void ARCharacterBase::PossessedBy(AController* NewController)
 
 	if (HasAuthority() && Controller && Controller->IsPlayerController())
 	{
+		GetWorldTimerManager().SetTimer(FriendshipBraceletTimer,this,&ARCharacterBase::CheckFriendShipBracelet, 0.5f,  true );
+		// THIS IS FOR HEALING BRACLET, AND WILL WORK FOREVER IF YOU ARE FAINTED
+
 		APlayerController* OwningPlayerController = Cast<APlayerController>(Controller);
 		// Find the ID
 
@@ -342,6 +355,216 @@ void ARCharacterBase::NextLevelExpUpdated(const FOnAttributeChangeData& ChangeDa
 	}
 }
 
+void ARCharacterBase::DealtDamage(ARCharacterBase* hitCharacter)
+{
+
+}
+
+void ARCharacterBase::HitSpecialAttack(ARCharacterBase* hitCharacter)
+{
+	if (HasAuthority() == false)
+		return;
+
+	CheckIVBag();
+	DealtDamage(hitCharacter);
+}
+
+void ARCharacterBase::HitRangedAttack(ARCharacterBase* hitCharacter)
+{
+	if (HasAuthority() == false)
+		return;
+
+	CheckRadio(hitCharacter);
+	DealtDamage(hitCharacter);
+}
+
+void ARCharacterBase::HitMeleeAttack(ARCharacterBase* hitCharacter)
+{
+	if (HasAuthority() == false)
+		return;
+
+	CheckHardhat();
+	CheckNails(hitCharacter);
+	DealtDamage(hitCharacter);
+}
+
+void ARCharacterBase::CheckFriendShipBracelet_Implementation()
+{
+	if (HasAuthority())
+	{
+		HealingRadiusEffect(FriendShipEffect, false);
+	}
+}
+
+void ARCharacterBase::CheckIVBag()
+{
+	HealingRadiusEffect(IVBagEffect, true);
+}
+
+void ARCharacterBase::CheckHardhat()
+{
+	bool bFoundLifeSteal = false;
+	bool bFoundMeleeStrength = false;
+	float lifesteal = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetBasicAttackLifestealAttribute(), bFoundLifeSteal);
+	float meleeStrength = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetMeleeAttackStrengthAttribute(), bFoundMeleeStrength);
+
+	if (bFoundLifeSteal == false || bFoundMeleeStrength == 0 || lifesteal <= 0)
+		return;
+
+	FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(LifestealEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+	FGameplayEffectSpec* spec = specHandle.Data.Get();
+	if (spec)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s Healed from melee attack!"), *GetName());
+		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetGenericTargetAquiredTag(), meleeStrength * lifesteal);
+		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+	}
+}
+
+void ARCharacterBase::CheckNails(ARCharacterBase* hitCharacter)
+{
+	bool bFound = false;
+	float nailsChance = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetNailsEffectChanceAttribute(), bFound);
+
+	if (bFound == false || nailsChance <= 0)
+		return;
+
+	float randomApplyChance = FMath::RandRange(0, 100);
+	//UE_LOG(LogTemp, Error, TEXT("%f% Trying to inflict got %f"), nailsChance, randomApplyChance);
+	if (nailsChance >= randomApplyChance)
+	{
+		FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(NailsEfffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+		FGameplayEffectSpec* spec = specHandle.Data.Get();
+		if (spec)
+		{
+			hitCharacter->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+		}
+	}
+}
+
+void ARCharacterBase::CheckRadio(ARCharacterBase* hitCharacter)
+{
+	
+	bool bFoundHealth = false;
+	float health = hitCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetHealthAttribute(), bFoundHealth);
+
+	if (bFoundHealth == false)
+		return;
+
+	if (health > 0)
+		return;
+
+	bool bFoundRadioEffect = false; // this is used for radius instead of effect
+	float radioEffect = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetRadioEffectChanceAttribute(), bFoundRadioEffect);
+
+	if (bFoundRadioEffect == false)
+		return;
+
+
+	if (radioEffect <= 0)
+		return;
+
+	TArray<FOverlapResult> OverlappingResults;
+
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(radioEffect);
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(hitCharacter);
+
+	DrawDebugSphere(GetWorld(), hitCharacter->GetActorLocation(), radioEffect, 32, FColor::Red, false, 2.0f);
+
+	bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, hitCharacter->GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
+
+	TArray<AREnemyBase*> alreadyDamaged;
+
+	for (const FOverlapResult& result : OverlappingResults)
+	{
+		AREnemyBase* enemy = Cast<AREnemyBase>(result.GetActor());
+		if (enemy)
+		{
+			bool bNewFoundHealth = false;
+			float newEnemyhealth = enemy->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetHealthAttribute(), bNewFoundHealth);
+
+			if (alreadyDamaged.Contains(enemy) == false && newEnemyhealth > 0)
+			{
+				FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(RadioEfffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+				FGameplayEffectSpec* spec = specHandle.Data.Get();
+				if (spec)
+				{
+					alreadyDamaged.Add(enemy);
+					enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+					RadioDelayTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ARCharacterBase::CheckRadioDelay, enemy));
+					//GetWorldTimerManager().SetTimer(RadioDelayTimer, this, &ARCharacterBase::CheckRadioDelay, 0.2f, enemy);
+				}
+			}
+		}
+	}
+}
+
+void ARCharacterBase::CheckRadioDelay(AREnemyBase* hitCharacter)
+{
+	CheckRadio(hitCharacter);
+}
+
+void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEffect, bool IVBag)
+{
+	bool bFound = false;
+	float healingRadius = (IVBag) ? AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetAbilityHealingRadiusAttribute(), bFound) : AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetFriendshipHealingRadiusAttribute(), bFound);
+
+	if (bFound == false || healingRadius == 0)
+		return;
+
+	TArray<FOverlapResult> OverlappingResults;
+
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(healingRadius);
+	FCollisionQueryParams QueryParams;
+	if (IVBag == false)
+	{
+		QueryParams.AddIgnoredActor(this); // Ignore self
+	}
+
+	DrawDebugSphere(GetWorld(), GetActorLocation(), healingRadius, 32, FColor::Green, false, 2.0f);
+
+	bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
+
+	TArray<ARPlayerBase*> alreadyHealedPlayers;
+	bool foundFriend = false;
+
+	for (const FOverlapResult& result : OverlappingResults)
+	{
+		ARPlayerBase* player = Cast<ARPlayerBase>(result.GetActor());
+		if (player)
+		{
+			if (alreadyHealedPlayers.Contains(player) == false)
+			{
+				foundFriend = true;
+
+				FGameplayEffectSpecHandle specHandle = player->GetAbilitySystemComponent()->MakeOutgoingSpec(healingEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+				FGameplayEffectSpec* spec = specHandle.Data.Get();
+				if (spec)
+				{
+					alreadyHealedPlayers.Add(player);
+					player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+				}
+			}
+		}
+	}
+
+	if (IVBag == false && foundFriend)
+	{
+		FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(healingEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+		FGameplayEffectSpec* spec = specHandle.Data.Get();
+		if (spec)
+		{
+			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+		}
+	}
+}
+
 void ARCharacterBase::LevelUp(int carryOverEXP) // Handles the player level up
 {
 	if (LevelUpEffect && GetAbilitySystemComponent())
@@ -481,6 +704,20 @@ void ARCharacterBase::ForwardSpeedUpdated(const FOnAttributeChangeData& ChangeDa
 	}
 }
 
+void ARCharacterBase::LaunchBozo_Implementation(FVector launchVelocity)
+{
+	if (HasAuthority())
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+		
+		FVector NewLocation = GetActorLocation() + FVector(0, 0, 100);
+		SetActorLocation(NewLocation, true);
+
+		LaunchCharacter(launchVelocity, true, true);
+		//GetCharacterMovement()->Launch(launchVelocity);
+	}
+}
+
 void ARCharacterBase::LevelUpUpgrade(int level, bool setLevel)
 {
 	FGameplayEffectContextHandle contextHandle = GetAbilitySystemComponent()->MakeEffectContext();
@@ -497,6 +734,8 @@ void ARCharacterBase::LevelUpUpgrade(int level, bool setLevel)
 			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetHealthTag(), HealthOnLevelUp * levelScale);
 			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMeleeAttackStrengthTag(), MeleeStrengthOnLevelUp * levelScale);
 			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetRangedAttackStrengthTag(), RangedStrengthOnLevelUp * levelScale);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetSpecialStrengthTag(), SpeicalStrengthOnLevelUp * levelScale);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetUltimateStrengthTag(), UltimateStrengthOnLevelUp * levelScale);
 		}
 		else
 		{
@@ -505,6 +744,8 @@ void ARCharacterBase::LevelUpUpgrade(int level, bool setLevel)
 			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetHealthTag(), HealthOnLevelUp);
 			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetMeleeAttackStrengthTag(), MeleeStrengthOnLevelUp);
 			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetRangedAttackStrengthTag(), RangedStrengthOnLevelUp);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetSpecialStrengthTag(), SpeicalStrengthOnLevelUp);
+			spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetUltimateStrengthTag(), UltimateStrengthOnLevelUp);
 		}
 
 		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);

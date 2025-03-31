@@ -44,6 +44,8 @@ void ARDot_SpecialProj::HitCharacter(ARCharacterBase* usingCharacter, ARCharacte
 	{
 	
 	}
+
+	usingCharacter->HitSpecialAttack(hitCharacter);
 	ApplyEffect(0, usingCharacter, hitCharacter);
 	ApplyEffect(1, usingCharacter, hitCharacter);
 }

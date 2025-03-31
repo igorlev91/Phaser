@@ -113,11 +113,6 @@ void UGA_DotFlying::ProcessFlying()
 			Player->GetPlayerBaseState()->Server_ProcessDotFlyingStamina(CurrentHoldDuration);
 		}
 
-		if (AudioComp && AbilityAudio)
-		{
-			AudioComp->SetSound(AbilityAudio);
-			AudioComp->Play();
-		}
 	}
 
 	SlowFallHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_DotFlying::ProcessFlying));
@@ -145,6 +140,8 @@ void UGA_DotFlying::Hold(float timeRemaining)
 	}
 	else
 	{
+		StartDurationAudioEffect();
+
 		bFlying = true;
 
 		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(FlyingSpeedClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
@@ -202,8 +199,6 @@ void UGA_DotFlying::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 	Player->playerController->ChangeTakeOffState(false, 0);
 	Player->GetPlayerBaseState()->Server_ProcessDotFlyingStamina(1);
 	GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
-
-	AudioComp->Stop();
 
 	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetFlyingTag());

@@ -62,6 +62,7 @@ void UGA_DotUltimate::ActivateAbility(const FGameplayAbilitySpecHandle Handle, c
 	playTargettingMontageTask->OnCancelled.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
 	playTargettingMontageTask->ReadyForActivation();
 
+	TriggerAudioCue();
 	/*UAbilityTask_WaitTargetData* waitTargetDataTask = UAbilityTask_WaitTargetData::WaitTargetData(this, NAME_None, EGameplayTargetingConfirmation::UserConfirmed, targetActorClass);
 	waitTargetDataTask->ValidData.AddDynamic(this, &UGA_DotUltimate::TargetAquired);
 	waitTargetDataTask->Cancelled.AddDynamic(this, &UGA_DotUltimate::TargetCancelled);

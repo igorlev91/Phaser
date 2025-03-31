@@ -29,6 +29,8 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	UAbilityTask_WaitGameplayEvent* EndTakeOffEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetReviveTag());
 	EndTakeOffEvent->EventReceived.AddDynamic(this, &UGA_Death::StopDeath);
 	EndTakeOffEvent->ReadyForActivation();
+
+	TriggerAudioCue();
 }
 
 void UGA_Death::StopDeath(FGameplayEventData Payload)

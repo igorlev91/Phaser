@@ -16,9 +16,9 @@ class UGA_AbilityBase : public UGameplayAbility
 	
 public:
 	UGA_AbilityBase();
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	UTexture2D* GetIconTexture() const { return IconTexture; }
-	USoundCue* GetAbilityAudio() const { return AbilityAudio; }
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	TSubclassOf<class UGameplayModMagnitudeCalculation> CooldownCalculationClass;
@@ -32,10 +32,14 @@ protected:
 	UTexture2D* IconTexture;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Audio")
-	class USoundCue* AbilityAudio;
+	FGameplayTag AudioCueTag;
 
-	UPROPERTY(VisibleAnywhere, Category = "Audio")
-	class UAudioComponent* AudioComp;
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	TSubclassOf<UGameplayEffect> DurationAudioEffect;
 
+	FActiveGameplayEffectHandle DurationAudioEffectHandle;
 
+	void TriggerAudioCue();
+	void StartDurationAudioEffect();
+	void StopDurationAudioEffect();
 };

@@ -19,6 +19,11 @@ void AEOSPlayerState::OnRep_PickedCharacter()
 	OnPickedCharacterReplicated.Broadcast(PickedCharacter);
 }
 
+void AEOSPlayerState::OnRep_HoveredCharacterIndex()
+{
+	OnHoveredCharacterIndexReplicated.Broadcast(HoveredCharacterIndex);
+}
+
 URCharacterDefination* AEOSPlayerState::GetCharacterDefination() const
 {
 	return PickedCharacter;
@@ -39,6 +44,21 @@ void AEOSPlayerState::Server_IssueCharacterPick_Implementation(URCharacterDefina
 }
 
 bool AEOSPlayerState::Server_IssueCharacterPick_Validate(URCharacterDefination* newPickedCharacterDefination)
+{
+	return true;
+}
+
+void AEOSPlayerState::Server_ChangeHoveredCharacterPick_Implementation()
+{
+	HoveredCharacterIndex++;
+
+	if (HoveredCharacterIndex == 4)
+		HoveredCharacterIndex = 0;
+
+	OnHoveredCharacterIndexReplicated.Broadcast(HoveredCharacterIndex);
+}
+
+bool AEOSPlayerState::Server_ChangeHoveredCharacterPick_Validate()
 {
 	return true;
 }
@@ -195,6 +215,7 @@ void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, Player, COND_None);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, PickedCharacter, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, HoveredCharacterIndex, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, playerVelocity, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, dotFlyStamina, COND_None, REPNOTIFY_Always);

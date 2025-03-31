@@ -7,6 +7,7 @@
 #include "EOSPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPickedCharacterReplicated, const class URCharacterDefination*, newPick);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHoveredCharacterIndexReplicated, int, newIndex);
 /**
  * 
  */
@@ -24,14 +25,24 @@ private:
 	UFUNCTION()
 	void OnRep_PickedCharacter();
 
+	UFUNCTION()
+	void OnRep_HoveredCharacterIndex();
+
 public:
 	FOnPickedCharacterReplicated OnPickedCharacterReplicated;
+	FOnHoveredCharacterIndexReplicated OnHoveredCharacterIndexReplicated;
+
+	UPROPERTY(replicatedUsing = OnRep_HoveredCharacterIndex, VisibleAnywhere, Category = "Character")
+	int HoveredCharacterIndex = 0;
 
 	UFUNCTION()
 	class URCharacterDefination* GetCharacterDefination() const;
 	 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_IssueCharacterPick(class URCharacterDefination* newPickedCharacterDefination);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_ChangeHoveredCharacterPick();
 
 
 	/** Copy properties which need to be saved in inactive PlayerState */

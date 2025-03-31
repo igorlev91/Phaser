@@ -7,7 +7,6 @@
 #include "RCharacterSelectMode.generated.h"
 
 
-class URCharacterDefination;
 /**
  * 
  */
@@ -29,14 +28,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "CagedCharacter")
 	FVector Sideline;
-
-	UPROPERTY(VisibleAnywhere, Category = "CagedCharacter")
-	TArray<class ACagedCharacter*> CagedCharacters;
-
-	void GetCagedCharacters();
-
-public:
-
-	UFUNCTION()
-	URCharacterDefination* NextCharacter();
 };

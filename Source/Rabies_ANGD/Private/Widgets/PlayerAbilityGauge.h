@@ -53,10 +53,13 @@ private:
 	float CooldownTickInterval = 1.0f / 24.0f;
 
 	FTimerHandle CooldownTickTimerHandle;
+	FTimerHandle PaddingTickTimerHandle;
 
 	void TickCooldown();
 
 	void CooldownFinished();
+
+	void NextTickPadding();
 
 	float CooldownDuration = 0;
 

@@ -101,6 +101,63 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
 	UAnimMontage* ReviveMontage;
 
+public:
+
+	UFUNCTION()
+	void DealtDamage(ARCharacterBase* hitCharacter);
+
+	UFUNCTION()
+	void HitSpecialAttack(ARCharacterBase* hitCharacter);
+
+	UFUNCTION()
+	void HitRangedAttack(ARCharacterBase* hitCharacter);
+
+	UFUNCTION()
+	void HitMeleeAttack(ARCharacterBase* hitCharacter);
+
+	UFUNCTION()
+	void CheckIVBag();
+
+	UFUNCTION()
+	void CheckHardhat();
+
+	UFUNCTION()
+	void CheckNails(ARCharacterBase* hitCharacter);
+
+	UFUNCTION()
+	void CheckRadio(ARCharacterBase* hitCharacter);
+
+	UFUNCTION()
+	void CheckRadioDelay(AREnemyBase* hitCharacter);
+
+	UFUNCTION(Server, Reliable)
+	void CheckFriendShipBracelet();
+
+	FTimerHandle FriendshipBraceletTimer;
+
+	UFUNCTION()
+	void HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEffect, bool IVBag);
+
+	UFUNCTION(Server, Reliable)
+	void LaunchBozo(FVector launchVelocity);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> IVBagEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> FriendShipEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> LifestealEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> NailsEfffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> RadioEfffect;
+
+	FTimerHandle RadioDelayTimer;
+
 private:
 	bool bHasDied;
 
@@ -108,6 +165,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
 	class URAttackingBoxComponent* AttackingBoxComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
+	class URPushBoxComponent* PushingBoxComponent;
 
 	void PlayMontage(UAnimMontage* MontageToPlay);
 
@@ -222,5 +282,11 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	float RangedStrengthOnLevelUp = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	float SpeicalStrengthOnLevelUp = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	float UltimateStrengthOnLevelUp = 1;
 
 };

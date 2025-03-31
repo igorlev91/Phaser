@@ -77,6 +77,8 @@ void UGA_Revive::Hold(float timeRemaining)
 	}
 	else
 	{
+		StartDurationAudioEffect();
+
 		TArray<AActor*> playersRevived = Player->nearbyFaintedActors;
 		EndHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_Revive::EndDelay));
 		AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>();

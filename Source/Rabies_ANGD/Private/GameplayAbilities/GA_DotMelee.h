@@ -19,10 +19,15 @@ public:
 
 private:
 
+	bool bDealDamage = true;
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UFUNCTION()
 	void HandleDamage(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void HandleEnemyPush(FGameplayEventData Payload);
 
 	UFUNCTION()
 	void DotSuperZoom();
@@ -35,6 +40,9 @@ private:
 
 	UFUNCTION()
 	void ApplyEffect(float value);
+
+	UPROPERTY()
+	class ARPlayerBase* Player;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> AttackDamage;

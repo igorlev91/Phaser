@@ -5,6 +5,13 @@
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
+
+
+
+#include "Components/PanelSlot.h"
+#include "Components/PanelWidget.h"
 
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
@@ -37,6 +44,8 @@ void UPlayerAbilityGauge::SetupOwningAbilityCDO(const UGA_AbilityBase* OwningAbi
 
 		CooldownCounterText->SetVisibility(ESlateVisibility::Hidden);
 		SetupAbilityDelegates();
+
+		PaddingTickTimerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UPlayerAbilityGauge::NextTickPadding));
 	}
 }
 
@@ -65,6 +74,7 @@ void UPlayerAbilityGauge::AbilityCommited(UGameplayAbility* Ability)
 {
 	if (Ability->GetClass() == AbilityCDO->GetClass())
 	{
+
 		CooldownDuration = 0;
 		CooldownTimeRemaining = 0;
 		Ability->GetCooldownTimeRemainingAndDuration(Ability->GetCurrentAbilitySpecHandle(), Ability->GetCurrentActorInfo(), CooldownTimeRemaining, CooldownDuration);
@@ -94,4 +104,12 @@ void UPlayerAbilityGauge::CooldownFinished()
 	GetWorld()->GetTimerManager().ClearTimer(CooldownTickTimerHandle);
 	IconMat->SetScalarParameterValue(CooldownPercentMaterialParamName, 1.0f);
 	CooldownCounterText->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UPlayerAbilityGauge::NextTickPadding()
+{
+	if (UHorizontalBoxSlot* HBoxSlot = Cast<UHorizontalBoxSlot>(Slot))
+	{
+		HBoxSlot->SetPadding(FMargin(36.0f, 0.0f, 0.0f, 0.0f));
+	}
 }

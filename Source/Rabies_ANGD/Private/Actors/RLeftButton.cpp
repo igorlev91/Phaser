@@ -5,6 +5,7 @@
 #include "Player/RCharacterSelectController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
+#include "Net/UnrealNetwork.h"
 
 void ARLeftButton::OnActorClicked(AActor* TouchedActor, FKey ButtonPressed)
 {

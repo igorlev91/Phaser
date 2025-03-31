@@ -15,9 +15,12 @@ UGA_AbilityBase::UGA_AbilityBase()
 {
 	ActivationBlockedTags.AddTag(URAbilityGenericTags::GetDeadTag());
 	ActivationBlockedTags.AddTag(URAbilityGenericTags::GetUnActionableTag());
+}
 
-	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
-	AudioComp->bAutoActivate = false;
+void UGA_AbilityBase::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	StopDurationAudioEffect();
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 void UGA_AbilityBase::SignalDamageStimuliEvent(FGameplayAbilityTargetDataHandle TargetHandle)
@@ -33,4 +36,24 @@ void UGA_AbilityBase::SignalDamageStimuliEvent(FGameplayAbilityTargetDataHandle 
 void UGA_AbilityBase::ExecuteSpawnVFXCue(UParticleSystem* VFXToSpawn, float Size, const FVector& Location)
 {
 	UE_LOG(LogTemp, Warning, TEXT("THIS IS A CODE COMMENT: There is no spawn vfx code yet"));
+}
+
+void UGA_AbilityBase::TriggerAudioCue()
+{
+	FGameplayCueParameters CueParams;
+	CueParams.Location = GetAvatarActorFromActorInfo()->GetActorLocation();
+	GetAbilitySystemComponentFromActorInfo()->ExecuteGameplayCue(AudioCueTag, CueParams);
+}
+
+void UGA_AbilityBase::StartDurationAudioEffect()
+{
+	DurationAudioEffectHandle = BP_ApplyGameplayEffectToOwner(DurationAudioEffect);
+}
+
+void UGA_AbilityBase::StopDurationAudioEffect()
+{
+	if (DurationAudioEffectHandle.IsValid())
+	{
+		BP_RemoveGameplayEffectFromOwnerWithHandle(DurationAudioEffectHandle);
+	}
 }

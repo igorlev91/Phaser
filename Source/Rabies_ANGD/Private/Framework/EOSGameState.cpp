@@ -3,8 +3,18 @@
 
 #include "Framework/EOSGameState.h"
 #include "Net/UnrealNetwork.h"
-#include "Framework/RCharacterDefination.h"
 #include "Player/RCharacterSelectController.h"
+#include "Framework/RCharacterDefination.h"
+#include "Actors/CagedCharacter.h"
+#include "Actors/Clipboard.h"
+#include "Algo/Sort.h"
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Actor.h"
+#include "Player/RCharacterSelectController.h"
+#include "Actors/RRightButton.h"
+#include "EOSGameState.h"
+#include "EOSGameInstance.h"
 
 void AEOSGameState::BeginPlay()
 {
@@ -18,7 +28,7 @@ URCharacterDefination* AEOSGameState::GetDefinationFromIndex(int index)
 	return Characters[index];
 }
 
-void AEOSGameState::ReadyUp_Implementation()
+void AEOSGameState::Server_ReadyUp_Implementation()
 {
 	ReadiedPlayers++;
 

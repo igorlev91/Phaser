@@ -31,7 +31,6 @@ void UPlayerAttributeGauge::NativePreConstruct()
 
 void UPlayerAttributeGauge::SetDefaultValue(float value)
 {
-
 	if (bPercentage)
 	{
 		float percentage = (1.0f - value) * 100.0f;

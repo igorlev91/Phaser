@@ -18,6 +18,10 @@ public:
 
 	void OnActorClicked(AActor* TouchedActor, FKey ButtonPressed);
 
+
+private:
+
+
 protected:
 	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
 };

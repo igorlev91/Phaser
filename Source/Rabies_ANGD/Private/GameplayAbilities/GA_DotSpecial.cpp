@@ -77,6 +77,7 @@ void UGA_DotSpecial::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 		dotPickActor->SetTargettingRange(5000.0f);
 	}
 	waitTargetDataTask->FinishSpawningActor(this, dotPickActor);
+	TriggerAudioCue();
 }
 
 void UGA_DotSpecial::TargetAquired(const FGameplayAbilityTargetDataHandle& Data)

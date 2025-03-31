@@ -13,11 +13,16 @@
 #include "LevelSequenceActor.h"
 #include "CineCameraActor.h"
 #include "LevelSequence.h"
+#include "Net/UnrealNetwork.h"
 #include "LevelSequenceCameraSettings.h"
 #include "GameFramework/PlayerController.h"
+#include "Actors/RRightButton.h"
 #include "GameFramework/GameStateBase.h"
 #include "Widgets/CharacterSelect.h"
 #include "Framework/RCharacterDefination.h"
+#include "Actors/CagedCharacter.h"
+#include "Actors/Clipboard.h"
+#include "Algo/Sort.h"
 #include "LevelSequencePlayer.h"
 #include "MovieSceneSequence.h"
 #include "Framework/RCharacterDefination.h"
@@ -31,6 +36,34 @@ void ARCharacterSelectController::OnRep_PlayerState()
 	{
 		GetCameraView();
 		CreateCharacterSelectUI();
+
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Conveyer"), FoundActors);
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(FoundActors[i]->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+			DynamicConveyerMaterialInstance = UMaterialInstanceDynamic::Create(ConveyerMaterial, MeshComponent);
+			if (DynamicConveyerMaterialInstance)
+			{
+				MeshComponent->SetMaterial(1, DynamicConveyerMaterialInstance);
+			}
+		}
+
+		MyPlayerState = Cast<AEOSPlayerState>(PlayerState);
+		if (MyPlayerState == nullptr)
+		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Playerstate was found on rep player state!"));
+			}
+			return;
+		}
+
+		if (!MyPlayerState->OnHoveredCharacterIndexReplicated.IsAlreadyBound(this, &ARCharacterSelectController::HoveredCharacterIndexChange))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Binded on character index"));
+			MyPlayerState->OnHoveredCharacterIndexReplicated.AddDynamic(this, &ARCharacterSelectController::HoveredCharacterIndexChange);
+		}
 	}
 }
 
@@ -58,7 +91,38 @@ void ARCharacterSelectController::BeginPlay()
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	GetWorld()->GetFirstPlayerController()->bEnableClickEvents = true;
 
+	GetCagedCharacters();
 	GetCameraView();
+
+	TArray<AActor*> FoundActors;
+
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AClipboard::StaticClass(), FoundActors);
+
+	if (FoundActors.Num() > 0)
+	{
+		Clipboard = Cast<AClipboard>(FoundActors[0]);
+	}
+
+	GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
+	if (!GameState)
+	{
+		return;
+	}
+
+	/*MyPlayerState = Cast<AEOSPlayerState>(PlayerState);
+	if (MyPlayerState == nullptr)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Playerstate was found on begin play!"));
+		}
+		return;
+	}
+
+	if (!MyPlayerState->OnHoveredCharacterIndexReplicated.IsAlreadyBound(this, &ARCharacterSelectController::HoveredCharacterIndexChange))
+	{
+		MyPlayerState->OnHoveredCharacterIndexReplicated.AddDynamic(this, &ARCharacterSelectController::HoveredCharacterIndexChange);
+	}
 
 	/*for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
 	{
@@ -80,22 +144,18 @@ void ARCharacterSelectController::BeginPlay()
 		SequencePlayer->OnFinished.AddDynamic(this, &ARCharacterSelectController::OnSequenceEnd);
 	}*/
 
-	GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
-	if (!GameState)
-	{
-		return;
-	}
-
-	CurrentlyHoveredCharacter = GameState->GetDefinationFromIndex(0);
+	//CurrentlyHoveredCharacter = GameState->GetDefinationFromIndex(0);
 }
 
 void ARCharacterSelectController::ConfirmCharacterChoice()
 {
 	if (!IsLocalPlayerController())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is Not local player"));
 		return;
+	}
 
-	AEOSPlayerState* playerState = Cast<AEOSPlayerState>(PlayerState);
-	if (playerState == nullptr)
+	if (MyPlayerState == nullptr)
 	{
 		if (GEngine)
 		{
@@ -103,13 +163,40 @@ void ARCharacterSelectController::ConfirmCharacterChoice()
 		}
 		return;
 	}
-	playerState->Server_IssueCharacterPick_Implementation(CurrentlyHoveredCharacter);
-	GameState->ReadyUp();
+
+	ServerRequestButtonClick(MyPlayerState);
 }
 
-void ARCharacterSelectController::SetCurrentlyHoveredCharacter(URCharacterDefination* currentlyHoveredCharacter)
+void ARCharacterSelectController::NextCharacter(class ARRightButton* rightButton)
 {
-	CurrentlyHoveredCharacter = currentlyHoveredCharacter;
+	RightButton = rightButton;
+
+	if (!IsLocalPlayerController())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is Not local player"));
+		return;
+	}
+
+	if (MyPlayerState == nullptr)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Playerstate was found!"));
+		}
+		return;
+	}
+	ServerRequestNextClick(MyPlayerState);
+}
+
+void ARCharacterSelectController::ServerRequestButtonClick_Implementation(AEOSPlayerState* requestingPlayerState)
+{
+	requestingPlayerState->Server_IssueCharacterPick_Implementation(GameState->GetDefinationFromIndex(requestingPlayerState->HoveredCharacterIndex));
+	GameState->Server_ReadyUp();
+}
+
+void ARCharacterSelectController::ServerRequestNextClick_Implementation(AEOSPlayerState* requestingPlayerState)
+{
+	requestingPlayerState->Server_ChangeHoveredCharacterPick();
 }
 
 void ARCharacterSelectController::GetCameraView()
@@ -176,4 +263,71 @@ void ARCharacterSelectController::OnSequenceEnd()
 
 		//SequencePlayer->OnFinished.AddDynamic(this, &ARMainMenuController::OnSequenceEnd);
 	}*/
+}
+
+void ARCharacterSelectController::HoveredCharacterIndexChange(int newIndex)
+{
+	if (DynamicConveyerMaterialInstance)
+	{
+		DynamicConveyerMaterialInstance->SetVectorParameterValue(FName("Scroll"), FVector(0.2f, 0.0f, 0.0f));
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, this, &ARCharacterSelectController::EnableClickButton, 1.3f, false);
+
+	GetNextCharacterCage();
+	Clipboard->SetNewCharacter(GameState->GetDefinationFromIndex(MyPlayerState->HoveredCharacterIndex));
+}
+
+void ARCharacterSelectController::EnableClickButton()
+{
+	if (RightButton)
+	{
+		RightButton->EnableClick();
+	}
+
+	if (DynamicConveyerMaterialInstance)
+	{
+		DynamicConveyerMaterialInstance->SetVectorParameterValue(FName("Scroll"), FVector(0.0f, 0.0f, 0.0f));
+	}
+}
+
+
+void ARCharacterSelectController::GetNextCharacterCage()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Getting next character"));
+	CagedCharacters[0]->TickPosition(OffScreen, Sideline, true);
+
+	if (CagedCharacters.Num() > 1) // Only rotate if there's more than one element
+	{
+		ACagedCharacter* FirstElement = CagedCharacters[0];
+		CagedCharacters.RemoveAt(0);
+		CagedCharacters.Add(FirstElement);
+	}
+
+	CagedCharacters[0]->TickPosition(ShownCage, Sideline, false);
+
+	//Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController())->SetCurrentlyHoveredCharacter(CagedCharacters[0]->Character);
+	//return CagedCharacters[0]->Character;
+}
+
+void ARCharacterSelectController::GetCagedCharacters()
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACagedCharacter::StaticClass(), FoundActors);
+	CagedCharacters.Empty();
+
+	for (AActor* Actor : FoundActors)
+	{
+		ACagedCharacter* CagedCharacter = Cast<ACagedCharacter>(Actor);
+		if (CagedCharacter)
+		{
+			CagedCharacters.Add(CagedCharacter);
+			UE_LOG(LogTemp, Warning, TEXT("CagedCharacter: %s"), *CagedCharacter->GetName());
+		}
+	}
+
+	Algo::Sort(CagedCharacters, [](const ACagedCharacter* A, const ACagedCharacter* B)
+		{
+			return A->CharacterIndex < B->CharacterIndex; // Sort in ascending order
+		});
 }

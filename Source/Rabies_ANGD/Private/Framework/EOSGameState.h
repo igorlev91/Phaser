@@ -34,10 +34,11 @@ public:
 
 	URCharacterDefination* GetDefinationFromIndex(int index);
 
-	UFUNCTION(NetMulticast, Reliable) // this function calls on both server and client if it's called from the server.
-	void ReadyUp();
+	UFUNCTION(BlueprintCallable, Server, Reliable) // this function calls on both server and client if it's called from the server.
+	void Server_ReadyUp();
 	
 private:
+
 	UFUNCTION(NetMulticast, Reliable) // this function calls on both server and client if it's called from the server.
 	void LoadMapAndListen();
 

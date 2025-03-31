@@ -109,6 +109,18 @@ private:
 	class UPlayerAttributeGauge* rangedAttackSpeed;
 
 	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* specialStrength;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* specialAttackSpeed;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* ultimateStrength;
+
+	UPROPERTY(meta = (BindWidget))
+	class UPlayerAttributeGauge* ultimateAttackSpeed;
+
+	UPROPERTY(meta = (BindWidget))
 	class UPlayerAttributeGauge* movementspeed;
 
 	UPROPERTY(meta = (BindWidget))

@@ -90,7 +90,9 @@ void UGA_RangedGattlingAttack::Fire(FGameplayEventData Payload)
 				}
 
 				//ApplyCooldown(cooldownHandle, actorInfo, activationInfo);
-				Player->Hitscan(4000, Player->GetPlayerBaseState());
+				Player->Hitscan(6000, Player->GetPlayerBaseState());
+
+				StartDurationAudioEffect();
 			}
 		}
 	}
@@ -120,6 +122,10 @@ void UGA_RangedGattlingAttack::RecieveAttackHitscan(AActor* hitActor, FVector st
 
 			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(RangedGattlingDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
 			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
+
+			if (ARCharacterBase* hitCharacter = Cast<ARCharacterBase>(hitActor))
+				Player->HitRangedAttack(hitCharacter); // make sure to do it afterwards so you can check health
+
 			SignalDamageStimuliEvent(Payload.TargetData);
 		}
 	}

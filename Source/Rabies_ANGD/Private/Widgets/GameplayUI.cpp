@@ -73,6 +73,16 @@ void UGameplayUI::NativeConstruct()
 		rangedAttackSpeed->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetRangedAttackCooldownReductionAttribute()));
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetRangedAttackCooldownReductionAttribute()).AddUObject(rangedAttackSpeed, &UPlayerAttributeGauge::UpdateValue);
 
+		specialStrength->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetAbilityStrengthAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetAbilityStrengthAttribute()).AddUObject(specialStrength, &UPlayerAttributeGauge::UpdateValue);
+		specialAttackSpeed->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetAbilityCooldownReductionAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetAbilityCooldownReductionAttribute()).AddUObject(specialAttackSpeed, &UPlayerAttributeGauge::UpdateValue);
+
+		ultimateStrength->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetUltimateStrengthAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetUltimateStrengthAttribute()).AddUObject(ultimateStrength, &UPlayerAttributeGauge::UpdateValue);
+		ultimateAttackSpeed->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetUltimateCooldownReductionAttribute()));
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetUltimateCooldownReductionAttribute()).AddUObject(ultimateAttackSpeed, &UPlayerAttributeGauge::UpdateValue);
+
 		movementspeed->SetDefaultValue(OwnerASC->GetNumericAttributeBase(URAttributeSet::GetMovementSpeedAttribute()));
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMovementSpeedAttribute()).AddUObject(movementspeed, &UPlayerAttributeGauge::UpdateValue);
 
