@@ -47,6 +47,8 @@ void UGA_EnemyRangedAttack::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	UAbilityTask_WaitGameplayEvent* WaitForDamage = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetGenericTargetAquiredTag());
 	WaitForDamage->EventReceived.AddDynamic(this, &UGA_EnemyRangedAttack::HandleDamage);
 	WaitForDamage->ReadyForActivation();
+
+	TriggerAudioCue();
 }
 
 void UGA_EnemyRangedAttack::TryCommitAttack(FGameplayEventData Payload)

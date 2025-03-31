@@ -77,7 +77,6 @@ void UGA_DotSpecial::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 		dotPickActor->SetTargettingRange(5000.0f);
 	}
 	waitTargetDataTask->FinishSpawningActor(this, dotPickActor);
-	TriggerAudioCue();
 }
 
 void UGA_DotSpecial::TargetAquired(const FGameplayAbilityTargetDataHandle& Data)
@@ -143,4 +142,5 @@ void UGA_DotSpecial::SendOffAttack(FGameplayEventData Payload)
 	newProjectile->Init(AttackDamages);
 	newProjectile->InitOwningCharacter(Player);
 	newProjectile->SetOwner(Player);
+	TriggerAudioCue();
 }

@@ -109,7 +109,10 @@ void ARCharacterSelectController::BeginPlay()
 		return;
 	}
 
-	/*MyPlayerState = Cast<AEOSPlayerState>(PlayerState);
+	if (GetNetMode() != ENetMode::NM_Standalone)
+		return;
+
+	MyPlayerState = Cast<AEOSPlayerState>(PlayerState);
 	if (MyPlayerState == nullptr)
 	{
 		if (GEngine)
@@ -123,28 +126,6 @@ void ARCharacterSelectController::BeginPlay()
 	{
 		MyPlayerState->OnHoveredCharacterIndexReplicated.AddDynamic(this, &ARCharacterSelectController::HoveredCharacterIndexChange);
 	}
-
-	/*for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
-	{
-		MainMenuSequence = *It;
-		break;
-	}
-
-	if (!CineCamera || !MainMenuSequence)
-		return;
-
-	ULevelSequencePlayer* SequencePlayer = MainMenuSequence->GetSequencePlayer();
-	if (SequencePlayer)
-	{
-		FMovieSceneSequencePlaybackParams playbackParams;
-		playbackParams.Time = 0;
-		SequencePlayer->SetPlaybackPosition(playbackParams);
-
-		SequencePlayer->Play();
-		SequencePlayer->OnFinished.AddDynamic(this, &ARCharacterSelectController::OnSequenceEnd);
-	}*/
-
-	//CurrentlyHoveredCharacter = GameState->GetDefinationFromIndex(0);
 }
 
 void ARCharacterSelectController::ConfirmCharacterChoice()

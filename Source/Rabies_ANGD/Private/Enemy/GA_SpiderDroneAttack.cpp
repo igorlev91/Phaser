@@ -54,7 +54,6 @@ void UGA_SpiderDroneAttack::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		return;
 	}
 
-
 	UAbilityTask_WaitGameplayEvent* WaitForActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetBasicAttackActivationTag());
 	WaitForActivation->EventReceived.AddDynamic(this, &UGA_SpiderDroneAttack::TryCommitAttack);
 	WaitForActivation->ReadyForActivation();
@@ -104,6 +103,7 @@ void UGA_SpiderDroneAttack::TryCommitAttack(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
+		TriggerAudioCue();
 		Character->Hitscan(8000, nullptr);
 	}
 }

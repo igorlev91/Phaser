@@ -39,7 +39,14 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void LeaveLevel();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_RequestSpawnDotLaserMarks(UNiagaraSystem* SystemToSpawn, FVector SpawnLocation, FVector Direction, float ScorchSize);
+
+
 private:
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SpawnDotLaserMarks(UNiagaraSystem* SystemToSpawn, FVector SpawnLocation, FVector Direction, float ScorchSize);
 
 	UPROPERTY()
 	FVector deadlockPos;

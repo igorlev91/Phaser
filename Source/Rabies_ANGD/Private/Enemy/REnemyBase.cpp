@@ -38,6 +38,7 @@
 AREnemyBase::AREnemyBase()
 {
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AREnemyBase::HitDetected);
 
@@ -45,12 +46,14 @@ AREnemyBase::AREnemyBase()
 	AIPerceptionSourceComp->RegisterForSense(UAISense_Sight::StaticClass());
 
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+
+	GetMesh()->SetGenerateOverlapEvents(true);
 }
 
 void AREnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 void AREnemyBase::Tick(float DeltaTime)

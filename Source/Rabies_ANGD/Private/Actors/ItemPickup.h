@@ -26,6 +26,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Item Detail")
 	class UStaticMeshComponent* ItemMesh;
 
+	UPROPERTY(VisibleAnywhere, Category = "Item Detail")
+	class UStaticMeshComponent* SphereStyle;
+
 	UPROPERTY(VisibleAnywhere, Category = "ChestDetail")
 	class USphereComponent* SphereCollider;
 

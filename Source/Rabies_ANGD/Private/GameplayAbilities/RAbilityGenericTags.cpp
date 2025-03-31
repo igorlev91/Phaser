@@ -138,6 +138,11 @@ FGameplayTag URAbilityGenericTags::GetScrapTag()
 	return FGameplayTag::RequestGameplayTag("stat.scrap");
 }
 
+FGameplayTag URAbilityGenericTags::GetTaserTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.taser");
+}
+
 FGameplayTag URAbilityGenericTags::GetRevivingTag()
 {
 	return FGameplayTag::RequestGameplayTag("stat.reviving");

@@ -55,6 +55,7 @@ void UGA_EnemyMeleeAttack::TryCommitAttack(FGameplayEventData Payload)
 		ARCharacterBase* character = Cast<ARCharacterBase>(GetOwningActorFromActorInfo());
 		if (character)
 		{
+			TriggerAudioCue();
 			character->ServerPlayAnimMontage(AttackAnim);
 		}
 	}

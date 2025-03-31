@@ -47,13 +47,18 @@ void UGA_AbilityBase::TriggerAudioCue()
 
 void UGA_AbilityBase::StartDurationAudioEffect()
 {
-	DurationAudioEffectHandle = BP_ApplyGameplayEffectToOwner(DurationAudioEffect);
+	if (!DurationAudioEffectHandle.IsValid())
+	{
+		DurationAudioEffectHandle = BP_ApplyGameplayEffectToOwner(DurationAudioEffect);
+	}
 }
 
 void UGA_AbilityBase::StopDurationAudioEffect()
 {
 	if (DurationAudioEffectHandle.IsValid())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("I SHOULD BE STOPPING!!!"));
+
 		BP_RemoveGameplayEffectFromOwnerWithHandle(DurationAudioEffectHandle);
 	}
 }

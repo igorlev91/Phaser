@@ -104,6 +104,7 @@ void UGA_RangedGattlingAttack::EndAbility(const FGameplayAbilitySpecHandle Handl
 
 	if (ClientHitScanHandle.IsValid() && Player)
 	{
+		StopDurationAudioEffect();
 		Player->ClientHitScan.Remove(ClientHitScanHandle);
 	}
 }

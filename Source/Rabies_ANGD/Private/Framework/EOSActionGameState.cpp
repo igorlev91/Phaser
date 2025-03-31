@@ -22,6 +22,8 @@
 #include "Player/RPlayerController.h"
 #include "Actors/EnemySpawnLocation.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 void AEOSActionGameState::BeginPlay()
 {
@@ -301,6 +303,32 @@ void AEOSActionGameState::LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad)
         GetWorld()->ServerTravel(levelName.ToString() + "?listen");
     }
 }
+
+void AEOSActionGameState::Server_RequestSpawnDotLaserMarks_Implementation(UNiagaraSystem* SystemToSpawn, FVector SpawnLocation, FVector Direction, float ScorchSize)
+{
+    Multicast_SpawnDotLaserMarks(SystemToSpawn, SpawnLocation, Direction, ScorchSize);
+}
+
+bool AEOSActionGameState::Server_RequestSpawnDotLaserMarks_Validate(UNiagaraSystem* SystemToSpawn, FVector SpawnLocation, FVector Direction, float ScorchSize)
+{
+    return true;
+}
+
+void AEOSActionGameState::Multicast_SpawnDotLaserMarks_Implementation(UNiagaraSystem* SystemToSpawn, FVector SpawnLocation, FVector Direction, float ScorchSize)
+{
+    if (!SystemToSpawn) return;
+
+    UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SystemToSpawn, SpawnLocation, FRotator::ZeroRotator, FVector(1.0f), true, true);
+
+    if (NiagaraComp)
+    {
+        NiagaraComp->SetVectorParameter(FName("Alignment"), Direction);
+        NiagaraComp->SetFloatParameter(FName("ScorchSize"), ScorchSize);
+    }
+}
+
+
+
 
 void AEOSActionGameState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {

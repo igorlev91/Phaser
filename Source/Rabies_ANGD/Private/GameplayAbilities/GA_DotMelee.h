@@ -64,4 +64,12 @@ private:
 	FTimerHandle ZoomTimerHandle;
 	FTimerHandle FallTimerHandle;
 	FTimerHandle RiseTimerHandle;
+
+	/*		Extra Audio		*/
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	FGameplayTag AudioCueTagAir;
+
+	void TriggerAudioCueAir();
+
 };

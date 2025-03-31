@@ -119,6 +119,9 @@ public:
 	void CheckIVBag();
 
 	UFUNCTION()
+	void CheckTaser(ARCharacterBase* hitCharacter);
+
+	UFUNCTION()
 	void CheckHardhat();
 
 	UFUNCTION()
@@ -156,6 +159,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Items")
 	TSubclassOf<UGameplayEffect> RadioEfffect;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> TaserEffect;
+
 	FTimerHandle RadioDelayTimer;
 
 private:
@@ -173,6 +179,8 @@ private:
 
 	void StartDeath();
 	void DeathTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+
+	void TaserTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damaged")

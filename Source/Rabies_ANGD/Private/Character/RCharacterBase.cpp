@@ -69,6 +69,7 @@ ARCharacterBase::ARCharacterBase()
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetForwardSpeedAttribute()).AddUObject(this, &ARCharacterBase::ForwardSpeedUpdated);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &ARCharacterBase::ScopingTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetDeadTag()).AddUObject(this, &ARCharacterBase::DeathTagChanged);
+	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetTaserTag()).AddUObject(this, &ARCharacterBase::TaserTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetFlyingTag()).AddUObject(this, &ARCharacterBase::FlyingTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetTakeOffDelayTag()).AddUObject(this, &ARCharacterBase::TakeOffDelayTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetHoldingJump()).AddUObject(this, &ARCharacterBase::HoldingJumpTagChanged);
@@ -232,7 +233,7 @@ void ARCharacterBase::Hitscan(float range, AEOSPlayerState* requestedPlayerState
 
 void ARCharacterBase::ClientHitScanResult_Implementation(AActor* hitActor, FVector start, FVector end, bool enemy)
 {
-	FString actorName = hitActor->GetName();
+	//FString actorName = hitActor->GetName();
 	//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *actorName));
 	//DrawDebugLine(GetWorld(), start, end, FColor::Green);
 	FColor debugColor = (enemy) ? FColor::Red : FColor::Green ;
@@ -284,6 +285,18 @@ void ARCharacterBase::DeathTagChanged(const FGameplayTag TagChanged, int32 NewSt
 		// change the AI perception
 
 		OnDeadStatusChanged.Broadcast(false);
+	}
+}
+
+void ARCharacterBase::TaserTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	if (NewStackCount == 1) // for getting stunned
+	{
+		//UE_LOG(LogTemp, Error, TEXT("%s Got stunned"), *GetName());
+	}
+	else if (NewStackCount == 0)
+	{
+		//UE_LOG(LogTemp, Error, TEXT("%s not stunned"), *GetName());
 	}
 }
 
@@ -366,6 +379,7 @@ void ARCharacterBase::HitSpecialAttack(ARCharacterBase* hitCharacter)
 		return;
 
 	CheckIVBag();
+	CheckTaser(hitCharacter);
 	DealtDamage(hitCharacter);
 }
 
@@ -399,6 +413,28 @@ void ARCharacterBase::CheckFriendShipBracelet_Implementation()
 void ARCharacterBase::CheckIVBag()
 {
 	HealingRadiusEffect(IVBagEffect, true);
+}
+
+void ARCharacterBase::CheckTaser(ARCharacterBase* hitCharacter)
+{
+	bool bFound = false;
+	float taserChance = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetTaserStunChanceAttribute(), bFound);
+
+	if (bFound == false || taserChance <= 0)
+		return;
+
+	float randomApplyChance = FMath::RandRange(0, 100);
+	//UE_LOG(LogTemp, Error, TEXT("%f% Trying to inflict got %f"), nailsChance, randomApplyChance);
+	if (taserChance >= randomApplyChance)
+	{
+		FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(TaserEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+		FGameplayEffectSpec* spec = specHandle.Data.Get();
+		if (spec)
+		{
+			hitCharacter->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+		}
+	}
 }
 
 void ARCharacterBase::CheckHardhat()
@@ -510,6 +546,7 @@ void ARCharacterBase::CheckRadioDelay(AREnemyBase* hitCharacter)
 
 void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEffect, bool IVBag)
 {
+
 	bool bFound = false;
 	float healingRadius = (IVBag) ? AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetAbilityHealingRadiusAttribute(), bFound) : AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetFriendshipHealingRadiusAttribute(), bFound);
 
@@ -602,15 +639,18 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 		bHasDied = false;
 	}
 
-	if (ChangeData.NewValue > 0 && ChangeData.NewValue < ChangeData.OldValue && FlinchMontage != nullptr && AirFlinchMontage != nullptr)
+	if (ChangeData.NewValue > 0 && ChangeData.NewValue < ChangeData.OldValue && ChangeData.NewValue && !AbilitySystemComponent->HasMatchingGameplayTag(URAbilityGenericTags::GetFullHealthTag()))
 	{
-		if (bIsFlying)
+		if (FlinchMontage != nullptr && AirFlinchMontage != nullptr)
 		{
-			ServerPlayAnimMontage(AirFlinchMontage);
-		}
-		else
-		{
-			ServerPlayAnimMontage(FlinchMontage);
+			if (bIsFlying)
+			{
+				ServerPlayAnimMontage(AirFlinchMontage);
+			}
+			else
+			{
+				ServerPlayAnimMontage(FlinchMontage);
+			}
 		}
 	}
 

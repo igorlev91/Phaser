@@ -77,6 +77,8 @@ void UGA_DeadlockRangedAttack::ActivateAbility(const FGameplayAbilitySpecHandle 
 				RecieveAttackHitscan(hitActor, startPos, endPos);
 			});
 	}
+
+	TriggerAudioCue();
 }
 
 void UGA_DeadlockRangedAttack::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos)
@@ -101,6 +103,7 @@ void UGA_DeadlockRangedAttack::TryCommitAttack(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
+		TriggerAudioCue();
 		Character->Hitscan(8000, nullptr);
 	}
 }

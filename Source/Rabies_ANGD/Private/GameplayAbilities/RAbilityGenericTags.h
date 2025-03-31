@@ -45,6 +45,7 @@ public:
 	static FGameplayTag GetHoldingJump();
 
 	static FGameplayTag GetScrapTag();
+	static FGameplayTag GetTaserTag();
 	static FGameplayTag GetRevivingTag();
 	static FGameplayTag GetReviveTag();
 	static FGameplayTag GetEndRevivingTag();

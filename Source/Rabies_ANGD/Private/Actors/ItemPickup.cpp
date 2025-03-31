@@ -15,6 +15,9 @@
 
 #include "Framework/EOSActionGameState.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 #include "GameplayAbilities/GA_AbilityBase.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 #include "AbilitySystemBlueprintLibrary.h"
@@ -42,6 +45,9 @@ AItemPickup::AItemPickup()
 	SphereCollider->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
 
 	RootComponent = ItemMesh;
+
+	SphereStyle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere Mesh"));
+	SphereStyle->SetupAttachment(ItemMesh);
 }
 
 // Called when the game starts or when spawned

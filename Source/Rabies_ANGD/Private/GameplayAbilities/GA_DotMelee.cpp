@@ -21,6 +21,7 @@
 
 #include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GA_DotMelee.h"
 
 UGA_DotMelee::UGA_DotMelee()
 {
@@ -79,6 +80,8 @@ void UGA_DotMelee::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, this, &UGA_DotMelee::DotSuperZoom, 0.5f, false);
 		GetWorld()->GetTimerManager().SetTimer(FallTimerHandle, this, &UGA_DotMelee::DotFall, 0.3f, false);
 		GetWorld()->GetTimerManager().SetTimer(RiseTimerHandle, this, &UGA_DotMelee::DotRise, 0.9f, false);
+
+		TriggerAudioCueAir();
 	}
 	else
 	{
@@ -88,9 +91,8 @@ void UGA_DotMelee::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		WaitForPush->EventReceived.AddDynamic(this, &UGA_DotMelee::HandleEnemyPush);
 		WaitForPush->ReadyForActivation();
 
+		TriggerAudioCue();
 	}
-
-	TriggerAudioCue();
 
 }
 
@@ -193,4 +195,11 @@ void UGA_DotMelee::ApplyEffect(float value)
 	fallSpec.Data.Get()->SetSetByCallerMagnitude(URAbilityGenericTags::GetGenericTargetAquiredTag(), value);
 
 	GravityFallEffectHandle = ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, fallSpec);
+}
+
+void UGA_DotMelee::TriggerAudioCueAir()
+{
+	FGameplayCueParameters CueParams;
+	CueParams.Location = GetAvatarActorFromActorInfo()->GetActorLocation();
+	GetAbilitySystemComponentFromActorInfo()->ExecuteGameplayCue(AudioCueTagAir, CueParams);
 }
