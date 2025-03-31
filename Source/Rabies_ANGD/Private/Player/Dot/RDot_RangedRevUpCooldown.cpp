@@ -1,15 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Player/Dot/RDot_MeleeAttack_Cooldown.h"
+#include "Player/Dot/RDot_RangedRevUpCooldown.h"
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayEffectTypes.h"
 #include "Player/RPlayerBase.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 
-float URDot_MeleeAttack_Cooldown::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
+float URDot_RangedRevUpCooldown::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
 {
-    float baseSpeed = 5.0f;
+    float baseSpeed = 2.5f;
 
     const UAbilitySystemComponent* SourceASC = Spec.GetContext().GetOriginalInstigatorAbilitySystemComponent();
 
@@ -17,7 +17,7 @@ float URDot_MeleeAttack_Cooldown::CalculateBaseMagnitude_Implementation(const FG
     if (SourceASC)
     {
         // Get the instigator’s strength attribute
-        float modifiedSpeed = SourceASC->GetNumericAttributeBase(URAttributeSet::GetMeleeAttackCooldownReductionAttribute());
+        float modifiedSpeed = SourceASC->GetNumericAttributeBase(URAttributeSet::GetRangedAttackCooldownReductionAttribute());
 
 
         baseSpeed *= modifiedSpeed;

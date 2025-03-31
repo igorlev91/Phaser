@@ -13,6 +13,9 @@
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+#include "Player/Dot/RDot_RangedRevUpCooldown.h"
+#include "Player/Dot/RDot_RangedAttack_Cooldown.h"
+
 #include "AbilitySystemBlueprintLibrary.h"
 
 #include "Character/RCharacterBase.h"
@@ -75,7 +78,18 @@ void UGA_RangedGattlingAttack::Fire(FGameplayEventData Payload)
 		{
 			if (Player)
 			{
-				ApplyCooldown(cooldownHandle, actorInfo, activationInfo);
+				FGameplayEffectContextHandle EffectContext = Player->GetAbilitySystemComponent()->MakeEffectContext();
+				EffectContext.AddSourceObject(this);
+
+				CooldownCalculationClass = ShootingCooldownClass;
+
+				FGameplayEffectSpecHandle cooldownSpecHandle = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(ShootingCooldownGameplayEffect, GetAbilityLevel(), EffectContext);
+				if (cooldownHandle.IsValid())
+				{
+					ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, cooldownSpecHandle);
+				}
+
+				//ApplyCooldown(cooldownHandle, actorInfo, activationInfo);
 				Player->Hitscan(4000, Player->GetPlayerBaseState());
 			}
 		}

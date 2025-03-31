@@ -151,7 +151,8 @@ void ARPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		enhancedInputComp->BindAction(jumpInputAction, ETriggerEvent::Started, this, &ARPlayerBase::StartJump);
 		enhancedInputComp->BindAction(jumpInputAction, ETriggerEvent::Completed, this, &ARPlayerBase::ReleaseJump);
 		enhancedInputComp->BindAction(QuitOutAction, ETriggerEvent::Triggered, this, &ARPlayerBase::QuitOut);
-		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::DoBasicAttack);
+		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Started, this, &ARPlayerBase::DoBasicAttack);
+		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Triggered, this, &ARPlayerBase::DoAutomaticAttack);
 		enhancedInputComp->BindAction(basicAttackAction, ETriggerEvent::Completed, this, &ARPlayerBase::StopBasicAttack);
 		enhancedInputComp->BindAction(scopeInputAction, ETriggerEvent::Started, this, &ARPlayerBase::EnableScoping);
 		enhancedInputComp->BindAction(scopeInputAction, ETriggerEvent::Completed, this, &ARPlayerBase::DisableScoping);
@@ -281,6 +282,18 @@ void ARPlayerBase::QuitOut()
 	}*/
 }
 
+void ARPlayerBase::DoAutomaticAttack()
+{
+	if (IsScoping())
+	{
+		//if (AudioComp->!IsPlaying())
+		//{
+
+		//}
+		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
+	}
+}
+
 void ARPlayerBase::DoBasicAttack()
 {
 	if (IsScoping())
@@ -290,6 +303,10 @@ void ARPlayerBase::DoBasicAttack()
 
 		//}
 		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::BasicAttack);
+	}
+	else
+	{
+		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::MeleeAttack);
 	}
 }
 

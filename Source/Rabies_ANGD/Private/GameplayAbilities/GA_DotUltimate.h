@@ -22,14 +22,32 @@ private:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UFUNCTION()
-	void TryCommitAttack(FGameplayEventData Payload);
+	void TargetAquired(const FGameplayAbilityTargetDataHandle& Data);
 
 	UFUNCTION()
-	void HandleDamage(FGameplayEventData Payload);
+	void TargetCancelled(const FGameplayAbilityTargetDataHandle& Data);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* TargettingMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* CastingMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* TargettingMontageAir;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* CastingMontageAir;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> AttackDamage;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Anim")
-	UAnimMontage* Anim;
+	UPROPERTY()
+	class UAbilityTask_PlayMontageAndWait* playTargettingMontageTask;
+
+	UFUNCTION()
+	void SendOffAttack(FGameplayEventData Payload);
+
+	UPROPERTY()
+	class ARPlayerBase* Player;
 };

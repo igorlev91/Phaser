@@ -42,6 +42,7 @@ public:
 	ATTRIBUTE_ACCESSORS(URAttributeSet, MovementSpeed)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, Scrap)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, Gravity)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, ForwardSpeed)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, ReviveSpeed)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, BasicAttackLifesteal)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, DamageReduction)
@@ -115,6 +116,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_Gravity)
 	FGameplayAttributeData Gravity;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ForwardSpeed)
+	FGameplayAttributeData ForwardSpeed;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ReviveSpeed)
 	FGameplayAttributeData ReviveSpeed;
@@ -217,8 +221,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_Scrap(const FGameplayAttributeData& OldValue);
+
 	UFUNCTION()
 	void OnRep_Gravity(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_ForwardSpeed(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
 	void OnRep_ReviveSpeed(const FGameplayAttributeData& OldValue);

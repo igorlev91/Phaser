@@ -78,6 +78,11 @@ FGameplayTag URAbilityGenericTags::GetAttackingTag()
 	return FGameplayTag::RequestGameplayTag("ability.attack.attacking");
 }
 
+FGameplayTag URAbilityGenericTags::GetMeleeAttackingTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.attack.meleeAttacking");
+}
+
 FGameplayTag URAbilityGenericTags::GetStartAimingTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.attack.startAiming");
@@ -186,4 +191,14 @@ FGameplayTag URAbilityGenericTags::GetMeleeAttackStrengthTag()
 FGameplayTag URAbilityGenericTags::GetRangedAttackStrengthTag()
 {
 	return FGameplayTag::RequestGameplayTag("stat.rangedAttackStrength");
+}
+
+FGameplayTag URAbilityGenericTags::GetSpecialStrengthTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.specialStrength");
+}
+
+FGameplayTag URAbilityGenericTags::GetUltimateStrengthTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.ultimateStrength");
 }

@@ -46,8 +46,14 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_SessionName)
 	FName SessionName;
 
+	UPROPERTY(ReplicatedUsing = OnRep_ReadiedPlayers)
+	int ReadiedPlayers;
+
 	UFUNCTION()
 	void OnRep_SessionName();
+
+	UFUNCTION()
+	void OnRep_ReadiedPlayers();
 
 	UFUNCTION(NetMulticast, Reliable) // this function calls on both server and client if it's called from the server.
 	void NetMulticast_UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected);

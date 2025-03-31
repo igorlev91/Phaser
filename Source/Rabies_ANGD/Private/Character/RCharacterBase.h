@@ -93,6 +93,7 @@ public:
 	FORCEINLINE bool IsFlying() const { return bIsFlying; }
 	FORCEINLINE bool IsTakeOffDelay() const { return bTakeOffDelay; }
 	FORCEINLINE bool IsHoldingJump() const { return bHoldingJump; }
+	FORCEINLINE bool IsMeleeAttacking() const { return bMeleeAttacking; }
 
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
 	UAnimMontage* DeathMontage;
@@ -139,6 +140,10 @@ private:
 	virtual void HoldingJumpTagChanged(bool bNewIsAiming) {/*empty in base*/ };
 	bool bHoldingJump;
 
+	void MeleeAttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	virtual void MeleeAttackingTagChanged(bool bNewIsAiming) {/*empty in base*/ };
+	bool bMeleeAttacking;
+
 	UPROPERTY(VisibleAnywhere, Category = "Gameplay Ability")
 	URAbilitySystemComponent* AbilitySystemComponent;
 
@@ -165,6 +170,7 @@ private:
 	void MaxHealthUpdated(const FOnAttributeChangeData& ChangeData);
 	void MovementSpeedUpdated(const FOnAttributeChangeData& ChangeData);
 	void GravityUpdated(const FOnAttributeChangeData& ChangeData);
+	void ForwardSpeedUpdated(const FOnAttributeChangeData& ChangeData);
 
 	FHitResult hitResult;
 

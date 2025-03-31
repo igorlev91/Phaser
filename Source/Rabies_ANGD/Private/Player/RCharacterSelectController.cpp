@@ -29,6 +29,7 @@ void ARCharacterSelectController::OnRep_PlayerState()
 	BP_OnRep_PlayerState();
 	if (IsLocalController() && CharacterSelectUI == nullptr) //maybe also check if they have authority?
 	{
+		GetCameraView();
 		CreateCharacterSelectUI();
 	}
 }
@@ -52,15 +53,12 @@ void ARCharacterSelectController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	bAutoManageActiveCameraTarget = false;
+
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	GetWorld()->GetFirstPlayerController()->bEnableClickEvents = true;
 
-	for (TActorIterator<ACineCameraActor> It(GetWorld()); It; ++It)
-	{
-		CineCamera = *It;
-		SetViewTarget(CineCamera);
-		break;
-	}
+	GetCameraView();
 
 	/*for (TActorIterator<ALevelSequenceActor> It(GetWorld()); It; ++It)
 	{
@@ -112,6 +110,30 @@ void ARCharacterSelectController::ConfirmCharacterChoice()
 void ARCharacterSelectController::SetCurrentlyHoveredCharacter(URCharacterDefination* currentlyHoveredCharacter)
 {
 	CurrentlyHoveredCharacter = currentlyHoveredCharacter;
+}
+
+void ARCharacterSelectController::GetCameraView()
+{
+	/*for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (Actor->Tags.Contains("MainCamera"))
+		{
+			ACineCameraActor* cameraActor = Cast<ACineCameraActor>(Actor);
+			if (cameraActor)
+			{
+				CineCamera = cameraActor;
+				SetViewTarget(CineCamera);
+			}
+		}
+	}*/
+
+	for (TActorIterator<ACineCameraActor> It(GetWorld()); It; ++It)
+	{
+		CineCamera = *It;
+		SetViewTarget(CineCamera);
+		break;
+	}
 }
 
 void ARCharacterSelectController::PostPossessionSetup(APawn* NewPawn)

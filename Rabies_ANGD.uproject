@@ -54,7 +54,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "NiagaraFluids",
+			"Name": "VirtualHeightfieldMesh",
 			"Enabled": true
 		}
 	]

@@ -37,6 +37,8 @@ public:
 	void SetCurrentlyHoveredCharacter(class URCharacterDefination* currentlyHoveredCharacter);
 
 private:
+	void GetCameraView();
+
 	class ACineCameraActor* CineCamera;
 
 	//class ALevelSequenceActor* MainMenuSequence;

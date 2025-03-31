@@ -8,9 +8,11 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
-
+#include "Player/Dot/RDot_SpecialProj.h"
 #include "Framework/EOSActionGameState.h"
 
+#include "Targeting/RTargetActor_DotSpecial.h"
+#include "Player/RPlayerController.h"
 #include "AbilitySystemBlueprintLibrary.h"
 
 #include "Player/RPlayerBase.h"
@@ -21,7 +23,6 @@ UGA_DotUltimate::UGA_DotUltimate()
 	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("ability.ultimate.activate"));
 	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("ability.ultimate.activate"));
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetScopingTag());
-	//ActivationOwnedTags.AddTag(URAbilityGenericTags::GetAttackingTag());
 
 	/*FAbilityTriggerData TriggerData;
 	TriggerData.TriggerTag = URAbilityGenericTags::GetBasicAttackActivationTag();
@@ -31,42 +32,93 @@ UGA_DotUltimate::UGA_DotUltimate()
 
 void UGA_DotUltimate::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Ending Attack no commitment"));
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		K2_EndAbility();
+		//EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 
+	if (!CheckCooldown(Handle, ActorInfo))
+	{
+		K2_EndAbility();
+		return;
+	}
 
-	UAbilityTask_WaitGameplayEvent* WaitForActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetBasicAttackActivationTag());
-	WaitForActivation->EventReceived.AddDynamic(this, &UGA_DotUltimate::TryCommitAttack);
-	WaitForActivation->ReadyForActivation();
+	Player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
+	if (Player == nullptr)
+		return;
 
-	UAbilityTask_WaitGameplayEvent* WaitForDamage = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetGenericTargetAquiredTag());
-	WaitForDamage->EventReceived.AddDynamic(this, &UGA_DotUltimate::HandleDamage);
-	WaitForDamage->ReadyForActivation();
+
+	UAbilityTask_WaitGameplayEvent* sendOffAttack = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetSpecialAttackActivationTag());
+	sendOffAttack->EventReceived.AddDynamic(this, &UGA_DotUltimate::SendOffAttack);
+	sendOffAttack->ReadyForActivation();
+
+	playTargettingMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, Player->IsFlying() ? TargettingMontageAir : TargettingMontage);
+	playTargettingMontageTask->OnBlendOut.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playTargettingMontageTask->OnInterrupted.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playTargettingMontageTask->OnCompleted.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playTargettingMontageTask->OnCancelled.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playTargettingMontageTask->ReadyForActivation();
+
+	/*UAbilityTask_WaitTargetData* waitTargetDataTask = UAbilityTask_WaitTargetData::WaitTargetData(this, NAME_None, EGameplayTargetingConfirmation::UserConfirmed, targetActorClass);
+	waitTargetDataTask->ValidData.AddDynamic(this, &UGA_DotUltimate::TargetAquired);
+	waitTargetDataTask->Cancelled.AddDynamic(this, &UGA_DotUltimate::TargetCancelled);
+	waitTargetDataTask->ReadyForActivation();*/
+
+	/*AGameplayAbilityTargetActor* spawnedTargetActor;
+	waitTargetDataTask->BeginSpawningActor(this, targetActorClass, spawnedTargetActor);
+	ARTargetActor_DotSpecial* dotPickActor = Cast<ARTargetActor_DotSpecial>(spawnedTargetActor);
+	if (dotPickActor)
+	{
+		dotPickActor->SetOwningPlayerControler(Player->playerController);
+		dotPickActor->SetTargettingRadus(500.0f);
+		dotPickActor->SetTargettingRange(5000.0f);
+	}
+	waitTargetDataTask->FinishSpawningActor(this, dotPickActor);*/
 }
 
-void UGA_DotUltimate::TryCommitAttack(FGameplayEventData Payload)
+void UGA_DotUltimate::TargetAquired(const FGameplayAbilityTargetDataHandle& Data)
 {
-	if (K2_HasAuthority())
+	if (playTargettingMontageTask)
 	{
-		ARCharacterBase* character = Cast<ARCharacterBase>(GetOwningActorFromActorInfo());
-		if (character)
+		playTargettingMontageTask->OnBlendOut.RemoveAll(this);
+		playTargettingMontageTask->OnInterrupted.RemoveAll(this);
+		playTargettingMontageTask->OnCompleted.RemoveAll(this);
+		playTargettingMontageTask->OnCancelled.RemoveAll(this);
+	}
+
+	if (HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
+	{
+		if (!K2_CommitAbility())
 		{
-			character->ServerPlayAnimMontage(Anim);
+			K2_EndAbility();
+			return;
 		}
 	}
+
+	UAbilityTask_PlayMontageAndWait* playFinishMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, Player->IsFlying() ? CastingMontageAir : CastingMontage);
+	playFinishMontageTask->OnBlendOut.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playFinishMontageTask->OnInterrupted.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playFinishMontageTask->OnCompleted.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playFinishMontageTask->OnCancelled.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
+	playFinishMontageTask->ReadyForActivation();
 }
 
-void UGA_DotUltimate::HandleDamage(FGameplayEventData Payload)
+void UGA_DotUltimate::TargetCancelled(const FGameplayAbilityTargetDataHandle& Data)
 {
-	if (K2_HasAuthority())
-	{
-		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(AttackDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-		ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
-		SignalDamageStimuliEvent(Payload.TargetData);
+}
 
-	}
+void UGA_DotUltimate::SendOffAttack(FGameplayEventData Payload)
+{
+	FVector viewLoc;
+	FRotator viewRot;
+
+	/*
+	Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
+	ARDot_SpecialProj* newProjectile = GetWorld()->SpawnActor<ARDot_SpecialProj>(DotProjectile, Player->GetActorLocation(), viewRot);
+	newProjectile->Init(AttackDamages);
+	newProjectile->InitOwningCharacter(Player);
+	newProjectile->SetOwner(Player);*/
 }

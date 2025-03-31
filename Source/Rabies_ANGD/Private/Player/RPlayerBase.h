@@ -186,6 +186,9 @@ private:
 	void QuitOut();
 
 	UFUNCTION()
+	void DoAutomaticAttack();
+
+	UFUNCTION()
 	void DoBasicAttack();
 
 	UFUNCTION()
@@ -259,6 +262,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Passive")
 	bool bInstantJump;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Passive")
+	bool bAutomaticRangedAttack;
 
 	/////////////////////////////////
 	/*          Online             */

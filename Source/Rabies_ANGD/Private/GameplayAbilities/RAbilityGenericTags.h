@@ -32,6 +32,7 @@ public:
 	static FGameplayTag GetScopingTag();
 	static FGameplayTag GetEndScopingTag();
 	static FGameplayTag GetAttackingTag();
+	static FGameplayTag GetMeleeAttackingTag();
 	static FGameplayTag GetStartAimingTag();
 	static FGameplayTag GetEndAimingTag();
 	static FGameplayTag GetEndAttackTag();
@@ -56,5 +57,7 @@ public:
 	static FGameplayTag GetHealthTag();
 	static FGameplayTag GetMeleeAttackStrengthTag();
 	static FGameplayTag GetRangedAttackStrengthTag();
+	static FGameplayTag GetSpecialStrengthTag();
+	static FGameplayTag GetUltimateStrengthTag();
 
 };

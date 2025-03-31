@@ -57,4 +57,10 @@ private:
 	class ARPlayerBase* Player;
 
 	FTimerHandle RangedAttackHandle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Cooldown")
+	TSubclassOf<class UGameplayModMagnitudeCalculation> ShootingCooldownClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Cooldown")
+	TSubclassOf<class UGameplayEffect> ShootingCooldownGameplayEffect;
 };
