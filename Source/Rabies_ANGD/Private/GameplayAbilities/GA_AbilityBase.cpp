@@ -47,7 +47,7 @@ void UGA_AbilityBase::TriggerAudioCue()
 
 void UGA_AbilityBase::StartDurationAudioEffect()
 {
-	if (!DurationAudioEffectHandle.IsValid())
+	if (!DurationAudioEffectHandle.IsValid() && DurationAudioEffect)
 	{
 		DurationAudioEffectHandle = BP_ApplyGameplayEffectToOwner(DurationAudioEffect);
 	}

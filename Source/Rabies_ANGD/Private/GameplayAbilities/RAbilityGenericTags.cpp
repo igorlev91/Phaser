@@ -108,6 +108,11 @@ FGameplayTag URAbilityGenericTags::GetFlyingTag()
 	return FGameplayTag::RequestGameplayTag("ability.passive.flying");
 }
 
+FGameplayTag URAbilityGenericTags::GetInvisTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.passive.invis");
+}
+
 FGameplayTag URAbilityGenericTags::GetTiredFlyingTag()
 {
 	return FGameplayTag::RequestGameplayTag("ability.passive.tiredFlying");

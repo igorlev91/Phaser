@@ -4,26 +4,31 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
-#include "GA_TexUltimate.generated.h"
+#include "GA_TexPassive.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UGA_TexUltimate : public UGA_AbilityBase
+class UGA_TexPassive : public UGA_AbilityBase
 {
 	GENERATED_BODY()
 
 public:
-	UGA_TexUltimate();
+	UGA_TexPassive();
 
 private:
-
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	UAnimMontage* CastingMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Bonus Stats")
+	TSubclassOf<class UGameplayEffect> BonusStatsClass;
 
-	void FinishUltimate(FGameplayEventData Payload);
+	UFUNCTION()
+	void FinishStealth(FGameplayEventData Payload);
+
+	FActiveGameplayEffectHandle StatsEffectHandle;
+
+	UPROPERTY()
+	class ARPlayerBase* Player;
 };

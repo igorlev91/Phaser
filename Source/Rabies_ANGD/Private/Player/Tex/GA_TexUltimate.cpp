@@ -38,7 +38,7 @@ UGA_TexUltimate::UGA_TexUltimate()
 {
 	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("ability.ultimate.activate"));
 	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("ability.ultimate.activate"));
-	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetScopingTag());
+	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetUltimateAttackAimingTag());
 }
 
 void UGA_TexUltimate::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -56,10 +56,21 @@ void UGA_TexUltimate::ActivateAbility(const FGameplayAbilitySpecHandle Handle, c
 		K2_EndAbility();
 		return;
 	}
+
+	//ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+
+	UAbilityTask_WaitGameplayEvent* meleeActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetBasicAttackActivationTag());
+	meleeActivation->EventReceived.AddDynamic(this, &UGA_TexUltimate::FinishUltimate);
+	meleeActivation->ReadyForActivation();
 }
 
 void UGA_TexUltimate::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
+}
+
+void UGA_TexUltimate::FinishUltimate(FGameplayEventData Payload)
+{
+	K2_EndAbility();
 }

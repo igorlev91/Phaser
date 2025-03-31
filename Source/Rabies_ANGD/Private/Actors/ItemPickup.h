@@ -63,5 +63,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void SetupItem(URItemDataAsset* newItemAsset);
+	void SetupItem(URItemDataAsset* newItemAsset, FVector randomDirection);
 };

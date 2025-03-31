@@ -51,13 +51,23 @@ void UGA_TexRanged::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	if (Player)
 	{
-		ClientHitScanHandle = Player->ClientHitScan.AddLambda([this](AActor* hitActor, FVector startPos, FVector endPos)
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetBasicAttackActivationTag(), FGameplayEventData());
+		ClientHitScanHandle = Player->ClientHitScan.AddLambda([this](AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit)
 			{
-				RecieveAttackHitscan(hitActor, startPos, endPos);
+				RecieveAttackHitscan(hitActor, startPos, endPos, bIsCrit);
 			});
 	}
 
-	Fire();
+
+	if (Player->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetUltimateAttackAimingTag()))
+	{
+		GetWorld()->GetTimerManager().SetTimer(UltimateTimerHandle, this, &UGA_TexRanged::Fire, 1.0f, false);
+		Player->ServerPlayAnimMontage(UltimateMontage);
+	}
+	else
+	{
+		Fire();
+	}
 }
 
 void UGA_TexRanged::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
@@ -71,7 +81,7 @@ void UGA_TexRanged::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 	}
 }
 
-void UGA_TexRanged::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos)
+void UGA_TexRanged::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit)
 {
 	if (K2_HasAuthority())
 	{
@@ -82,21 +92,19 @@ void UGA_TexRanged::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVe
 			if (hitEnemy == nullptr)
 				return;
 
-			bool hitCrit = false;
-
 			FVector hitPointVector = hitEnemy->GetMesh()->GetSocketLocation(hitEnemy->WeakpointSocketName);
-			UE_LOG(LogTemp, Warning, TEXT("Value is: %f"), FVector::Dist(endPos, hitPointVector));
+			//UE_LOG(LogTemp, Warning, TEXT("Value is: %f"), FVector::Dist(endPos, hitPointVector));
 
-			/*if (FVector::Dist(hitPointVector, endPos) <= hitEnemy->WeakpointPrecision)
+			if (bIsCrit)
 			{
-				hitCrit = true;
-			}*/
+				Player->GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Passive); // Texs invis
+			}
 
 			FGameplayEventData Payload = FGameplayEventData();
 
 			Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(hitActor);
 
-			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec((hitCrit) ? CritRangedDamage : RangedDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+			FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec((bIsCrit) ? CritRangedDamage : RangedDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
 			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
 
 			if (ARCharacterBase* hitCharacter = Cast<ARCharacterBase>(hitActor))

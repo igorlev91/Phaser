@@ -111,7 +111,7 @@ void AREnemyAIController::TargetPerceptionUpdated(AActor* Target, FAIStimulus St
 	}
 
 	URAbilitySystemComponent* TargetASC = Cast<URAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target)); 
-	if(TargetASC->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+	if(TargetASC->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) || TargetASC->HasMatchingGameplayTag(URAbilityGenericTags::GetInvisTag()))
 		return;
 
 	if (Stimulus.WasSuccessfullySensed() || bAutoSense)
@@ -119,6 +119,7 @@ void AREnemyAIController::TargetPerceptionUpdated(AActor* Target, FAIStimulus St
 		if (!GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName))
 		{
 			player->OnDeadStatusChanged.AddUObject(this, &AREnemyAIController::PlayerDeadStatusUpdated);
+			player->OnInvisStatusChanged.AddUObject(this, &AREnemyAIController::PlayerDeadStatusUpdated);
 			Enemy->UpdateAITarget(Target);
 			GetBlackboardComponent()->SetValueAsObject(TargetBlackboardKeyName, Target);
 		}

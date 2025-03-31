@@ -269,7 +269,11 @@ void AEOSActionGameState::OpenedChest_Implementation(int chestID)
         AllItems.Add(newitem); // make sure that the chest has bReplicates to true]
         AllChests.RemoveAt(chestID);
         newitem->SetOwner(this);
-        newitem->SetupItem(newData);
+        float x = FMath::RandRange(-100, 100);
+        float y = FMath::RandRange(-100, 100);
+        FVector ForceDirection = FVector(x, y, 600.f); // Adjust the Z value to set how much it pops up
+        newitem->SetOwner(this);
+        newitem->SetupItem(newData, ForceDirection);
     }
 }
 

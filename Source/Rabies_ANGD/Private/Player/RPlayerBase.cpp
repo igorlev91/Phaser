@@ -110,6 +110,9 @@ void ARPlayerBase::BeginPlay()
 	ItemPickupCollider->OnComponentEndOverlap.AddDynamic(this, &ARPlayerBase::OnOverlapEnd);
 
 	OnDeadStatusChanged.AddUObject(this, &ARPlayerBase::DeadStatusUpdated);
+	OnInvisStatusChanged.AddUObject(this, &ARPlayerBase::InvisStatusUpdated);
+
+	DynamicTexMaterialInstance = UMaterialInstanceDynamic::Create(TexStealthMat, GetMesh());
 
 	ReviveUIWidgetComp->SetWidgetClass(ReviveUIClass);
 	ReviveUI = CreateWidget<UReviveUI>(GetWorld(), ReviveUIWidgetComp->GetWidgetClass());
@@ -582,6 +585,26 @@ void ARPlayerBase::DeadStatusUpdated(bool bIsDead)
 	}
 }
 
+void ARPlayerBase::InvisStatusUpdated(bool bIsDead)
+{
+	if (bIsDead)
+	{
+		if (DynamicTexMaterialInstance)
+		{
+			GetMesh()->SetMaterial(0, DynamicTexMaterialInstance);
+		}
+	}
+	else
+	{
+		GetMesh()->SetMaterial(0, TexDefaultMat);
+	}
+}
+
+void ARPlayerBase::FrameDelayItemPickup(AItemPickup* newItem)
+{
+	newItem->PlayerPickupRequest(this);
+}
+
 void ARPlayerBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetUnActionableTag()) || GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag())) return;
@@ -589,7 +612,7 @@ void ARPlayerBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 	AItemPickup* newItem = Cast<AItemPickup>(OtherActor);
 	if (newItem)
 	{
-		newItem->PlayerPickupRequest(this);
+		PickupItemHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ARPlayerBase::FrameDelayItemPickup, newItem));
 	}
 
 	ARPlayerBase* player = Cast<ARPlayerBase>(OtherActor);

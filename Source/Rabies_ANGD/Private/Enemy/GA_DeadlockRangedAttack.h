@@ -22,7 +22,7 @@ private:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UFUNCTION()
-	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos);
+	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit);
 
 	UFUNCTION()
 	void TryCommitAttack(FGameplayEventData Payload);

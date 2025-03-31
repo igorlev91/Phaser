@@ -53,6 +53,9 @@ private:
 	void DeadTimer(float timeRemaining);
 
 	UPROPERTY(meta = (BindWidget))
+	class UItemPopupUI* ItemPopupUI;
+
+	UPROPERTY(meta = (BindWidget))
 	class UVerticalBox* BossVerticalBox;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Lobby")

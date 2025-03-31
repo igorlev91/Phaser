@@ -82,7 +82,6 @@ void UGA_DotUltimate::ActivateAbility(const FGameplayAbilitySpecHandle Handle, c
 	playTargettingMontageTask->OnCancelled.AddDynamic(this, &UGA_DotUltimate::K2_EndAbility);
 	playTargettingMontageTask->ReadyForActivation();
 
-	TriggerAudioCue();
 	UAbilityTask_WaitTargetData* waitTargetDataTask = UAbilityTask_WaitTargetData::WaitTargetData(this, NAME_None, EGameplayTargetingConfirmation::UserConfirmed, targetActorClass);
 	waitTargetDataTask->ValidData.AddDynamic(this, &UGA_DotUltimate::TargetAquired);
 	waitTargetDataTask->Cancelled.AddDynamic(this, &UGA_DotUltimate::TargetCancelled);
@@ -101,9 +100,9 @@ void UGA_DotUltimate::ActivateAbility(const FGameplayAbilitySpecHandle Handle, c
 
 	if (Player)
 	{
-		ClientHitScanHandle = Player->ClientHitScan.AddLambda([this](AActor* hitActor, FVector startPos, FVector endPos)
+		ClientHitScanHandle = Player->ClientHitScan.AddLambda([this](AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit)
 			{
-				RecieveAttackHitscan(hitActor, startPos, endPos);
+				RecieveAttackHitscan(hitActor, startPos, endPos, bIsCrit);
 			});
 	}
 }
@@ -209,7 +208,7 @@ void UGA_DotUltimate::StopAttacking()
 	ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, pushSpec);
 }
 
-void UGA_DotUltimate::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos)
+void UGA_DotUltimate::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit)
 {
 	if (hitActor == nullptr) return;
 
@@ -258,7 +257,7 @@ void UGA_DotUltimate::SendOffAttack(FGameplayEventData Payload)
 
 			Player->Hitscan(40000, Player->GetPlayerBaseState());
 
-			//StartDurationAudioEffect();
+			StartDurationAudioEffect();
 		}
 	}
 }

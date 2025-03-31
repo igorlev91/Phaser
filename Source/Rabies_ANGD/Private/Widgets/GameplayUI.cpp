@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 
+#include "Widgets/ItemPopupUI.h"
 #include "Widgets/PlayerItemInventory.h"
 #include "Widgets/BossHealthBar.h"
 
@@ -175,6 +176,10 @@ void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 	if (PlayerItemInventory)
 	{
 		PlayerItemInventory->AddItem(itemAsset);
+	}
+	if (ItemPopupUI)
+	{
+		ItemPopupUI->SetItem(itemAsset);
 	}
 }
 

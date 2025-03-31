@@ -65,6 +65,18 @@ public:
 	class AEscapeToWin* escapeToWin;
 private:
 
+	UPROPERTY(EditDefaultsOnly, Category = "Tex Invis")
+	UMaterial* TexDefaultMat;  // The base material reference in the editor
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tex Invis")
+	UMaterial* TexStealthMat;  // The base material reference in the editor
+
+	UPROPERTY(VisibleAnywhere, Category = "Tex Invis")
+	UMaterialInstanceDynamic* DynamicTexMaterialInstance;  // The dynamic material instance
+
+	UFUNCTION()
+	void FrameDelayItemPickup(class AItemPickup* newItem);
+
 	UPROPERTY(VisibleAnywhere, Category = "PlayerDetail")
 	class USphereComponent* ItemPickupCollider;
 
@@ -73,6 +85,9 @@ private:
 
 	UFUNCTION()
 	void DeadStatusUpdated(bool bIsDead);
+
+	UFUNCTION()
+	void InvisStatusUpdated(bool bIsDead);
 
 public:
 
@@ -257,6 +272,8 @@ public:
 	/////////////////////////////////
 	/*          Passives           */
 	////////////////////////////////
+
+	FTimerHandle PickupItemHandle;
 
 private:
 

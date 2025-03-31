@@ -49,4 +49,10 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	class UMaterialInstance* OrbInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FString ItemTooltip;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FString ItemDescription;
 };

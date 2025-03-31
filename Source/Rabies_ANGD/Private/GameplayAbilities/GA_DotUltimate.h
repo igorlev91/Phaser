@@ -71,7 +71,7 @@ private:
 	TSubclassOf<class ARTargetActor_DotUltimate> targetUltimateActorClass;
 
 	UFUNCTION()
-	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos);
+	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit);
 
 	UPROPERTY(VisibleAnywhere, Category = "Targetting")
 	class ARTargetActor_DotUltimate* TargetActorDotUltimate;

@@ -113,7 +113,7 @@ void AItemPickup::Tick(float DeltaTime)
 	}
 }
 
-void AItemPickup::SetupItem_Implementation(URItemDataAsset* newItemAsset)
+void AItemPickup::SetupItem_Implementation(URItemDataAsset* newItemAsset, FVector randomDirection)
 {
 	ItemAsset = newItemAsset;
 	if (newItemAsset->OutlineInstance != nullptr)
@@ -134,10 +134,7 @@ void AItemPickup::SetupItem_Implementation(URItemDataAsset* newItemAsset)
 		ItemMesh->SetStaticMesh(newItemAsset->ItemMesh);
 	}
 
-	float x = FMath::RandRange(-100, 100);
-	float y = FMath::RandRange(-100, 100);
-	FVector ForceDirection = FVector(x, y, 600.f); // Adjust the Z value to set how much it pops up
-	ItemMesh->AddImpulse(ForceDirection, NAME_None, true);
+	ItemMesh->AddImpulse(randomDirection, NAME_None, true);
 	GetWorld()->GetTimerManager().SetTimer(FallTimerHandle, this, &AItemPickup::StartRotatingItem, 1.2f, false);
 }
 
