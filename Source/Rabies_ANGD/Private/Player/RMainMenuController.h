@@ -14,6 +14,9 @@ class ARMainMenuController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	ARMainMenuController();
+
 protected:
 	virtual void OnRep_PlayerState() override;
 
@@ -80,4 +83,13 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "ComputerMaterial")
 	UMaterialInterface* ComputerMaterial;
+
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* LightsOnAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* MonitorLightAudio;
 };

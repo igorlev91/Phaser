@@ -19,8 +19,9 @@
 
 UGA_EnemyRangedAttack::UGA_EnemyRangedAttack()
 {
-	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
-	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("stat.AI"));
+	AbilityTags.AddTag(URAbilityGenericTags::GetRangedAttackCooldown());
+	BlockAbilitiesWithTag.AddTag(URAbilityGenericTags::GetRangedAttackCooldown());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetAttackingTag());
 
 	FAbilityTriggerData TriggerData;

@@ -22,6 +22,15 @@
 #include "LevelSequencePlayer.h"
 #include "MovieSceneSequence.h"
 #include "Widgets/MainMenu.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+
+ARMainMenuController::ARMainMenuController()
+{
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->SetupAttachment(GetRootComponent());
+	AudioComp->bAutoActivate = false;
+}
 
 void ARMainMenuController::OnRep_PlayerState()
 {
@@ -93,10 +102,9 @@ void ARMainMenuController::BeginPlay()
 
 	GetGameInstance<UEOSGameInstance>()->SessionJoined.AddUObject(this, &ARMainMenuController::JoinedSession);
 
-
 	GetWorldTimerManager().SetTimer(BacklightTimerHandle, this, &ARMainMenuController::EnableBacklights, 1.5f, false);
-	GetWorldTimerManager().SetTimer(FrontlightTimerHandle, this, &ARMainMenuController::EnableFrontlights, 3.0f, false);
-	GetWorldTimerManager().SetTimer(FinalTimerHandle, this, &ARMainMenuController::EnableComputer, 4.0f, false);
+	GetWorldTimerManager().SetTimer(FrontlightTimerHandle, this, &ARMainMenuController::EnableFrontlights, 2.5f, false);
+	GetWorldTimerManager().SetTimer(FinalTimerHandle, this, &ARMainMenuController::EnableComputer, 3.5f, false);
 }
 
 void ARMainMenuController::EnableLights(UWorld* world, FName Tag)
@@ -119,6 +127,11 @@ void ARMainMenuController::EnableLights(UWorld* world, FName Tag)
 
 void ARMainMenuController::EnableBacklights()
 {
+	if (AudioComp && LightsOnAudio)
+	{
+		AudioComp->SetSound(LightsOnAudio);
+		AudioComp->Play();
+	}
 	EnableLights(GetWorld(), "backlight");
 }
 
@@ -129,6 +142,12 @@ void ARMainMenuController::EnableFrontlights()
 
 void ARMainMenuController::EnableComputer()
 {
+	if (AudioComp && MonitorLightAudio)
+	{
+		AudioComp->SetSound(MonitorLightAudio);
+		AudioComp->Play();
+	}
+
 	FName monitorTag = "Monitor";
 	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
 	{

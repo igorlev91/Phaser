@@ -60,6 +60,8 @@ public:
 	ATTRIBUTE_ACCESSORS(URAttributeSet, FuelCoolantEffectChance)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, HeaterEffectChance)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, UraniumEffectChance)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, Fire)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, Ice)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, KeyCard)
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
@@ -171,6 +173,12 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_UraniumEffectChance)
 	FGameplayAttributeData UraniumEffectChance;
 
+	UPROPERTY(ReplicatedUsing = OnRep_Fire)
+	FGameplayAttributeData Fire;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Ice)
+	FGameplayAttributeData Ice;
+
 	UPROPERTY(ReplicatedUsing = OnRep_KeyCard)
 	FGameplayAttributeData KeyCard;
 
@@ -278,6 +286,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_UraniumEffectChance(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_Fire(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_Ice(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
 	void OnRep_KeyCard(const FGameplayAttributeData& OldValue);

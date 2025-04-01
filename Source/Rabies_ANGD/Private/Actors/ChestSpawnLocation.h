@@ -15,6 +15,9 @@ public:
 	// Sets default values for this actor's properties
 	AChestSpawnLocation();
 
+	UPROPERTY(EditDefaultsOnly, Category = "Details")
+	bool bRareChest;
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Details")
 	class UStaticMeshComponent* DefaultApparence;

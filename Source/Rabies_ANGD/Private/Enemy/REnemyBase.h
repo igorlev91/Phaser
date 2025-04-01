@@ -28,6 +28,9 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void InitLevel(int level);
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UTexture* EnemyIcon;
+
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -41,6 +44,9 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "AI")
 	class UAIPerceptionStimuliSourceComponent* AIPerceptionSourceComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	TSubclassOf<class UGameplayEffect> GravityFallClass;
 
 	FTimerHandle LevelHandle;
 	FTimerHandle DeathHandle;

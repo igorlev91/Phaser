@@ -14,6 +14,9 @@ class ARRightButton : public ARPhysicalButtonBase
 {
 	GENERATED_BODY()
 
+public:
+	ARRightButton();
+
 private:
 
 	bool bPressDelay;
@@ -32,4 +35,15 @@ protected:
 	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
 
 	virtual void BeginPlay() override;
+
+	/*		Audio		*/
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* SelectAudio;
+
+	bool bPlaySound = true;
+
+	void SetPlaySoundToTrue();
 };

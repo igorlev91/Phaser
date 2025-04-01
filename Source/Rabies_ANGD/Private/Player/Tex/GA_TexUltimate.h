@@ -6,6 +6,8 @@
 #include "GameplayAbilities/GA_AbilityBase.h"
 #include "GA_TexUltimate.generated.h"
 
+
+class ARCharacterBase;
 /**
  * 
  */
@@ -24,6 +26,39 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	UAnimMontage* CastingMontage;
+
+	FDelegateHandle ClientHitScanHandle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> UltimateDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> CritUltimateDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* CritHitParticle;
+
+	FTimerHandle StopTimer;
+	FTimerHandle ShootingBounceTimer;
+
+	UPROPERTY()
+	TArray<ARCharacterBase*> alreadyHitEnemies;
+
+	bool hasCrit = false;
+	FVector start;
+	FVector end;
+
+	UFUNCTION()
+	void SendBounce();
+
+	UFUNCTION()
+	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit);
+
+	UPROPERTY()
+	class ARPlayerBase* Player;
+
+
+	void FinishTimerUltimate();
 
 	void FinishUltimate(FGameplayEventData Payload);
 };

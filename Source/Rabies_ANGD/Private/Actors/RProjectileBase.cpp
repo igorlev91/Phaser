@@ -26,6 +26,9 @@
 
 #include "Net/UnrealNetwork.h"
 
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+
 // Sets default values
 ARProjectileBase::ARProjectileBase()
 {
@@ -53,6 +56,8 @@ ARProjectileBase::ARProjectileBase()
 
 	ProjectileComponent->InitialSpeed = initalSpeed;
 	ProjectileComponent->MaxSpeed = maxSpeed;
+
+	ProjectileComponent->OnProjectileBounce.AddDynamic(this, &ARProjectileBase::OnBounce);
 }
 
 // Called when the game starts or when spawned
@@ -80,6 +85,19 @@ void ARProjectileBase::BeginPlay()
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(DestroyHandle, this, &ARProjectileBase::DestroySelf, lifeTime, false);
+}
+
+void ARProjectileBase::OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
+{
+	OnBounceCharacter.Broadcast(ImpactResult, ImpactVelocity); 
+	if (ImpactVelocity.Length() > AudioPlayMinSpeed)
+	{
+		AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+		if (gameState && HitAudio)
+		{
+			gameState->Multicast_RequestPlayAudio(HitAudio, GetActorLocation(), GetActorRotation(), 1, 1, 0, HitSoundAttenuationSettings);
+		}
+	}
 }
 
 void ARProjectileBase::DestroySelf()

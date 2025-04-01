@@ -9,6 +9,10 @@
 
 void UChestInteractUI::SetCostText(int costAmount)
 {
-	FText Text = FText::Format(FText::FromString("{0}"), FText::AsNumber(costAmount));
-	CostText->SetText(Text);
+	if (CostText != nullptr)
+	{
+		FText Text = FText::Format(FText::FromString("{0}"), FText::AsNumber(costAmount));
+		CostText->SetText(Text);
+
+	}
 }

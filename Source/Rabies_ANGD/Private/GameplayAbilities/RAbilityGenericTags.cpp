@@ -23,6 +23,16 @@ FGameplayTag URAbilityGenericTags::GetBasicAttackActivationTag()
 	return FGameplayTag::RequestGameplayTag("ability.attack.activate");
 }
 
+FGameplayTag URAbilityGenericTags::GetRangedAttackLeftActivationTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.attack.rangedLeft");
+}
+
+FGameplayTag URAbilityGenericTags::GetRangedAttackRightActivationTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.attack.rangedRight");
+}
+
 FGameplayTag URAbilityGenericTags::GetMeleeAttackCooldown()
 {
 	return FGameplayTag::RequestGameplayTag("ability.attack.meleeAtkCooldown");
@@ -146,6 +156,21 @@ FGameplayTag URAbilityGenericTags::GetScrapTag()
 FGameplayTag URAbilityGenericTags::GetTaserTag()
 {
 	return FGameplayTag::RequestGameplayTag("stat.taser");
+}
+
+FGameplayTag URAbilityGenericTags::GetRadiationTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.radiation");
+}
+
+FGameplayTag URAbilityGenericTags::GetFireTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.fire");
+}
+
+FGameplayTag URAbilityGenericTags::GetIceTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.ice");
 }
 
 FGameplayTag URAbilityGenericTags::GetRevivingTag()

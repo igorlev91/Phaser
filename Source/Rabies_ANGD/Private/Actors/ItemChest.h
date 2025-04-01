@@ -20,6 +20,8 @@ private:
 
 	bool bWithinInteraction;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	class UMaterialInstance* NegativeOutline;
 
 	UPROPERTY(VisibleAnywhere, Category = "Chest Detail")
 	class UStaticMeshComponent* ChestBottomMesh;
@@ -50,9 +52,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TSubclassOf<class UGameplayEffect> ScrapPriceEffect;
 
-	UPROPERTY(Replicated, Transient, EditDefaultsOnly, Category = "Abilities")
-	float ScrapPrice;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -60,6 +59,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(Replicated, Transient, EditDefaultsOnly, Category = "Abilities")
+	float ScrapPrice;
 
 	UFUNCTION(BlueprintCallable, Category = "Chest Detail")
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -73,7 +75,15 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void UpdateChestOpened();
 
+	UFUNCTION()
+	void SetPairedPing(class APingActor* myPing);
+
+	UFUNCTION()
+	bool HasPing();
+
 private:
+	UPROPERTY(Replicated)
+	class APingActor* MyPing;
 
 
 	UPROPERTY(Replicated)
@@ -86,6 +96,6 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Server, Unreliable)
-	void Server_OpenChest();
+	void Server_OpenChest(bool bFeelinLucky);
 
 };

@@ -9,6 +9,10 @@
 
 class ACharacter;
 class UCharacterMovementComponent;
+
+class URAbilitySystemComponent;
+class URAttributeSet;
+class UGameplayEffect;
 /**
  * 
  */
@@ -77,6 +81,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
 	bool IsUltimateAiming() const { return bUltimateAiming; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	bool IsReviving() const { return bReviving; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	float GetMovementSpeedScale() const { return CurrentMovementSpeedScale / BaseMovementSpeedScale; }
+
+	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (BlueprintThreadSafe))
+	float GetFlyingMovementSpeedScale() const { return CurrentFlyingSpeedScale / BaseFlyingSpeedScale; }
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
@@ -92,6 +105,13 @@ private:
 
 	const ACharacter* OwnerCharacter;
 	const UCharacterMovementComponent* OwnerMovementComp;
+
+	float BaseMovementSpeedScale;
+	float BaseFlyingSpeedScale;
+	float CurrentMovementSpeedScale;
+	float CurrentFlyingSpeedScale;
+
+	bool bBaseMovementSpeedUpdate;
 
 	float Speed;
 	float DotFlyStamina;
@@ -115,9 +135,11 @@ private:
 	bool bDead;
 	bool bFlying;
 	bool bTiredFlying;
+	bool bReviving;
 
 	void AttackingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	void RevivingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void SpecialAimingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void UltimateAimingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 	void FlyingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);

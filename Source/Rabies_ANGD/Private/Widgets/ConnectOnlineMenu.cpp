@@ -19,6 +19,8 @@
 #include "Components/Button.h"
 #include "Widgets/OpenLobby.h"
 
+#include "Sound/SoundCue.h"
+
 void UConnectOnlineMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -32,6 +34,11 @@ void UConnectOnlineMenu::NativeConstruct()
 	SessionNameText->OnTextChanged.AddDynamic(this, &UConnectOnlineMenu::SessionNameTextChanged);
 	JoinLobbyBtn->RabiesButton->OnClicked.AddDynamic(this, &UConnectOnlineMenu::JoinLobbyButtonClicked);
 	JoinLobbyBtn->RabiesButton->SetIsEnabled(false);
+
+	ReturnBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
+	CreateSessionBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
+	FindSessionsBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
+	JoinLobbyBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
 
 	CreateSessionBtn->RabiesButton->SetIsEnabled(false);
 
@@ -47,6 +54,8 @@ void UConnectOnlineMenu::CreateSessionButtonClicked()
 {
 	if (GameInst)
 	{
+		UGameplayStatics::PlaySound2D(this, ClickAudio);
+
 		GameInst->CreateSession(FName{ SessionNameText->GetText().ToString() });
 	}
 }
@@ -55,6 +64,8 @@ void UConnectOnlineMenu::FindSessionsButtonClicked()
 {
 	if (GameInst)
 	{
+		UGameplayStatics::PlaySound2D(this, ClickAudio);
+
 		GameInst->FindSession();
 	}
 }
@@ -89,6 +100,8 @@ void UConnectOnlineMenu::LobbySelected(int lobbyIndex)
 
 void UConnectOnlineMenu::Return()
 {
+	UGameplayStatics::PlaySound2D(this, ClickAudio);
+
 	ARMainMenuController* mainMenuController = Cast<ARMainMenuController>(GetWorld()->GetFirstPlayerController());
 
 	if (mainMenuController)
@@ -104,6 +117,19 @@ void UConnectOnlineMenu::Return()
 }
 
 void UConnectOnlineMenu::JoinLobbyButtonClicked()
+{
+	UGameplayStatics::PlaySound2D(this, ClickAudio);
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UConnectOnlineMenu::JoinLobby, 0.2f, false);
+}
+
+void UConnectOnlineMenu::PlayHoverAudio()
+{
+	UGameplayStatics::PlaySound2D(this, HoverAudio);
+}
+
+void UConnectOnlineMenu::JoinLobby()
 {
 	if (GameInst)
 	{

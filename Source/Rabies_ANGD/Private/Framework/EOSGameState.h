@@ -9,7 +9,7 @@
 
 class URCharacterDefination;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSessionNameReplicated, const FName&, name);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCharacterSelectionReplicated, const URCharacterDefination*, Selected, const URCharacterDefination*, Deslected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnCharacterSelectionReplicated, const URCharacterDefination*, Selected, const URCharacterDefination*, Deslected, const FString&, playerNameCheck);
 /**
  * 
  */
@@ -30,7 +30,7 @@ public:
 	const TArray<URCharacterDefination*>& GetCharacters() const;
 
 	bool bCharcterSelected(const URCharacterDefination* CharacterToCheck) const;
-	void UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected);
+	void UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected, const FString& playerNameCheck);
 
 	URCharacterDefination* GetDefinationFromIndex(int index);
 
@@ -57,7 +57,7 @@ private:
 	void OnRep_ReadiedPlayers();
 
 	UFUNCTION(NetMulticast, Reliable) // this function calls on both server and client if it's called from the server.
-	void NetMulticast_UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected);
+	void NetMulticast_UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected, const FString& playerNameCheck);
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<URCharacterDefination*> Characters;

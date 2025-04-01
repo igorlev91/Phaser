@@ -32,8 +32,9 @@
 
 UGA_DeadlockRangedAttack::UGA_DeadlockRangedAttack()
 {
-	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
-	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("stat.AI"));
+	AbilityTags.AddTag(URAbilityGenericTags::GetRangedAttackCooldown());
+	BlockAbilitiesWithTag.AddTag(URAbilityGenericTags::GetRangedAttackCooldown());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetAttackingTag());
 
 	FAbilityTriggerData TriggerData;
@@ -52,9 +53,13 @@ void UGA_DeadlockRangedAttack::ActivateAbility(const FGameplayAbilitySpecHandle 
 		return;
 	}
 
-	UAbilityTask_WaitGameplayEvent* WaitForActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetBasicAttackActivationTag());
-	WaitForActivation->EventReceived.AddDynamic(this, &UGA_DeadlockRangedAttack::TryCommitAttack);
+	UAbilityTask_WaitGameplayEvent* WaitForActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetRangedAttackRightActivationTag());
+	WaitForActivation->EventReceived.AddDynamic(this, &UGA_DeadlockRangedAttack::TryCommitRightAttack);
 	WaitForActivation->ReadyForActivation();
+
+	UAbilityTask_WaitGameplayEvent* WaitForActivation2 = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetRangedAttackLeftActivationTag());
+	WaitForActivation2->EventReceived.AddDynamic(this, &UGA_DeadlockRangedAttack::TryCommitLeftAttack);
+	WaitForActivation2->ReadyForActivation();
 
 	UAbilityTask_WaitGameplayEvent* AimingActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetStartAimingTag());
 	AimingActivation->EventReceived.AddDynamic(this, &UGA_DeadlockRangedAttack::StartAiming);
@@ -99,12 +104,25 @@ void UGA_DeadlockRangedAttack::RecieveAttackHitscan(AActor* hitActor, FVector st
 	}
 }
 
-void UGA_DeadlockRangedAttack::TryCommitAttack(FGameplayEventData Payload)
+void UGA_DeadlockRangedAttack::TryCommitLeftAttack(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
+		Character->RangedAttackSocketName = TEXT("Ranged_SocketLeft");
+		//UE_LOG(LogTemp, Error, TEXT("DEADLOCKE Attacking"));
 		TriggerAudioCue();
-		Character->Hitscan(8000, nullptr);
+		Character->Hitscan(12000, nullptr);
+	}
+}
+
+void UGA_DeadlockRangedAttack::TryCommitRightAttack(FGameplayEventData Payload)
+{
+	if (K2_HasAuthority())
+	{
+		Character->RangedAttackSocketName = TEXT("Ranged_Socket");
+		//UE_LOG(LogTemp, Error, TEXT("DEADLOCKE Attacking"));
+		TriggerAudioCue();
+		Character->Hitscan(12000, nullptr);
 	}
 }
 

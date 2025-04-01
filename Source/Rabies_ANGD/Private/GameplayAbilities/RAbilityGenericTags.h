@@ -21,6 +21,8 @@ public:
 	static FGameplayTag GetFullHealthTag();
 	static FGameplayTag GetDeadTag();
 	static FGameplayTag GetBasicAttackActivationTag();
+	static FGameplayTag GetRangedAttackLeftActivationTag();
+	static FGameplayTag GetRangedAttackRightActivationTag();
 	static FGameplayTag GetMeleeAttackCooldown();
 	static FGameplayTag GetRangedAttackCooldown();
 	static FGameplayTag GetSpecialAttackActivationTag();
@@ -47,6 +49,9 @@ public:
 
 	static FGameplayTag GetScrapTag();
 	static FGameplayTag GetTaserTag();
+	static FGameplayTag GetRadiationTag();
+	static FGameplayTag GetFireTag();
+	static FGameplayTag GetIceTag();
 	static FGameplayTag GetRevivingTag();
 	static FGameplayTag GetReviveTag();
 	static FGameplayTag GetEndRevivingTag();

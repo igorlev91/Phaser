@@ -68,6 +68,8 @@ ARCharacterBase::ARCharacterBase()
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetMovementSpeedAttribute()).AddUObject(this, &ARCharacterBase::MovementSpeedUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetGravityAttribute()).AddUObject(this, &ARCharacterBase::GravityUpdated);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetForwardSpeedAttribute()).AddUObject(this, &ARCharacterBase::ForwardSpeedUpdated);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetFireAttribute()).AddUObject(this, &ARCharacterBase::HandleFireVFX);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetIceAttribute()).AddUObject(this, &ARCharacterBase::HandleIceVFX);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &ARCharacterBase::ScopingTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetDeadTag()).AddUObject(this, &ARCharacterBase::DeathTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(URAbilityGenericTags::GetTaserTag()).AddUObject(this, &ARCharacterBase::TaserTagChanged);
@@ -97,6 +99,16 @@ ARCharacterBase::ARCharacterBase()
 	WeakpointCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
 	WeakpointCollider->SetCollisionResponseToChannel(ECC_GameTraceChannel3, ECR_Block);
 
+	Weapon_LeftHand = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftWeapon"));
+	Weapon_LeftHand->SetupAttachment(RootComponent); // Default to root, attach later
+	Weapon_LeftHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Weapon_LeftHand->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+	Weapon_RightHand = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightWeapon"));
+	Weapon_RightHand->SetupAttachment(RootComponent); // Default to root, attach later
+	Weapon_RightHand->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Weapon_RightHand->SetCollisionResponseToAllChannels(ECR_Ignore);
+
 	PrimaryActorTick.bRunOnAnyThread = false; // prevents crash??
 }
 
@@ -119,6 +131,27 @@ void ARCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	InitStatusHUD();
+
+	GetWorldTimerManager().SetTimer(RadiationTimer, this, &ARCharacterBase::CheckRadiationDamage, 0.3f, true); // may want to make this random but it needs to be replicated.
+	GetWorldTimerManager().SetTimer(FireDelayTimer, this, &ARCharacterBase::CheckFireDamage, 0.2f, true); // may want to make this random but it needs to be replicated.
+
+	DynamicMaterialInstance = UMaterialInstanceDynamic::Create(MyMaterial, GetMesh());
+	if (DynamicMaterialInstance)
+	{
+		GetMesh()->SetMaterial(0, DynamicMaterialInstance);
+	}
+
+	if (Weapon_LeftHand && WeaponLeftSocketName != TEXT("Replace With Joint"))
+	{
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		Weapon_LeftHand->AttachToComponent(GetMesh(), AttachmentRules, WeaponLeftSocketName);
+	}
+
+	if (Weapon_RightHand && WeaponRightSocketName != TEXT("Replace With Joint"))
+	{
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		Weapon_RightHand->AttachToComponent(GetMesh(), AttachmentRules, WeaponRightSocketName);
+	}
 
 	if (WeakpointCollider)
 	{
@@ -168,6 +201,7 @@ void ARCharacterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	WeakpointWidgetComp->SetWorldLocation(GetMesh()->GetSocketLocation(WeakpointSocketName));
+
 }
 
 void ARCharacterBase::PossessedBy(AController* NewController)
@@ -188,7 +222,7 @@ void ARCharacterBase::PossessedBy(AController* NewController)
 	if (HasAuthority() && Controller && Controller->IsPlayerController())
 	{
 		GetWorldTimerManager().SetTimer(FriendshipBraceletTimer,this,&ARCharacterBase::CheckFriendShipBracelet, 0.5f,  true );
-		// THIS IS FOR HEALING BRACLET, AND WILL WORK FOREVER IF YOU ARE FAINTED
+		// THIS IS FOR HEALING BRACLET, CHECK TO SEE IF IT WORKS WHEN YOU ARE FAINTED
 
 		APlayerController* OwningPlayerController = Cast<APlayerController>(Controller);
 		// Find the ID
@@ -213,6 +247,8 @@ void ARCharacterBase::InitStatusHUD()
 
 	HealthBar->SetRenderScale(FVector2D{ 0.5f });
 
+
+
 	if (AttributeSet)
 	{
 		//UE_LOG(LogTemp, Error, TEXT("health is: %d / %d"), AttributeSet->GetHealth(), AttributeSet->GetMaxHealth());
@@ -231,9 +267,35 @@ void ARCharacterBase::InitStatusHUD()
 	if (IsLocallyControlled())
 	{
 		if (GetController() && GetController()->IsPlayerController())
+		{
 			HealthBar->SetVisibility(ESlateVisibility::Hidden);
+
+		}
+	}
+	else
+	{
+		HealthBar->SetAllyView(CharacterIcon);
+		HealthBarWidgetComp->SetDrawAtDesiredSize(true);
+		HealthBar->SetRenderScale(FVector2D{ 0.3f });
 	}
 }
+
+void ARCharacterBase::SetHealthBarFromAllyPerspective(FVector viewingLocation)
+{
+	if (HealthBar && HealthBarWidgetComp)
+	{
+
+		HealthBarWidgetComp->SetDrawAtDesiredSize(true);
+		float Distance = FVector::Dist(viewingLocation, GetActorLocation());
+		//UE_LOG(LogTemp, Warning, TEXT("Value is: %f"), Distance);
+		float BaseSize = 200.f; // Default UI size
+		float SizeFactor = BaseSize / Distance;
+		SizeFactor = FMathf::Clamp(SizeFactor, SizeFactor, 0.6f);
+		HealthBar->SetRenderScale(FVector2D(SizeFactor, SizeFactor));
+
+	}
+}
+
 
 int ARCharacterBase::GetCurrentScrap()
 {
@@ -337,6 +399,7 @@ void ARCharacterBase::DeathTagChanged(const FGameplayTag TagChanged, int32 NewSt
 {
 	if (NewStackCount == 0) // for getting revived
 	{
+		
 		PlayAnimMontage(ReviveMontage);
 		//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		AbilitySystemComponent->ApplyFullStat();
@@ -349,12 +412,28 @@ void ARCharacterBase::DeathTagChanged(const FGameplayTag TagChanged, int32 NewSt
 
 void ARCharacterBase::TaserTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
-	if (NewStackCount == 1) // for getting stunned
+	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		return;
+
+	bIsTased = NewStackCount != 0;
+	TaserTagChanged(bIsTased);
+	OnTaserStatusChanged.Broadcast(bIsTased);
+	if (FlinchMontage == nullptr)
 	{
+		UE_LOG(LogTemp, Error, TEXT("%s No flinch/stun montage assigned!"), *GetName());
+		return;
+	}
+
+	if (bIsTased) // for getting stunned
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		PlayAnimMontage(FlinchMontage);
 		//UE_LOG(LogTemp, Error, TEXT("%s Got stunned"), *GetName());
 	}
-	else if (NewStackCount == 0)
+	else
 	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		StopAnimMontage(FlinchMontage);
 		//UE_LOG(LogTemp, Error, TEXT("%s not stunned"), *GetName());
 	}
 }
@@ -444,7 +523,10 @@ void ARCharacterBase::NextLevelExpUpdated(const FOnAttributeChangeData& ChangeDa
 
 void ARCharacterBase::DealtDamage(ARCharacterBase* hitCharacter)
 {
+	if (HasAuthority() == false)
+		return;
 
+	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetHeaterEffectChanceAttribute(), FireEffect);
 }
 
 void ARCharacterBase::HitSpecialAttack(ARCharacterBase* hitCharacter)
@@ -453,7 +535,8 @@ void ARCharacterBase::HitSpecialAttack(ARCharacterBase* hitCharacter)
 		return;
 
 	CheckIVBag();
-	CheckTaser(hitCharacter);
+	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetUraniumEffectChanceAttribute(), RadiationEffect);
+	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetTaserStunChanceAttribute(), TaserEffect);
 	DealtDamage(hitCharacter);
 }
 
@@ -462,6 +545,7 @@ void ARCharacterBase::HitRangedAttack(ARCharacterBase* hitCharacter)
 	if (HasAuthority() == false)
 		return;
 
+	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetFuelCoolantEffectChanceAttribute(), IceEffect);
 	CheckRadio(hitCharacter);
 	DealtDamage(hitCharacter);
 }
@@ -472,11 +556,11 @@ void ARCharacterBase::HitMeleeAttack(ARCharacterBase* hitCharacter)
 		return;
 
 	CheckHardhat();
-	CheckNails(hitCharacter);
+	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetNailsEffectChanceAttribute(), NailsEfffect);
 	DealtDamage(hitCharacter);
 }
 
-void ARCharacterBase::CheckFriendShipBracelet_Implementation()
+void ARCharacterBase::CheckFriendShipBracelet()
 {
 	if (HasAuthority())
 	{
@@ -489,19 +573,26 @@ void ARCharacterBase::CheckIVBag()
 	HealingRadiusEffect(IVBagEffect, true);
 }
 
-void ARCharacterBase::CheckTaser(ARCharacterBase* hitCharacter)
+void ARCharacterBase::ApplyItemEffectAtRandom(ARCharacterBase* hitCharacter, FGameplayAttribute effectChance, TSubclassOf<UGameplayEffect> effectToApply)
 {
 	bool bFound = false;
-	float taserChance = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetTaserStunChanceAttribute(), bFound);
+	float chance = AbilitySystemComponent->GetGameplayAttributeValue(effectChance, bFound);
 
-	if (bFound == false || taserChance <= 0)
+	if (bFound == false || chance <= 0)
 		return;
 
 	float randomApplyChance = FMath::RandRange(0, 100);
 	//UE_LOG(LogTemp, Error, TEXT("%f% Trying to inflict got %f"), nailsChance, randomApplyChance);
-	if (taserChance >= randomApplyChance)
+	if (chance >= randomApplyChance)
 	{
-		FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(TaserEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+		if (effectToApply == IceEffect)
+		{
+			bFireNext = !bFireNext;
+			if (bFireNext)
+				effectToApply = FireEffect;
+		}
+
+		FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(effectToApply, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
 
 		FGameplayEffectSpec* spec = specHandle.Data.Get();
 		if (spec)
@@ -529,28 +620,6 @@ void ARCharacterBase::CheckHardhat()
 		UE_LOG(LogTemp, Error, TEXT("%s Healed from melee attack!"), *GetName());
 		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetGenericTargetAquiredTag(), meleeStrength * lifesteal);
 		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
-	}
-}
-
-void ARCharacterBase::CheckNails(ARCharacterBase* hitCharacter)
-{
-	bool bFound = false;
-	float nailsChance = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetNailsEffectChanceAttribute(), bFound);
-
-	if (bFound == false || nailsChance <= 0)
-		return;
-
-	float randomApplyChance = FMath::RandRange(0, 100);
-	//UE_LOG(LogTemp, Error, TEXT("%f% Trying to inflict got %f"), nailsChance, randomApplyChance);
-	if (nailsChance >= randomApplyChance)
-	{
-		FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(NailsEfffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
-
-		FGameplayEffectSpec* spec = specHandle.Data.Get();
-		if (spec)
-		{
-			hitCharacter->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
-		}
 	}
 }
 
@@ -618,6 +687,127 @@ void ARCharacterBase::CheckRadioDelay(AREnemyBase* hitCharacter)
 	CheckRadio(hitCharacter);
 }
 
+
+void ARCharacterBase::NetMulticast_HandleFireVFX_Implementation(float fireValue)
+{
+	AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+	if (gameState)
+	{
+		FVector spawnPos = GetActorLocation();
+		spawnPos.Z -= 80;
+		gameState->Multicast_AdjustFireOnCharacter(FireSystem, this, spawnPos, FVector::UpVector, fireValue);
+	}
+}
+
+void ARCharacterBase::NetMulticast_HandleIceVFX_Implementation(float iceValue)
+{
+	AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+	if (gameState)
+	{
+		FVector spawnPos = GetActorLocation();
+		spawnPos.Z -= 80;
+		gameState->Server_AdjustIceOnCharacter(nullptr, this, spawnPos, FVector::UpVector, iceValue);
+	}
+}
+
+void ARCharacterBase::HandleFireVFX(const FOnAttributeChangeData& ChangeData)
+{
+	NetMulticast_HandleFireVFX(ChangeData.NewValue);
+}
+
+void ARCharacterBase::HandleIceVFX(const FOnAttributeChangeData& ChangeData)
+{
+	NetMulticast_HandleIceVFX(ChangeData.NewValue);
+}
+
+void ARCharacterBase::CheckFireDamage()
+{
+	if (FireDamageEffect == nullptr)
+	{
+		return;
+	}
+
+	bool bFoundHealth = false;
+	float health = GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetHealthAttribute(), bFoundHealth);
+
+	bool bFoundFire = false;
+	float fire = GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetFireAttribute(), bFoundFire);
+
+	if (bFoundHealth == false || health <= 0 || bFoundFire == false || fire <= 0)
+		return;
+
+	FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(FireDamageEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+	FGameplayEffectSpec* spec = specHandle.Data.Get();
+	if (spec)
+	{
+		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+	}
+}
+
+void ARCharacterBase::CheckRadiationDamage()
+{
+	if (RadiationDamageEffect == nullptr)
+	{
+		return;
+	}
+
+	if (!AbilitySystemComponent->HasMatchingGameplayTag(URAbilityGenericTags::GetRadiationTag()))
+		return;
+
+	bool bFoundHealth = false;
+	float health = GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetHealthAttribute(), bFoundHealth);
+
+	if (bFoundHealth == false || health <= 0)
+		return;
+
+	if (RadOutlineInstance != nullptr && bRadiated == false)
+	{
+		bRadiated = true;
+		GetMesh()->SetOverlayMaterial(RadOutlineInstance);
+	}
+
+	TArray<FOverlapResult> OverlappingResults;
+
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(400 * WeakpointSize);
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this); // Ignore self
+
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 400 * WeakpointSize, 32, FColor::Red, false, 0.1f);
+
+	bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
+
+	TArray<AREnemyBase*> alreadyDamagedEnemies;
+
+	for (const FOverlapResult& result : OverlappingResults)
+	{
+		AREnemyBase* enemy = Cast<AREnemyBase>(result.GetActor());
+		if (enemy)
+		{
+			if (alreadyDamagedEnemies.Contains(enemy) == false)
+			{
+				FGameplayEffectSpecHandle specHandle = enemy->GetAbilitySystemComponent()->MakeOutgoingSpec(RadiationDamageEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+
+				FGameplayEffectSpec* spec = specHandle.Data.Get();
+				if (spec)
+				{
+					if (enemy->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+						return;
+
+					alreadyDamagedEnemies.Add(enemy);
+					RadiationDelayTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ARCharacterBase::CheckRadiationDelay, enemy));
+					enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+				}
+			}
+		}
+	}
+}
+
+void ARCharacterBase::CheckRadiationDelay(AREnemyBase* hitCharacter)
+{
+	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetUraniumEffectChanceAttribute(), RadiationEffect);
+}
+
 void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEffect, bool IVBag)
 {
 
@@ -636,7 +826,9 @@ void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEf
 		QueryParams.AddIgnoredActor(this); // Ignore self
 	}
 
-	DrawDebugSphere(GetWorld(), GetActorLocation(), healingRadius, 32, FColor::Green, false, 2.0f);
+	AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+
+	//DrawDebugSphere(GetWorld(), GetActorLocation(), healingRadius, 32, FColor::Green, false, 0.1f);
 
 	bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
 
@@ -657,10 +849,23 @@ void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEf
 				FGameplayEffectSpec* spec = specHandle.Data.Get();
 				if (spec)
 				{
+					if (gameState && HealingSelf)
+					{
+						gameState->Multicast_RequestSpawnVFXOnCharacter(HealingSelf, player, player->GetActorLocation(), player->GetActorLocation(), 0);
+					}
+
 					alreadyHealedPlayers.Add(player);
 					player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 				}
 			}
+		}
+	}
+
+	if (foundFriend)
+	{
+		if (gameState)
+		{
+			gameState->Multicast_SpawnHealingPulse(nullptr, this, this->GetActorLocation(), this->GetActorLocation(), healingRadius);
 		}
 	}
 
@@ -671,6 +876,10 @@ void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEf
 		FGameplayEffectSpec* spec = specHandle.Data.Get();
 		if (spec)
 		{
+			if (gameState && HealingSelf)
+			{
+				gameState->Multicast_RequestSpawnVFXOnCharacter(HealingSelf, this, this->GetActorLocation(), this->GetActorLocation(), 0);
+			}
 			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 		}
 	}
@@ -707,6 +916,9 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 		UE_LOG(LogTemp, Error, TEXT("%s NO ATTRIBUTE SET"), *GetName());
 		return;
 	}
+
+	if(AbilitySystemComponent->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		return;
 
 	if (ChangeData.OldValue >= 1)
 	{

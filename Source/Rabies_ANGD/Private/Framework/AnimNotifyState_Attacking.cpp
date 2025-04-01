@@ -3,6 +3,7 @@
 
 #include "Framework/AnimNotifyState_Attacking.h"
 #include "Framework/RAttackingBoxComponent.h"
+#include "Framework/RPushBoxComponent.h"
 
 void UAnimNotifyState_Attacking::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -10,10 +11,16 @@ void UAnimNotifyState_Attacking::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 
 	const AActor* OwnerActor = MeshComp->GetOwner();
 	AttackingBoxComponent = OwnerActor->GetComponentByClass<URAttackingBoxComponent>();
-	if (AttackingBoxComponent)
+	PushBoxComponent = OwnerActor->GetComponentByClass<URPushBoxComponent>();
+	if (AttackingBoxComponent && bIsPush == false)
 	{
 		AttackingBoxComponent->AttachToComponent(MeshComp, FAttachmentTransformRules::SnapToTargetIncludingScale, AttachSocket);
 		AttackingBoxComponent->StartDetection();
+	}
+	else if (bIsPush && PushBoxComponent)
+	{
+		PushBoxComponent->AttachToComponent(MeshComp, FAttachmentTransformRules::SnapToTargetIncludingScale, AttachSocket);
+		PushBoxComponent->StartDetection();
 	}
 }
 
@@ -21,7 +28,11 @@ void UAnimNotifyState_Attacking::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 {
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 
-	if (AttackingBoxComponent)
+	if (AttackingBoxComponent && bIsPush == false)
+	{
+		AttackingBoxComponent->DoAttackCheck();
+	}
+	else if (bIsPush && PushBoxComponent)
 	{
 		AttackingBoxComponent->DoAttackCheck();
 	}
@@ -31,7 +42,11 @@ void UAnimNotifyState_Attacking::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
-	if (AttackingBoxComponent)
+	if (AttackingBoxComponent && bIsPush == false)
+	{
+		AttackingBoxComponent->EndDetection();
+	}
+	else if (bIsPush && PushBoxComponent)
 	{
 		AttackingBoxComponent->EndDetection();
 	}

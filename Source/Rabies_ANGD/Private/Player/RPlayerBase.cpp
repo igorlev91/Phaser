@@ -13,6 +13,7 @@
 #include "GameplayAbilities/RAttributeSet.h"
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
+#include "Framework/EOSActionGameState.h"
 
 #include "Framework/RItemDataAsset.h"
 
@@ -45,6 +46,8 @@
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
 
+#define ECC_PingInput ECC_GameTraceChannel4
+
 ARPlayerBase::ARPlayerBase()
 {
 	viewPivot = CreateDefaultSubobject<USceneComponent>("Camera Pivot");
@@ -74,8 +77,8 @@ ARPlayerBase::ARPlayerBase()
 	ItemPickupCollider->SetupAttachment(GetRootComponent());
 	ItemPickupCollider->SetCollisionProfileName(TEXT("OverlapAll"));
 
-	cameraClampMax = 10;
-	cameraClampMin = -60;
+	cameraClampMax = 50;
+	cameraClampMin = -80;
 	bIsScoping = false;
 
 	GroundCheckComp = CreateDefaultSubobject<USphereComponent>("Ground Check Comp");
@@ -90,6 +93,7 @@ void ARPlayerBase::Tick(float DeltaTime)
 	if (EOSPlayerState && IsLocallyControlled())
 	{
 		//UE_LOG(LogTemp, Error, TEXT(""), *GetName());
+		SetAllyHealthBars();
 		viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
 		EOSPlayerState->Server_UpdatePlayerVelocity(GetCharacterMovement()->Velocity);
 		EOSPlayerState->Server_UpdateSocketLocations(GetMesh()->GetSocketLocation(RootAimingSocketName), GetMesh()->GetSocketLocation(RangedAttackSocketName));
@@ -100,6 +104,28 @@ void ARPlayerBase::Tick(float DeltaTime)
 		}
 	}
 
+}
+
+void ARPlayerBase::SetAllyHealthBars()
+{
+	FVector viewLoc;
+	FRotator viewRot;
+
+	playerController->GetPlayerViewPoint(viewLoc, viewRot);
+
+	// Find all actors in the world
+	TArray<AActor*> AllActors;
+	UGameplayStatics::GetAllActorsOfClass(playerController->GetWorld(), ARPlayerBase::StaticClass(), AllActors);
+
+	for (AActor* Actor : AllActors)
+	{
+		ARPlayerBase* allyPlayer = Cast<ARPlayerBase>(Actor);
+
+		if (!allyPlayer || allyPlayer == this)
+			continue;
+
+		allyPlayer->SetHealthBarFromAllyPerspective(GetActorLocation());
+	}
 }
 
 void ARPlayerBase::BeginPlay()
@@ -166,6 +192,7 @@ void ARPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		enhancedInputComp->BindAction(ultimateAttackAction, ETriggerEvent::Completed, this, &ARPlayerBase::FinishUltimateAttack);
 		enhancedInputComp->BindAction(InteractInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Interact);
 		enhancedInputComp->BindAction(PausingInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Pause);
+		enhancedInputComp->BindAction(PingInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::Ping);
 		enhancedInputComp->BindAction(LoadDebugInputAction, ETriggerEvent::Triggered, this, &ARPlayerBase::LoadDebug);
 	}
 }
@@ -232,7 +259,7 @@ void ARPlayerBase::StartJump()
 	{
 		return;
 	}
-
+	
 	if (bInRangeToRevive)
 	{
 		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Revive);
@@ -243,6 +270,12 @@ void ARPlayerBase::StartJump()
 
 	if (bInstantJump)
 	{
+		if (!GetCharacterMovement()->IsFalling())
+		{
+			AudioComp->SetSound(JumpAudio);
+			AudioComp->Play();
+		}
+
 		Jump();
 		return;
 	}
@@ -313,6 +346,51 @@ void ARPlayerBase::DoBasicAttack()
 	}
 }
 
+void ARPlayerBase::Ping()
+{
+	if (!EOSPlayerState || !IsLocallyControlled())
+	{
+		return;
+	}
+
+	FVector viewLoc;
+	FRotator viewRot;
+
+	playerController->GetPlayerViewPoint(viewLoc, viewRot);
+	if (bIsScoping == false)
+	{
+		viewLoc = GetActorLocation();
+	}
+
+	FVector startPos = viewLoc + viewRot.Vector();
+	FVector endPos = startPos + viewRot.Vector() * 8000.0f;
+
+	FCollisionShape collisionShape = FCollisionShape::MakeSphere(1);
+	ECollisionChannel collisionChannel = ECC_PingInput;
+	FHitResult newHitResult;
+	bool hit = GetWorld()->SweepSingleByChannel(newHitResult, startPos, endPos, FQuat::Identity, collisionChannel, collisionShape);
+	if (hit)
+	{
+		FVector hitPoint = newHitResult.ImpactPoint;
+		AActor* hitActor = newHitResult.GetActor();
+		Server_HandlePing(hitPoint, hitActor);
+		//FColor debugColor = FColor::Blue;
+		//DrawDebugCylinder(GetWorld(), startPos, endPos, 1.0f, 32, debugColor, false, 0.2f, 0U, 1.0f);
+		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *newHitResult.GetActor()->GetName()));
+
+
+	}
+}
+
+void ARPlayerBase::Server_HandlePing_Implementation(FVector hitPoint, AActor* hitActor)
+{
+	AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+	if (gameState)
+	{
+		gameState->Server_Ping(hitPoint, hitActor);
+	}
+}
+
 void ARPlayerBase::StopBasicAttack()
 {
 	FGameplayEventData eventData;
@@ -375,7 +453,14 @@ void ARPlayerBase::FinishUltimateAttack()
 void ARPlayerBase::Interact()
 {
 	PlayerInteraction.Broadcast();
-	ServerRequestInteraction(interactionChest, escapeToWin); // if there's lag this might not work... Reconsider your options carefully
+
+	bool bLucky = false;
+	if (interactionChest != nullptr)
+	{
+		 bLucky = CashMyLuck();
+	}
+
+	ServerRequestInteraction(interactionChest, escapeToWin, bLucky); // if there's lag this might not work... Reconsider your options carefully
 }
 
 void ARPlayerBase::Pause()
@@ -430,14 +515,14 @@ void ARPlayerBase::ScopingTagChanged(bool bNewIsAiming)
 	if (bNewIsAiming)
 	{
 		cameraClampMax = 50;
-		cameraClampMin = -50;
+		cameraClampMin = -80;
 		LerpCameraToLocalOffset(AimCameraLocalOffset);
 	}
 	else
 	{
 		DisableScoping();
-		cameraClampMax = 10;
-		cameraClampMin = -60;
+		cameraClampMax = 50;
+		cameraClampMin = -80;
 		LerpCameraToLocalOffset(DefaultCameraLocal);
 	}
 }
@@ -467,6 +552,14 @@ void ARPlayerBase::SetPausetoFalse()
 	isPaused = false;
 }
 
+bool ARPlayerBase::CashMyLuck()
+{
+	if (playerController == nullptr || bFeelinLucky == false)
+		return false;
+
+	return playerController->CashMyLuck();
+}
+
 void ARPlayerBase::PlayPickupAudio()
 {
 	if (AudioComp && PickupAudio)
@@ -490,7 +583,7 @@ void ARPlayerBase::GroundCheckCompOverlapped(UPrimitiveComponent* OverlappedComp
 	}
 }
 
-void ARPlayerBase::ServerSetPlayerReviveState_Implementation(bool state)
+void ARPlayerBase::SetPlayerReviveState_Implementation(bool state)
 {
 	if (ReviveUI == nullptr)
 	{
@@ -519,11 +612,11 @@ void ARPlayerBase::ServerRequestPickupItem_Implementation(AItemPickup* itemPicku
 	}
 }
 
-void ARPlayerBase::ServerRequestInteraction_Implementation(AItemChest* Chest, AEscapeToWin* winPoint)
+void ARPlayerBase::ServerRequestInteraction_Implementation(AItemChest* Chest, AEscapeToWin* winPoint, bool bLucky)
 {
 	if (Chest)
 	{
-		Chest->Server_OpenChest();
+		Chest->Server_OpenChest(bLucky);
 	}
 
 	if (winPoint)
@@ -624,7 +717,7 @@ void ARPlayerBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 		if (player->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
 		{
 			bInRangeToRevive = true;
-			player->ServerSetPlayerReviveState(true);
+			player->SetPlayerReviveState(true);
 		}
 	}
 }
@@ -640,7 +733,7 @@ void ARPlayerBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 		if (player->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
 		{
 			bInRangeToRevive = false;
-			player->ServerSetPlayerReviveState(false);
+			player->SetPlayerReviveState(false);
 		}
 	}
 }

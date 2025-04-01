@@ -136,6 +136,14 @@ void ARPlayerController::AddNewItemToUI(URItemDataAsset* newItemAsset)
 
 }
 
+bool ARPlayerController::CashMyLuck()
+{
+	if (GameplayUI == nullptr)
+		return false;
+
+	return GameplayUI->CashMyLuck();
+}
+
 void ARPlayerController::Server_RequestRevive_Implementation(AEOSPlayerState* TargetPlayerState)
 {
 	if (TargetPlayerState)

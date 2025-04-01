@@ -69,6 +69,8 @@ private:
 
 	class ARPlayerBase* player;
 
+	class AAS_BackgroundMusic* BackgroundMusic;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

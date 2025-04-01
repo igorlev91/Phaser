@@ -7,7 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Widgets/PingUI.h"
+#include "Actors/PingActor.h"
 #include "Framework/EOSActionGameState.h"
 
 #include "GameplayAbilities/GA_AbilityBase.h"
@@ -87,7 +88,11 @@ void AItemChest::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 	}
 
 	bWithinInteraction = true;
-	InteractWidget->SetVisibility(ESlateVisibility::Visible);
+
+	if (InteractWidget != nullptr)
+	{
+		InteractWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 
 	player->PlayerInteraction.AddUObject(this, &AItemChest::Interact);
 
@@ -102,16 +107,41 @@ void AItemChest::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* 
 	}
 
 	bWithinInteraction = false;
-	InteractWidget->SetVisibility(ESlateVisibility::Collapsed);
 
+	if (InteractWidget != nullptr)
+	{
+		InteractWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	player->SetInteractionChest(nullptr);
 	player->PlayerInteraction.Clear();
 }
 
 void AItemChest::SetUpUI(bool SetInteraction)
 {
+	if (InteractWidgetComp == nullptr)
+		return;
+
 	InteractWidget = Cast<UChestInteractUI>(InteractWidgetComp->GetUserWidgetObject());
+
+	if (InteractWidget == nullptr)
+		return;
+
 	InteractWidget->SetCostText(ScrapPrice);
 	InteractWidget->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void AItemChest::SetPairedPing(APingActor* myPing)
+{
+	if (MyPing == nullptr)
+	{
+		MyPing = myPing;
+	}
+}
+
+bool AItemChest::HasPing()
+{
+	return (MyPing != nullptr);
 }
 
 void AItemChest::Interact()
@@ -122,7 +152,7 @@ void AItemChest::Interact()
 	player->SetInteractionChest(this);
 }
 
-void AItemChest::Server_OpenChest_Implementation()
+void AItemChest::Server_OpenChest_Implementation(bool bFeelinLucky)
 {
 	if (HasAuthority())
 	{
@@ -152,6 +182,9 @@ void AItemChest::Server_OpenChest_Implementation()
 		UAbilitySystemComponent* ASC = player->GetAbilitySystemComponent();
 		if (ASC && ScrapPriceEffect)
 		{
+			if (MyPing != nullptr)
+				MyPing->TimedDestroy();
+
 			FGameplayEffectContextHandle effectContext = ASC->MakeEffectContext();
 			FGameplayEffectSpecHandle effectSpecHandle = ASC->MakeOutgoingSpec(ScrapPriceEffect, 1.0f, effectContext);
 			FGameplayEffectSpec* spec = effectSpecHandle.Data.Get();
@@ -166,7 +199,8 @@ void AItemChest::Server_OpenChest_Implementation()
 			AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
 			if (gameState == GetOwner())
 			{
-				gameState->SelectChest(this);
+				int amount = bFeelinLucky ? 2 : 1 ;
+				gameState->SelectChest(this, amount);
 			}
 		}
 	}
@@ -175,8 +209,15 @@ void AItemChest::Server_OpenChest_Implementation()
 
 void AItemChest::UpdateChestOpened_Implementation()
 {
-	InteractWidget->SetVisibility(ESlateVisibility::Hidden);
-	ChestTopMesh->SetVisibility(false);
+	if (InteractWidget != nullptr)
+	{
+		InteractWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
+
+	if (ChestTopMesh != nullptr)
+	{
+		ChestTopMesh->SetVisibility(false);
+	}
 
 	if (AudioComp && ChestOpenAudio)
 	{
@@ -184,6 +225,10 @@ void AItemChest::UpdateChestOpened_Implementation()
 		AudioComp->Play();
 	}
 
+	ChestBottomMesh->SetOverlayMaterial(nullptr);
+	ChestTopMesh->SetOverlayMaterial(nullptr);
+
+	SphereCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	bWasOpened = true;
 }
 
@@ -191,5 +236,6 @@ void AItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(AItemChest, bWasOpened, COND_None);
+	DOREPLIFETIME_CONDITION(AItemChest, MyPing, COND_None);
 	DOREPLIFETIME_CONDITION(AItemChest, ScrapPrice, COND_None);
 }

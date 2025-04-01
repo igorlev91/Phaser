@@ -51,7 +51,6 @@ void UGA_TexRanged::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	if (Player)
 	{
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetBasicAttackActivationTag(), FGameplayEventData());
 		ClientHitScanHandle = Player->ClientHitScan.AddLambda([this](AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit)
 			{
 				RecieveAttackHitscan(hitActor, startPos, endPos, bIsCrit);
@@ -66,6 +65,7 @@ void UGA_TexRanged::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	}
 	else
 	{
+		TriggerAudioCue();
 		Fire();
 	}
 }
@@ -76,7 +76,6 @@ void UGA_TexRanged::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 
 	if (ClientHitScanHandle.IsValid() && Player)
 	{
-		StopDurationAudioEffect();
 		Player->ClientHitScan.Remove(ClientHitScanHandle);
 	}
 }
@@ -117,13 +116,12 @@ void UGA_TexRanged::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVe
 
 void UGA_TexRanged::Fire()
 {
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetRangedAttackStrengthTag(), FGameplayEventData());
 	if (K2_HasAuthority())
 	{
 		if (Player)
 		{
 			Player->Hitscan(6000, Player->GetPlayerBaseState());
-
-			StartDurationAudioEffect();
 
 			K2_EndAbility();
 		}

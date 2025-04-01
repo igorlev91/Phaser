@@ -40,6 +40,9 @@ public:
 	UFUNCTION()
 	void RemoveBossHealthFromUI(class UBossHealthBar* barToRemove);
 
+	UFUNCTION()
+	bool CashMyLuck();
+
 private:
 
 	//************************//
@@ -131,6 +134,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	TSubclassOf<class UPlayerAbilityGauge> AbilityGaugeClass;
+
+	UPROPERTY(meta = (BindWidget))
+	class UChesterLuckUI* ChesterLuckUI;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	TArray<UTexture*> ButtonInputs;
 
 	bool crosshairState;
 

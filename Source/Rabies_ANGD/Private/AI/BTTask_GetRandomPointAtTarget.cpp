@@ -23,10 +23,9 @@ EBTNodeResult::Type UBTTask_GetRandomPointAtTarget::ExecuteTask(UBehaviorTreeCom
 	}
 
 	float RandomDistance = FMath::RandRange(50.0f, 250.0f);
-	FVector RandomDirection = FMath::VRand();
-	RandomDirection *= RandomDistance;
-
-	FVector RandomLocation = targetActor->GetActorLocation() + RandomDirection;
+	float RandomAngle = FMath::RandRange(0.0f, (2 * 3.14f));
+	FVector CircleOffset = FVector(FMath::Cos(RandomAngle) * RandomDistance, FMath::Sin(RandomAngle) * RandomDistance, 0.0f);
+	FVector RandomLocation = targetActor->GetActorLocation() + CircleOffset;
 
 	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
 	if (NavSys)

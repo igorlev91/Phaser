@@ -23,6 +23,10 @@ public:
 
 	void SetLevel(int newLevel);
 
+	void SetAllyView(UTexture* characterIcon);
+
+	void SetAllyDisplayName(FString playerDisplayName);
+
 private:
 
 	UPROPERTY(EditAnywhere, Category = "Visual")
@@ -48,4 +52,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Visual")
 	FLinearColor colorRed;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* CharacterIconImage;
+
+	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
+	class UTextBlock* NameDisplayText;
 };

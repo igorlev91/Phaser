@@ -7,6 +7,7 @@
 #include "RProjectileBase.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_FourParams(FOnHitCharacter, class ARCharacterBase*, /*Using character*/ class ARCharacterBase* /*Hit Target*/, bool /* isEnemy */, int /* #target hit */);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBounceCharacter, const FHitResult&, const FVector&);
 
 UCLASS()
 class ARProjectileBase : public AActor
@@ -50,9 +51,14 @@ private:
 	int hitCharacters = 0;
 
 	FTimerHandle DestroyHandle;
+
+	UFUNCTION()
+	void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
 	
 public:	
 	FOnHitCharacter OnHitCharacter;
+
+	FOnBounceCharacter OnBounceCharacter;
 	// Sets default values for this actor's properties
 	ARProjectileBase();
 
@@ -70,14 +76,23 @@ public:
 
 	class ARCharacterBase* OwnedPlayer;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* HitAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundAttenuation* HitSoundAttenuationSettings;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	float AudioPlayMinSpeed = 200;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void DestroySelf();
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void DestroySelf();
 };

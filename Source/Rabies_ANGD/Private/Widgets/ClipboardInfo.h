@@ -52,5 +52,8 @@ private:
 	class UTextBlock* ultimateText;
 
 	UPROPERTY(meta = (BindWidget))
+	class UImage* passiveIcon;
+
+	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* passiveText;
 };

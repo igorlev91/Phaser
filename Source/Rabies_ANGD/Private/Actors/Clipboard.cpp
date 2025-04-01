@@ -15,6 +15,9 @@
 #include "Framework/EOSActionGameState.h"
 #include "Widgets/ClipboardInfo.h"
 
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+
 // Sets default values
 AClipboard::AClipboard()
 {
@@ -28,6 +31,10 @@ AClipboard::AClipboard()
 
 	InteractWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
 	InteractWidgetComp->SetupAttachment(GetRootComponent());
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->SetupAttachment(GetRootComponent());
+	AudioComp->bAutoActivate = false;
 }
 
 void AClipboard::MoveClipboard(FVector goal, FRotator rotationGoal)
@@ -57,17 +64,39 @@ void AClipboard::SetClipboardInfo(URCharacterDefination* Character)
 
 void AClipboard::SetNewCharacter(URCharacterDefination* Character)
 {
+	if (AudioComp != nullptr && MoveAudio != nullptr)
+	{
+		AudioComp->SetSound(MoveAudio);
+		AudioComp->Play();
+	}
+
+	if (GetWorld() == nullptr)
+		return;
+
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 	MoveClipboard(ClipboardPosHidden, ClipboardRotHidden);
 	if (Character)
 	{
 		CurrentCharacter = Character;
-		GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, this, &AClipboard::FinishNewCharacter, 1.0f, false);
+		GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, this, &AClipboard::FinishNewCharacter, 1.5f, false);
+
+
+
+
+
+
+
+		//
 	}
 }
 
 void AClipboard::FinishNewCharacter()
 {
+	if (AudioComp != nullptr && MoveAudio != nullptr)
+	{
+		AudioComp->SetSound(MoveAudio);
+		AudioComp->Play();
+	}
 	MoveClipboard(ClipboardPosShown, ClipboardRotShown);
 	SetClipboardInfo(CurrentCharacter);
 }
@@ -77,11 +106,18 @@ void AClipboard::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
-	infoWidget = Cast<UClipboardInfo>(InteractWidgetComp->GetUserWidgetObject());
-	infoWidget->SetVisibility(ESlateVisibility::Visible);
+	if (InteractWidgetComp != nullptr)
+	{
+		infoWidget = Cast<UClipboardInfo>(InteractWidgetComp->GetUserWidgetObject());
 
-	SetNewCharacter(DefaultCharacter);
+		if (infoWidget != nullptr)
+		{
+			infoWidget->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	
+	if(DefaultCharacter != nullptr)
+		SetNewCharacter(DefaultCharacter);
 }
 
 // Called every frame

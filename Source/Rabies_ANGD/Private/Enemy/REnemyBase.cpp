@@ -104,14 +104,39 @@ void AREnemyBase::DeadStatusUpdated(bool bIsDead)
 {
 	UE_LOG(LogTemp, Error, TEXT("Dead"));
 
+	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		return;
+
+	GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetDeadTag());
+
+	FGameplayEventData eventData;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, URAbilityGenericTags::GetDeadTag(), eventData);
+
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	if (AIPerceptionSourceComp) {
+	if (AIPerceptionSourceComp) 
+	{
 		AIPerceptionSourceComp->UnregisterFromPerceptionSystem();
 	}
 
 	if (bIsDead)
 	{
+		if (GravityFallClass != nullptr)
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+			FGameplayEffectContextHandle contextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+			FGameplayEffectSpecHandle effectSpechandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GravityFallClass, 1.0f, contextHandle);
+
+			FGameplayEffectSpec* spec = effectSpechandle.Data.Get();
+			if (spec)
+			{
+
+				GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+			}
+		}
+
 		PlayAnimMontage(DeathMontage);
 		GetWorld()->GetTimerManager().SetTimer(DeathHandle, this, &AREnemyBase::DelayServerDeathRequest, deathTimer, false);
 	}

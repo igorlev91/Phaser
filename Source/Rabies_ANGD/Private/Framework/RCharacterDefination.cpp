@@ -5,6 +5,13 @@
 #include "GameFramework/Character.h"
 #include "Components/SkeletalMeshComponent.h"
 
+/*void URCharacterDefination::BeginPlay()
+{
+	Super::BeginPlay();
+
+
+}*/
+
 USkeletalMesh* URCharacterDefination::GetMesh() const
 {
 	if (CharacterClass)

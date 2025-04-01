@@ -63,7 +63,14 @@ public:
 	TArray<AActor*> nearbyFaintedActors;
 
 	class AEscapeToWin* escapeToWin;
+
 private:
+
+	UFUNCTION(Server, Reliable)
+	void Server_HandlePing(FVector hitPoint, AActor* hitActor);
+
+	UFUNCTION()
+	void SetAllyHealthBars();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Tex Invis")
 	UMaterial* TexDefaultMat;  // The base material reference in the editor
@@ -178,6 +185,9 @@ private:
 	UInputAction* PausingInputAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* PingInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* LoadDebugInputAction;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -205,6 +215,9 @@ private:
 
 	UFUNCTION()
 	void DoBasicAttack();
+
+	UFUNCTION()
+	void Ping();
 
 	UFUNCTION()
 	void StopBasicAttack();
@@ -275,6 +288,16 @@ public:
 
 	FTimerHandle PickupItemHandle;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Passive")
+	bool bFeelinLucky;
+
+	UFUNCTION()
+	bool CashMyLuck();
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Passive")
+	UAnimMontage* RevivingBuddy;
+
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Passive")
@@ -291,7 +314,7 @@ private:
 	class AEOSPlayerState* EOSPlayerState;
 
 	UFUNCTION(Server, Reliable)
-	void ServerRequestInteraction(class AItemChest* Chest, class AEscapeToWin* winPoint);
+	void ServerRequestInteraction(class AItemChest* Chest, class AEscapeToWin* winPoint, bool bLucky);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestPickupItem(class AItemPickup* itemPickup, class URItemDataAsset* itemAsset);
@@ -299,7 +322,7 @@ private:
 public:
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void ServerSetPlayerReviveState(bool state);
+	void SetPlayerReviveState(bool state);
 
 	UFUNCTION(Client, Reliable)
 	void AddNewItem(class URItemDataAsset* newItemAsset);

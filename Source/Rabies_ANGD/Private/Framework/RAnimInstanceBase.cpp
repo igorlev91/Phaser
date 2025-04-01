@@ -10,6 +10,8 @@
 #include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
+#include "GameplayAbilities/RAbilitySystemComponent.h"
+#include "GameplayAbilities/RAttributeSet.h"
 
 bool URAnimInstanceBase::ShouldDoUpperBody() const
 {
@@ -33,6 +35,7 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 		if (OwnerASC)
 		{
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetScopingTag()).AddUObject(this, &URAnimInstanceBase::ScopingTagChanged);
+			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetRevivingTag()).AddUObject(this, &URAnimInstanceBase::RevivingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetSpecialAttackAimingTag()).AddUObject(this, &URAnimInstanceBase::SpecialAimingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetUltimateAttackAimingTag()).AddUObject(this, &URAnimInstanceBase::UltimateAimingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetAttackingTag()).AddUObject(this, &URAnimInstanceBase::AttackingTagChanged);
@@ -40,6 +43,10 @@ void URAnimInstanceBase::NativeInitializeAnimation()
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetTiredFlyingTag()).AddUObject(this, &URAnimInstanceBase::TiredFlyingTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetHoldingJump()).AddUObject(this, &URAnimInstanceBase::HoldingJumpTagChanged);
 			OwnerASC->RegisterGameplayTagEvent(URAbilityGenericTags::GetDeadTag()).AddUObject(this, &URAnimInstanceBase::DeathTagChanged);
+			
+			BaseFlyingSpeedScale = 830.0f; // very sad this is hard coded but it will never become relavent again... :)
+			BaseMovementSpeedScale = OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed;
+			UE_LOG(LogTemp, Error, TEXT("Base Speed scale: %f"), BaseMovementSpeedScale);
 		}
 	}
 
@@ -80,12 +87,21 @@ void URAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 		LookDir.Normalize();
 		FwdSpeed = Velocity.Dot(LookDir);
 		RightSpeed = -Velocity.Dot(LookDir.Cross(FVector::UpVector));
+
+		if (bFlying)
+			CurrentFlyingSpeedScale = OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed;
+		CurrentMovementSpeedScale = OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed;
 	}
 }
 
 void URAnimInstanceBase::ScopingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
 {
 	bIsScoping = NewStackCount != 0;
+}
+
+void URAnimInstanceBase::RevivingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)
+{
+	bReviving = NewStackCount != 0;
 }
 
 void URAnimInstanceBase::SpecialAimingTagChanged(const FGameplayTag TagChanged, int32 NewStackCount)

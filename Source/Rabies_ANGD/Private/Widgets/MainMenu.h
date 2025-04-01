@@ -94,4 +94,17 @@ private:
 
 	UFUNCTION()
 	void CreditsClicked();
+
+	/*		Audio		*/
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* HoverAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* ClickAudio;
+
+	UFUNCTION()
+	void PlayHoverAudio();
+
+	UFUNCTION()
+	void LoadGameLevel();
 };

@@ -13,15 +13,11 @@
 
 #include "Player/RPlayerBase.h"
 
-#include "GameplayAbilities/RAbilitySystemComponent.h"
-
 #include "Framework/EOSActionGameState.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 
-#include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GA_TexMelee.h"
 
 UGA_TexMelee::UGA_TexMelee()
 {
@@ -65,6 +61,7 @@ void UGA_TexMelee::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	UAbilityTask_WaitGameplayEvent* WaitForDamage = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetGenericTargetAquiredTag());
 	WaitForDamage->EventReceived.AddDynamic(this, &UGA_TexMelee::HandleDamage);
 	WaitForDamage->ReadyForActivation();
+	TriggerAudioCue();
 }
 
 void UGA_TexMelee::HandleDamage(FGameplayEventData Payload)

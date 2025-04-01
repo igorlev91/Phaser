@@ -16,6 +16,9 @@ class ARCharacterSelectController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	ARCharacterSelectController();
+
 protected:
 	virtual void OnRep_PlayerState() override;
 
@@ -105,4 +108,16 @@ private:
 	TArray<class ACagedCharacter*> CagedCharacters;
 
 	void GetCagedCharacters();
+
+	/*		Audio		*/
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* ConveyorAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* ConveyorStopAudio;
+
+	void PlayConveyorStop();
 };

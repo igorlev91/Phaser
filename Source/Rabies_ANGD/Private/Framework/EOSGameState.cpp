@@ -32,7 +32,7 @@ void AEOSGameState::Server_ReadyUp_Implementation()
 {
 	ReadiedPlayers++;
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Waiting for players..."));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Ready up!..."));
 
 	if (PlayerArray.Num() == ReadiedPlayers)
 	{
@@ -56,7 +56,7 @@ bool AEOSGameState::bCharcterSelected(const URCharacterDefination* CharacterToCh
 	return SelectedCharacters.Contains(CharacterToCheck);
 }
 
-void AEOSGameState::UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected)
+void AEOSGameState::UpdateCharacterSelection(const URCharacterDefination* Selected, const URCharacterDefination* Deselected, const FString& playerNameCheck)
 {
 	if (!HasAuthority()) return;
 
@@ -70,7 +70,7 @@ void AEOSGameState::UpdateCharacterSelection(const URCharacterDefination* Select
 		SelectedCharacters.Remove(Deselected);
 	}
 
-	NetMulticast_UpdateCharacterSelection(Selected, Deselected);
+	NetMulticast_UpdateCharacterSelection(Selected, Deselected, playerNameCheck);
 }
 
 void AEOSGameState::OnRep_SessionName()
@@ -83,9 +83,9 @@ void AEOSGameState::OnRep_ReadiedPlayers()
 
 }
 
-void AEOSGameState::NetMulticast_UpdateCharacterSelection_Implementation(const URCharacterDefination* Selected, const URCharacterDefination* Deselected)
+void AEOSGameState::NetMulticast_UpdateCharacterSelection_Implementation(const URCharacterDefination* Selected, const URCharacterDefination* Deselected, const FString& playerNameCheck)
 {
-	OnCharacterSelectionReplicated.Broadcast(Selected, Deselected);
+	OnCharacterSelectionReplicated.Broadcast(Selected, Deselected, playerNameCheck);
 }
 
 void AEOSGameState::LoadMapAndListen_Implementation()

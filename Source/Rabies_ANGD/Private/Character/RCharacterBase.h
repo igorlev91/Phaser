@@ -20,6 +20,7 @@ class UGameplayEffect;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDeadStatusChanged, bool /*bIsDead*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInvisStatusChanged, bool /*bIsDead*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTaserStatusChanged, bool /*bIsTased*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnLevelUp, int /*new level*/);
 DECLARE_MULTICAST_DELEGATE_FourParams(FOnClientHitScan, AActor* /*Hit Target*/, FVector /* Start Pos */, FVector /* End Pos */, bool /*crit*/);
 
@@ -32,6 +33,8 @@ public:
 	FOnDeadStatusChanged OnDeadStatusChanged;
 
 	FOnInvisStatusChanged OnInvisStatusChanged;
+
+	FOnTaserStatusChanged OnTaserStatusChanged;
 
 	FOnClientHitScan ClientHitScan;
 	FOnLevelUp onLevelUp;
@@ -122,13 +125,10 @@ public:
 	void CheckIVBag();
 
 	UFUNCTION()
-	void CheckTaser(ARCharacterBase* hitCharacter);
+	void ApplyItemEffectAtRandom(ARCharacterBase* hitCharacter, FGameplayAttribute effectChance, TSubclassOf<UGameplayEffect> effectToApply);
 
 	UFUNCTION()
 	void CheckHardhat();
-
-	UFUNCTION()
-	void CheckNails(ARCharacterBase* hitCharacter);
 
 	UFUNCTION()
 	void CheckRadio(ARCharacterBase* hitCharacter);
@@ -136,10 +136,37 @@ public:
 	UFUNCTION()
 	void CheckRadioDelay(AREnemyBase* hitCharacter);
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION()
+	void CheckRadiationDelay(AREnemyBase* hitCharacter);
+
+	UFUNCTION()
 	void CheckFriendShipBracelet();
 
+	UFUNCTION()
+	void CheckRadiationDamage();
+
+	UFUNCTION()
+	void CheckFireDamage();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* FireSystem;
+
+	UPROPERTY()
+	class UNiagaraComponent* CurrentFire;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* HealingSelf;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* RedHealingSelf;
+
 	FTimerHandle FriendshipBraceletTimer;
+	FTimerHandle RadiationTimer;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	class UMaterialInstance* RadOutlineInstance;
+
+	bool bRadiated = false;
 
 	UFUNCTION()
 	void HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEffect, bool IVBag);
@@ -165,9 +192,28 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Items")
 	TSubclassOf<UGameplayEffect> TaserEffect;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> RadiationEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> RadiationDamageEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> FireEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> IceEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Items")
+	TSubclassOf<UGameplayEffect> FireDamageEffect;
+
 	FTimerHandle RadioDelayTimer;
+	FTimerHandle RadiationDelayTimer;
+	FTimerHandle FireDelayTimer;
 
 	FName WeakpointSocketName = TEXT("Weakpoint");
+
+	bool bFireNext;
 
 
 	UFUNCTION()
@@ -176,10 +222,25 @@ public:
 	UFUNCTION()
 	void HideWeakpointUI(class ARCharacterBase* ScopingCharacter);
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	float WeakpointSize ;
+
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	UMaterialInstanceDynamic* DynamicMaterialInstance;  // The dynamic material instance
+
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float WeakpointSize;
+	class UStaticMeshComponent* Weapon_LeftHand;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	class UStaticMeshComponent* Weapon_RightHand;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName WeaponLeftSocketName = TEXT("Replace With Joint");
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName WeaponRightSocketName = TEXT("Replace With Joint");
 
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	class UCapsuleComponent* WeakpointCollider;
@@ -195,6 +256,10 @@ private:
 
 	bool bHasDied;
 
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UMaterial* MyMaterial;  // The base material reference in the editor
+
 	void LevelUp(int carryOverEXP);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attacking")
@@ -209,6 +274,8 @@ private:
 	void DeathTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
 
 	void TaserTagChanged(const FGameplayTag TagChanged, int32 NewStackCount);
+	virtual void TaserTagChanged(bool bNewIsAiming) {/*empty in base*/ };
+	bool bIsTased;
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damaged")
@@ -263,6 +330,16 @@ private:
 	UPROPERTY()
 	class UHealthBar* HealthBar;
 
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_HandleFireVFX(float fireValue);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_HandleIceVFX(float iceValue);
+
+	//UFUNCTION(NetMulticast, Reliable)
+	void HandleFireVFX(const FOnAttributeChangeData& ChangeData);
+	void HandleIceVFX(const FOnAttributeChangeData& ChangeData);
+
 	void LevelUpdated(const FOnAttributeChangeData& ChangeData);
 	void ExpUpdated(const FOnAttributeChangeData& ChangeData);
 	void NextLevelExpUpdated(const FOnAttributeChangeData& ChangeData);
@@ -297,6 +374,9 @@ public:
 
 private:
 
+	UPROPERTY(EditDefaultsOnly, Category = "Icon")
+	UTexture* CharacterIcon;
+
 	UPROPERTY(Replicated)
 	FGenericTeamId TeamId;
 
@@ -306,6 +386,9 @@ private:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; // need this when doing Replicated things
 
 public:
+	UFUNCTION()
+	void SetHealthBarFromAllyPerspective(FVector viewingLocation);
+
 	UPROPERTY(Replicated)
 	int AILevel;
 

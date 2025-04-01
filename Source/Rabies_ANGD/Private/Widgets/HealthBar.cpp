@@ -7,6 +7,7 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "Math/Color.h"
 #include "Math/UnrealMathUtility.h"
+#include "Components/Image.h"
 #include "GameplayAbilities/RAttributeSet.h"
 
 void UHealthBar::NativePreConstruct()
@@ -42,4 +43,20 @@ void UHealthBar::SetLevel(int newLevel)
 	FText Text = FText::Format(FText::FromString("Lv {0}"), FText::AsNumber((int)newLevel));
 	LevelText->SetText(Text);
 	LevelText->SetColorAndOpacity(FSlateColor(levelColor));
+}
+
+void UHealthBar::SetAllyView(UTexture* characterIcon)
+{
+	FSlateBrush brush;
+
+	brush.SetResourceObject(characterIcon);
+	CharacterIconImage->SetBrush(brush);
+
+	//UE_LOG(LogTemp, Error, TEXT("%s Setting health bar"), *GetName());
+}
+
+void UHealthBar::SetAllyDisplayName(FString playerDisplayName)
+{
+	FText Text = FText::FromString(playerDisplayName);
+	NameDisplayText->SetText(Text);
 }

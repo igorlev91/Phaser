@@ -67,4 +67,16 @@ private:
 	void JoinLobbyButtonClicked();
 
 	int SelectedLobbyIndex = -1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* HoverAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* ClickAudio;
+
+	UFUNCTION()
+	void PlayHoverAudio();
+
+	UFUNCTION()
+	void JoinLobby();
 };

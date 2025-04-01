@@ -26,6 +26,15 @@
 #include "LevelSequencePlayer.h"
 #include "MovieSceneSequence.h"
 #include "Framework/RCharacterDefination.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+
+ARCharacterSelectController::ARCharacterSelectController()
+{
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->SetupAttachment(GetRootComponent());
+	AudioComp->bAutoActivate = false;
+}
 
 void ARCharacterSelectController::OnRep_PlayerState()
 {
@@ -61,7 +70,7 @@ void ARCharacterSelectController::OnRep_PlayerState()
 
 		if (!MyPlayerState->OnHoveredCharacterIndexReplicated.IsAlreadyBound(this, &ARCharacterSelectController::HoveredCharacterIndexChange))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Binded on character index"));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Binded on character index"));
 			MyPlayerState->OnHoveredCharacterIndexReplicated.AddDynamic(this, &ARCharacterSelectController::HoveredCharacterIndexChange);
 		}
 	}
@@ -110,7 +119,13 @@ void ARCharacterSelectController::BeginPlay()
 	}
 
 	if (GetNetMode() != ENetMode::NM_Standalone)
+	{
+		if (GEngine)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Character select controller: Online"));
+		}
 		return;
+	}
 
 	MyPlayerState = Cast<AEOSPlayerState>(PlayerState);
 	if (MyPlayerState == nullptr)
@@ -136,6 +151,7 @@ void ARCharacterSelectController::ConfirmCharacterChoice()
 		return;
 	}
 
+	MyPlayerState = Cast<AEOSPlayerState>(PlayerState);
 	if (MyPlayerState == nullptr)
 	{
 		if (GEngine)
@@ -158,6 +174,7 @@ void ARCharacterSelectController::NextCharacter(class ARRightButton* rightButton
 		return;
 	}
 
+	MyPlayerState = Cast<AEOSPlayerState>(PlayerState);
 	if (MyPlayerState == nullptr)
 	{
 		if (GEngine)
@@ -278,6 +295,15 @@ void ARCharacterSelectController::GetNextCharacterCage()
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Getting next character"));
 	CagedCharacters[0]->TickPosition(OffScreen, Sideline, true);
 
+	if (AudioComp && ConveyorAudio)
+	{
+		AudioComp->SetSound(ConveyorAudio);
+		AudioComp->Play();
+
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ARCharacterSelectController::PlayConveyorStop, 0.8f, false);
+	}
+
 	if (CagedCharacters.Num() > 1) // Only rotate if there's more than one element
 	{
 		ACagedCharacter* FirstElement = CagedCharacters[0];
@@ -311,4 +337,13 @@ void ARCharacterSelectController::GetCagedCharacters()
 		{
 			return A->CharacterIndex < B->CharacterIndex; // Sort in ascending order
 		});
+}
+
+void ARCharacterSelectController::PlayConveyorStop()
+{
+	if (AudioComp && ConveyorStopAudio)
+	{
+		AudioComp->SetSound(ConveyorStopAudio);
+		AudioComp->Play();
+	}
 }

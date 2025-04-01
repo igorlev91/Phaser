@@ -9,8 +9,10 @@
 #include "Framework/RCharacterDefination.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/TileView.h"
+#include "Widgets/PlayerEntry.h"
 #include "Engine/Engine.h"
 #include "Player/RCharacterSelectController.h"
+#include "Framework/EOSPlayerState.h"
 #include "GameFramework/PlayerState.h"
 #include "Widgets/CharacterEntry.h"
 
@@ -57,16 +59,26 @@ void ULobbyDisplay::RefreshPlayerList()
 	}
 }
 
-void ULobbyDisplay::CharacterSelectionReplicated(const URCharacterDefination* selected, const URCharacterDefination* deselcted)
+void ULobbyDisplay::CharacterSelectionReplicated(const URCharacterDefination* selected, const URCharacterDefination* deselcted, const FString& playerNameCheck)
 {
 	ARCharacterSelectController* playerSelectControler = Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController());
 
-	if (selected != nullptr && playerSelectControler != nullptr)
+	if (selected != nullptr && playerSelectControler != nullptr && LobbyPlayerList != nullptr)
 	{
-		UCharacterEntry* characterEntry = Cast<UCharacterEntry>(CharacterListIcon->GetDisplayedEntryWidgets()[0]);
-		if (characterEntry)
+		for (int i = 0; i < LobbyPlayerList->GetDisplayedEntryWidgets().Num(); i++)
 		{
-			characterEntry->SetCharacterIcon(selected);
+			UPlayerEntry* playerEntry = Cast<UPlayerEntry>(LobbyPlayerList->GetDisplayedEntryWidgets()[i]);
+			if (playerEntry == nullptr)
+				continue;
+
+			if (playerEntry->GetPlayerName() == playerNameCheck)
+			{
+				UCharacterEntry* characterEntry = Cast<UCharacterEntry>(CharacterListIcon->GetDisplayedEntryWidgets()[i]);
+				if (characterEntry)
+				{
+					characterEntry->SetCharacterIcon(selected);
+				}
+			}
 		}
 	}
 	

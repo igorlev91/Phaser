@@ -19,6 +19,9 @@ public:
 	void DoAttackCheck();
 	void EndDetection();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
+	bool bEnemy;
+
 private:
 	TSet<const AActor*> AlreadyDetectedActors;
 

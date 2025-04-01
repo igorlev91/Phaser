@@ -137,8 +137,8 @@ void UEOSGameInstance::SetMenuController(ARMainMenuController* menuController)
 
 void UEOSGameInstance::Init()
 {
-	Super::Init();
-
+	Super::Init();	
+	
 	onlineSubsystem =  IOnlineSubsystem::Get();
 	identityPtr = onlineSubsystem->GetIdentityInterface();
 	identityPtr->OnLoginCompleteDelegates->AddUObject(this, &UEOSGameInstance::LoginCompleted);
@@ -149,6 +149,17 @@ void UEOSGameInstance::Init()
 	sessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::FindSessionsCompleted);
 
 	sessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::JoinSessionCompleted);
+
+
+	FString launchMode = "";
+	FParse::Value(FCommandLine::Get(), TEXT("-LaunchMode="), launchMode);
+	UE_LOG(LogTemp, Warning, TEXT("the launch mode string is: %s"), *(launchMode))
+	if (launchMode == "TestLocalDedicatedServer")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("loading select level"));
+		CreateTestEOSSession();
+		return;
+	}
 
 	if (AttemptAutoLogin())
 	{
@@ -171,7 +182,7 @@ bool UEOSGameInstance::AttemptAutoLogin()
 			return identityPtr->AutoLogin(0);
 		}
 	}
-
+	
 	return false;
 }
 
@@ -236,5 +247,10 @@ void UEOSGameInstance::LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad)
 		const FName levelName = FName(*FPackageName::ObjectPathToPackageName(levelToLoad.ToString()));
 		GetWorld()->ServerTravel(levelName.ToString() + "?listen");
 	}
+}
+
+void UEOSGameInstance::CreateTestEOSSession()
+{
+	CreateSession("TestSession");
 }
 

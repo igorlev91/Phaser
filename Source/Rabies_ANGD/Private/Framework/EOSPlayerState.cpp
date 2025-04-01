@@ -12,7 +12,6 @@
 #include "GameplayAbilities/RAbilityGenericTags.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 void AEOSPlayerState::OnRep_PickedCharacter()
 {
@@ -38,7 +37,7 @@ void AEOSPlayerState::Server_IssueCharacterPick_Implementation(URCharacterDefina
 	if (!gameState)
 		return;
 
-	gameState->UpdateCharacterSelection(newPickedCharacterDefination, PickedCharacter);
+	gameState->UpdateCharacterSelection(newPickedCharacterDefination, PickedCharacter, GetPlayerName());
 	PickedCharacter = newPickedCharacterDefination;
 	OnPickedCharacterReplicated.Broadcast(PickedCharacter);
 }
@@ -67,7 +66,7 @@ void AEOSPlayerState::CopyProperties(APlayerState* PlayerState)
 {
 	Super::CopyProperties(PlayerState);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Copied Updated Character"));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Copied Updated Character"));
 	AEOSPlayerState* NewPlayerState = Cast<AEOSPlayerState>(PlayerState);
 	NewPlayerState->PickedCharacter = PickedCharacter;
 }
@@ -81,10 +80,13 @@ AEOSPlayerState::AEOSPlayerState()
 
 void AEOSPlayerState::Server_RevivePlayer_Implementation()
 {
+	//if (Player == nullptr)
+		//return;
+
 	FGameplayEventData eventData;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Player, URAbilityGenericTags::GetReviveTag(), eventData);
 
-	Player->ServerSetPlayerReviveState(false);
+	Player->SetPlayerReviveState(false);
 	UE_LOG(LogTemp, Warning, TEXT("Getting revived"));
 }
 
@@ -151,7 +153,8 @@ void AEOSPlayerState::OnRep_HitScanLocation()
 
 void AEOSPlayerState::OnRep_PlayerVelocity()
 {
-	Player->PlayerVelocity = playerVelocity;
+	if(Player != nullptr)
+		Player->PlayerVelocity = playerVelocity;
 }
 
 

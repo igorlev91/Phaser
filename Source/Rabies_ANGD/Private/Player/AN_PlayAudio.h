@@ -21,4 +21,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Footstep")
 	class USoundCue* MetalFootstepSound;
+
+	UPROPERTY(EditAnywhere, Category = "Footstep")
+	class USoundCue* TrashFootstepSound;
 };

@@ -26,6 +26,9 @@ void UClipboardInfo::SetCharacterInfo(URCharacterDefination* Character)
 	brush.SetResourceObject(Character->UltimateIcon);
 	ultimateIcon->SetBrush(brush);
 
+	brush.SetResourceObject(Character->PassiveIcon);
+	passiveIcon->SetBrush(brush);
+
 	characterName->SetText(FText::FromName(Character->CharacterName));
 	meleeText->SetText(Character->MeleeText);
 	rangedText->SetText(Character->RangedText);

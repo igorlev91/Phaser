@@ -34,9 +34,22 @@ private:
 	UFUNCTION()
 	void LobbyButtonClicked();
 
+	UFUNCTION()
+	void LobbyButtonAudio();
+
 	int LobbyIndex = -1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* HoverAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* ClickAudio;
+
+	UFUNCTION()
+	void PlayHoverAudio();
 
 protected:
 
 	virtual void NativeConstruct() override;
+
 };

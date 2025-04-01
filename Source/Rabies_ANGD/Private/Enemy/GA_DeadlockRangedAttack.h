@@ -25,7 +25,10 @@ private:
 	void RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVector endPos, bool bIsCrit);
 
 	UFUNCTION()
-	void TryCommitAttack(FGameplayEventData Payload);
+	void TryCommitRightAttack(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void TryCommitLeftAttack(FGameplayEventData Payload);
 
 	UFUNCTION()
 	void HandleDamage(FGameplayEventData Payload);

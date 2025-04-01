@@ -28,6 +28,7 @@
 
 UGA_TexPassive::UGA_TexPassive()
 {
+	AbilityTags.AddTag(URAbilityGenericTags::GetInvisTag());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetInvisTag());
 }
 
@@ -61,7 +62,7 @@ void UGA_TexPassive::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 	meleeActivation->EventReceived.AddDynamic(this, &UGA_TexPassive::FinishStealth);
 	meleeActivation->ReadyForActivation();
 
-	UAbilityTask_WaitGameplayEvent* rangedActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, FGameplayTag::RequestGameplayTag("ability.attack.activate"));
+	UAbilityTask_WaitGameplayEvent* rangedActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetRangedAttackStrengthTag());
 	rangedActivation->EventReceived.AddDynamic(this, &UGA_TexPassive::FinishStealth);
 	rangedActivation->ReadyForActivation();
 

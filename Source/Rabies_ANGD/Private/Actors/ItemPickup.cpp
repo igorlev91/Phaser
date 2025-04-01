@@ -10,6 +10,7 @@
 #include "Framework/RItemDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/GameplayAbility.h"
+#include "Actors/PingActor.h"
 
 #include "Blueprint/UserWidget.h"
 
@@ -96,6 +97,9 @@ void AItemPickup::UpdateItemPickedup_Implementation()
 	}
 
 	//Player->AddItem(ItemAsset);
+	if (MyPing != nullptr)
+		MyPing->TimedDestroy();
+
 	Destroy();
 }
 
@@ -111,6 +115,19 @@ void AItemPickup::Tick(float DeltaTime)
 
 		ItemMesh->SetWorldRotation(NewRotation);
 	}
+}
+
+void AItemPickup::SetPairedPing(APingActor* myPing)
+{
+	if (MyPing == nullptr)
+	{
+		MyPing = myPing;
+	}
+}
+
+bool AItemPickup::HasPing()
+{
+	return (MyPing != nullptr);
 }
 
 void AItemPickup::SetupItem_Implementation(URItemDataAsset* newItemAsset, FVector randomDirection)
@@ -142,4 +159,10 @@ void AItemPickup::StartRotatingItem_Implementation()
 {
 	ItemMesh->SetSimulatePhysics(false);
 	bRotate = true;
+}
+
+void AItemPickup::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AItemPickup, MyPing, COND_None);
 }

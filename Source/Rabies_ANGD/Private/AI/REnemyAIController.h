@@ -33,6 +33,10 @@ protected:
 
 private:
 
+	void DelayStart();
+
+	FTimerHandle StartTimerHandle;
+
 	UFUNCTION()
 	void PlayerDeadStatusUpdated(bool bIsDead);
 
@@ -67,4 +71,5 @@ private:
 	void ProcessForgottonTarget(AActor* Target);
 
 	void PawnDeathStatusChanged(bool bIsDead);
+	void PawnTaserStatusChanged(bool bIsTased);
 };

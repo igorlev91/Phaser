@@ -33,6 +33,9 @@ public:
 	UFUNCTION()
 	void AddNewItemToUI(class URItemDataAsset* newItemAsset);
 
+	UFUNCTION()
+	bool CashMyLuck();
+
 	UFUNCTION(Server, Reliable)
 	void Server_RequestRevive(AEOSPlayerState* TargetPlayerState);
 

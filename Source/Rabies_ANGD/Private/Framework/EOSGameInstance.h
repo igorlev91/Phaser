@@ -79,4 +79,6 @@ private:
 	void LoadMapAndListen(TSoftObjectPtr<UWorld> levelToLoad);
 
 	FName CurrentLobbyName;
+
+	void CreateTestEOSSession();
 };

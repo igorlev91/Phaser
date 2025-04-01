@@ -26,6 +26,7 @@ UGA_Revive::UGA_Revive()
 {
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetRevivingTag());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetUnActionableTag());
+	CancelAbilitiesWithTag.AddTag(URAbilityGenericTags::GetInvisTag());
 }
 
 void UGA_Revive::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -66,6 +67,14 @@ void UGA_Revive::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGame
 
 void UGA_Revive::Hold(float timeRemaining)
 {
+	if (Player)
+	{
+		if (Player->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		{
+			Player->playerController->ChangeRevivalState(false, 0);
+			K2_EndAbility();
+		}
+	}
 
 	if (CurrentHoldDuration <= 5)
 	{
@@ -77,8 +86,6 @@ void UGA_Revive::Hold(float timeRemaining)
 	}
 	else
 	{
-		StartDurationAudioEffect();
-
 		TArray<AActor*> playersRevived = Player->nearbyFaintedActors;
 		EndHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_Revive::EndDelay));
 		AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>();
@@ -102,7 +109,9 @@ void UGA_Revive::Hold(float timeRemaining)
                 {
 					if (EOSPlayeState->GetPlayer() == playerBase)
 					{
+						playerBase->SetPlayerReviveState(false);
 						Player->playerController->Server_RequestRevive(EOSPlayeState);
+						Player->ServerPlayAnimMontage(Player->RevivingBuddy);
 						UE_LOG(LogTemp, Error, TEXT("%s Reviving"), *player->GetName());
 					}
                 }

@@ -47,18 +47,26 @@ void UGA_AbilityBase::TriggerAudioCue()
 
 void UGA_AbilityBase::StartDurationAudioEffect()
 {
-	if (!DurationAudioEffectHandle.IsValid() && DurationAudioEffect)
+	//UE_LOG(LogTemp, Warning, TEXT("Trying to start duration audio effect"))
+	if (bPlayingDurationAudioEffect)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("Durational Effect Handle is Valid, should not fire again"))
+		return;
+	}
+
+	if (DurationAudioEffect)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Started duration audio effect"))
 		DurationAudioEffectHandle = BP_ApplyGameplayEffectToOwner(DurationAudioEffect);
+		bPlayingDurationAudioEffect = true;
 	}
 }
 
 void UGA_AbilityBase::StopDurationAudioEffect()
 {
-	if (DurationAudioEffectHandle.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("I SHOULD BE STOPPING!!!"));
+	//UE_LOG(LogTemp, Warning, TEXT("I SHOULD BE STOPPING!!!"));
 
-		BP_RemoveGameplayEffectFromOwnerWithHandle(DurationAudioEffectHandle);
-	}
+	BP_RemoveGameplayEffectFromOwnerWithHandle(DurationAudioEffectHandle);
+	bPlayingDurationAudioEffect = false;
+	
 }

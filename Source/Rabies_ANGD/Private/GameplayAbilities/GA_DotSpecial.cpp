@@ -133,14 +133,17 @@ void UGA_DotSpecial::TargetCancelled(const FGameplayAbilityTargetDataHandle& Dat
 
 void UGA_DotSpecial::SendOffAttack(FGameplayEventData Payload)
 {
-	//UE_LOG(LogTemp, Error, TEXT("Sending Attack"));
-	FVector viewLoc;
-	FRotator viewRot;
+	if (K2_HasAuthority())
+	{
+		//UE_LOG(LogTemp, Error, TEXT("Sending Attack"));
+		FVector viewLoc;
+		FRotator viewRot;
 
-	Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
-	ARDot_SpecialProj* newProjectile = GetWorld()->SpawnActor<ARDot_SpecialProj>(DotProjectile, Player->GetActorLocation(), viewRot);
-	newProjectile->Init(AttackDamages);
-	newProjectile->InitOwningCharacter(Player);
-	newProjectile->SetOwner(Player);
-	TriggerAudioCue();
+		Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
+		ARDot_SpecialProj* newProjectile = GetWorld()->SpawnActor<ARDot_SpecialProj>(DotProjectile, Player->GetActorLocation(), viewRot);
+		newProjectile->Init(AttackDamages);
+		newProjectile->InitOwningCharacter(Player);
+		newProjectile->SetOwner(Player);
+		TriggerAudioCue();
+	}
 }

@@ -10,6 +10,8 @@
 #include "Engine/World.h"
 #include "Framework/EOSGameState.h"
 #include "GameFramework/Actor.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
 
 void ARRightButton::EnableClick()
 {
@@ -18,8 +20,23 @@ void ARRightButton::EnableClick()
 
 }
 
+ARRightButton::ARRightButton()
+{
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComp->SetupAttachment(GetRootComponent());
+	AudioComp->bAutoActivate = false;
+}
+
 void ARRightButton::OnActorClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
+	if (AudioComp && SelectAudio && bPlaySound)
+	{
+		AudioComp->SetSound(SelectAudio);
+		AudioComp->Play();
+
+		bPlaySound = false;
+	}
+
 	if (GEngine && bPressDelay == false)
 	{
 		GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
@@ -29,12 +46,19 @@ void ARRightButton::OnActorClicked(AActor* TouchedActor, FKey ButtonPressed)
 			SetLight(false);
 			bPressDelay = true;
 
-			CharacterSelectController->NextCharacter(this);
+			CharacterSelectController = Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController());
+			if (CharacterSelectController != nullptr)
+			{
+				CharacterSelectController->NextCharacter(this);
+			}
 		}
 		else
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("RightButton clicked!"));
 		}
+
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ARRightButton::SetPlaySoundToTrue, 1.0f, false);
 	}
 }
 
@@ -47,8 +71,6 @@ void ARRightButton::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CharacterSelectController = Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController());
-
 	TArray<AActor*> FoundActors;
 
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AClipboard::StaticClass(), FoundActors);
@@ -57,4 +79,9 @@ void ARRightButton::BeginPlay()
 	{
 		Clipboard = Cast<AClipboard>(FoundActors[0]);
 	}
+}
+
+void ARRightButton::SetPlaySoundToTrue()
+{
+	bPlaySound = true;
 }

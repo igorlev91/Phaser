@@ -38,7 +38,7 @@ protected:
 	TSubclassOf<UGameplayEffect> DurationAudioEffect;
 
 	FActiveGameplayEffectHandle DurationAudioEffectHandle;
-
+	bool bPlayingDurationAudioEffect = false;
 	void TriggerAudioCue();
 	void StartDurationAudioEffect();
 	void StopDurationAudioEffect();

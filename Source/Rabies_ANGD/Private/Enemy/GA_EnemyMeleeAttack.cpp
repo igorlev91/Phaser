@@ -19,8 +19,9 @@
 
 UGA_EnemyMeleeAttack::UGA_EnemyMeleeAttack()
 {
-	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
-	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("stat.AI"));
+	AbilityTags.AddTag(URAbilityGenericTags::GetMeleeAttackCooldown());
+	BlockAbilitiesWithTag.AddTag(URAbilityGenericTags::GetMeleeAttackCooldown());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetAttackingTag());
 
 	FAbilityTriggerData TriggerData;
@@ -38,7 +39,7 @@ void UGA_EnemyMeleeAttack::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		return;
 	}
 
-
+	UE_LOG(LogTemp, Error, TEXT("Deadlock SET UP ATTACKING"));
 	UAbilityTask_WaitGameplayEvent* WaitForActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetBasicAttackActivationTag());
 	WaitForActivation->EventReceived.AddDynamic(this, &UGA_EnemyMeleeAttack::TryCommitAttack);
 	WaitForActivation->ReadyForActivation();
@@ -52,6 +53,7 @@ void UGA_EnemyMeleeAttack::TryCommitAttack(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
+		UE_LOG(LogTemp, Error, TEXT("Deadlock Attacking"));
 		ARCharacterBase* character = Cast<ARCharacterBase>(GetOwningActorFromActorInfo());
 		if (character)
 		{

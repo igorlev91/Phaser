@@ -7,11 +7,13 @@
 #include "Engine/World.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Sound/SoundCue.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Engine/EngineTypes.h"
 
 void UAN_PlayAudio::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
-	
+
 	if (!MeshComp)
 	{
 		return;
@@ -29,47 +31,33 @@ void UAN_PlayAudio::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* 
 	FHitResult Hit;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Owner);
-
-	if (Owner->GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params))
+	Params.bTraceComplex = false;
+	TArray<AActor*> ActorsToIgnore{MeshComp->GetOwner()};
+	
+	if (UKismetSystemLibrary::LineTraceSingle(MeshComp, Start, End, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::None, Hit, true))
 	{
-		DrawDebugLine(Owner->GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
-		DrawDebugPoint(Owner->GetWorld(), Hit.ImpactPoint, 10.0f, FColor::Green, false, 2.0f);
+		UPhysicalMaterial* PhysMat = Hit.PhysMaterial.Get();
+		if (PhysMat)
+		{
+			USoundCue* FootstepSound = nullptr;
 
-		//UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *Hit.GetActor()->GetName());
-
-		//if (Hit.PhysMaterial.IsValid())
-		//{
-		//	UE_LOG(LogTemp, Warning, TEXT("Valid"));
-		//}
-		//else
-		//{
-		//	UE_LOG(LogTemp, Warning, TEXT("Not Valid"));
-		//}
-
-
-		//UPhysicalMaterial* PhysMat = Hit.PhysMaterial.Get();
-		//if (PhysMat)
-		//{
-		//	UE_LOG(LogTemp, Warning, TEXT("Hitting"));
-		//	//USoundCue* FootstepSound = nullptr;
-
-		//	//switch (PhysMat->SurfaceType)
-		//	//{
-		//	//case SurfaceType1:
-		//	//	UE_LOG(LogTemp, Warning, TEXT("Stepping on Snow"));
-		//	//	FootstepSound = SnowFootstepSound;
-		//	//	break;
-		//	//case SurfaceType2:
-		//	//	UE_LOG(LogTemp, Warning, TEXT("Stepping on Metal"));
-		//	//	FootstepSound = MetalFootstepSound;
-		//	//	break;
-		//	//}
-		//	//
-		//	//if (FootstepSound)
-		//	//{
-		//	//	UE_LOG(LogTemp, Warning, TEXT("Hey you, play that sound"));
-		//	//	UGameplayStatics::PlaySoundAtLocation(Owner, FootstepSound, Hit.Location);
-		//	//}
-		//}
+			switch (PhysMat->SurfaceType)
+			{
+			case SurfaceType1:
+				FootstepSound = SnowFootstepSound;
+				break;
+			case SurfaceType2:
+				FootstepSound = MetalFootstepSound;
+				break;
+			case SurfaceType3:
+				FootstepSound = TrashFootstepSound;
+				break;
+			}
+		
+			if (FootstepSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(Owner, FootstepSound, Hit.Location);
+			}
+		}
 	}
 }

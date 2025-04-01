@@ -114,16 +114,19 @@ void UGA_TexSpecial::TargetCancelled(const FGameplayAbilityTargetDataHandle& Dat
 
 void UGA_TexSpecial::SendOffAttack(FGameplayEventData Payload)
 {
-	//UE_LOG(LogTemp, Error, TEXT("Sending Attack"));
-	FVector viewLoc;
-	FRotator viewRot;
+	if (K2_HasAuthority())
+	{
+		//UE_LOG(LogTemp, Error, TEXT("Sending Attack"));
+		FVector viewLoc;
+		FRotator viewRot;
 
-	Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
-	viewRot.Yaw -= directionRot;
-	ARTex_SpecialProj* newProjectile = GetWorld()->SpawnActor<ARTex_SpecialProj>(TexProjectile, Player->GetActorLocation(), viewRot);
-	newProjectile->Init(AttackDamages);
-	newProjectile->InitOwningCharacter(Player);
-	newProjectile->SetOwner(Player);
-	directionRot -= 5.0f;
-	TriggerAudioCue();
+		Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
+		viewRot.Yaw -= directionRot;
+		ARTex_SpecialProj* newProjectile = GetWorld()->SpawnActor<ARTex_SpecialProj>(TexProjectile, Player->GetActorLocation(), viewRot);
+		newProjectile->Init(AttackDamages);
+		newProjectile->InitOwningCharacter(Player);
+		newProjectile->SetOwner(Player);
+		directionRot -= 5.0f;
+		TriggerAudioCue();
+	}
 }

@@ -34,8 +34,9 @@
 
 UGA_SpiderDroneAttack::UGA_SpiderDroneAttack()
 {
-	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
-	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("ability.attack.activate"));
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("stat.AI"));
+	AbilityTags.AddTag(URAbilityGenericTags::GetRangedAttackCooldown());
+	BlockAbilitiesWithTag.AddTag(URAbilityGenericTags::GetRangedAttackCooldown());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetAttackingTag());
 
 	FAbilityTriggerData TriggerData;
@@ -46,7 +47,7 @@ UGA_SpiderDroneAttack::UGA_SpiderDroneAttack()
 
 void UGA_SpiderDroneAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	UE_LOG(LogTemp, Error, TEXT("Set up attack"));
+	//UE_LOG(LogTemp, Error, TEXT("Set up attack"));
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Ending Attack no commitment"));
@@ -104,7 +105,7 @@ void UGA_SpiderDroneAttack::TryCommitAttack(FGameplayEventData Payload)
 	if (K2_HasAuthority())
 	{
 		TriggerAudioCue();
-		Character->Hitscan(8000, nullptr);
+		Character->Hitscan(12000, nullptr);
 	}
 }
 

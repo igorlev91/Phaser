@@ -17,6 +17,8 @@ void UItemPopupUI::SetItem(URItemDataAsset* data)
 	itemDescription->SetText(FText::FromString(data->ItemDescription));
 	itemTooltip->SetText(FText::FromString(data->ItemTooltip));
 
+	GetWorld()->GetTimerManager().ClearTimer(TickTimerHandle);
+	SetRenderOpacity(0);
 	TickOpacity(true);
 	GetWorld()->GetTimerManager().SetTimer(HideTimerHandle, this, &UItemPopupUI::SetHiddenState, 5.0f, false);
 

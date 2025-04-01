@@ -16,6 +16,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Framework/EOSActionGameState.h"
+#include "Music/AS_BackgroundMusic.h"
+#include "EngineUtils.h"
 
 // Sets default values
 AEscapeToWin::AEscapeToWin()
@@ -129,14 +131,24 @@ void AEscapeToWin::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 
 void AEscapeToWin::SetUpEndGame_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Set up"));
+	//UE_LOG(LogTemp, Warning, TEXT("Set up"));
+	if (EndGameWidgetComp == nullptr)
+		return;
 	EndGameUI = Cast<UEndGameWidget>(EndGameWidgetComp->GetUserWidgetObject());
+
+	if (EndGameUI == nullptr)
+		return;
 	EndGameUI->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void AEscapeToWin::CheckKeyCard_Implementation()
 {
 	//Check to see if player has keycard
+	if (GetWorld() == nullptr)
+	{
+		return;
+	}
+
 	AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
 	if (!gameState)
 		return;
@@ -161,8 +173,18 @@ void AEscapeToWin::CheckKeyCard_Implementation()
 		}
 	}
 
-	if (bHasKeyCard == true)
+	if (bHasKeyCard == true && GetWorld() != nullptr)
 	{
+		for (TActorIterator<AAS_BackgroundMusic> BackgroundMusicInstanceIter = TActorIterator<AAS_BackgroundMusic>(GetWorld()); BackgroundMusicInstanceIter; ++BackgroundMusicInstanceIter)
+		{
+			if (*BackgroundMusicInstanceIter)
+			{
+				BackgroundMusic = *BackgroundMusicInstanceIter;
+				BackgroundMusic->SwapPlayingMusic();
+				break;
+			}
+		}
+
 		gameState->StartBossFight(0);
 		bStartBoss = true;
 
@@ -177,7 +199,7 @@ void AEscapeToWin::CheckKeyCard_Implementation()
 		}
 
 	}
-	else
+	else if(GetWorld() != nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("No keycard"));
 		ChangeText("No Keycard Detected.\nAccessed Denied.", FLinearColor::Red);

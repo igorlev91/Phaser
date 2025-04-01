@@ -42,7 +42,7 @@ private:
 	void RefreshPlayerList();
 
 	UFUNCTION()
-	void CharacterSelectionReplicated(const class URCharacterDefination* selected, const class URCharacterDefination* deselcted);
+	void CharacterSelectionReplicated(const class URCharacterDefination* selected, const class URCharacterDefination* deselcted, const FString& playerNameCheck);
 
 	FTimerHandle PlayerListUpdateHandle;
 };

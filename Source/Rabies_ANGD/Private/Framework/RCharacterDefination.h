@@ -13,6 +13,9 @@ UCLASS()
 class URCharacterDefination : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
+
+protected:
+	//virtual void BeginPlay() override;
 	
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
@@ -44,6 +47,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	FText UltimateText;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	UTexture* PassiveIcon;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	FText PassiveText;

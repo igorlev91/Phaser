@@ -48,6 +48,12 @@ private:
 
 	void FinishNewCharacter();
 
+	UPROPERTY(VisibleAnywhere, Category = "Audio")
+	class UAudioComponent* AudioComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundCue* MoveAudio;
+
 public:	
 	// Sets default values for this actor's properties
 	AClipboard();
