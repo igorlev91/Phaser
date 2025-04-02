@@ -1,5 +1,11 @@
+# Mac File System Files
+.DS_Store
 # Visual Studio 2015 user specific files
+.vsconfig
+.idea/
 .vs/
+.git/
+.gitignore
 
 # Compiled Object files
 *.slo
@@ -26,7 +32,6 @@
 *.lib
 
 # Executables
-*.exe
 *.out
 *.app
 *.ipa
@@ -44,14 +49,14 @@
 # Precompiled Assets
 SourceArt/**/*.png
 SourceArt/**/*.tga
-EOS_DevAuthTool/*
+
 # Binary Files
 Binaries/*
-Plugins/*/Binaries/*
+Plugins/**/Binaries/*
 
 # Builds
 Build/*
-Content/* 
+
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/
 Build/*/**
@@ -68,7 +73,7 @@ Saved/*
 
 # Compiled source files for the engine to use
 Intermediate/*
-Plugins/*/Intermediate/*
+Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
