@@ -15,4 +15,10 @@ class  AInGamePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	void SetCurrentCharacter(ARCharacterBase* InCurrentCharacter);
+	ARCharacterBase* GetCurrentCharacter();
+
+private:
+	ARCharacterBase* CurrentCharacter;
 };

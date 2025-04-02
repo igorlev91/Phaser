@@ -10,7 +10,7 @@
 #include "GameplayAbilities/RGameplayCueInterface.h"
 
 #include "GenericTeamAgentInterface.h"
-
+#include "../Widgets/Lobby/OverheadPlayerSpot.h"
 #include "RCharacterBase.generated.h"
 
 class URAbilitySystemComponent;
@@ -413,4 +413,38 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	float UltimateStrengthOnLevelUp = 1;
 
+
+	UPROPERTY(Replicated)
+	bool bIsReady;
+
+	UPROPERTY(Replicated)
+	FString PlayerName;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* OverheadPlayerSpot;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multi_SetPlayerName(const FString& InPlayerName);
+	void Multi_SetPlayerName_Implementation(const FString& InPlayerName);
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void Multi_SetReadyStatus(bool InbIsReady);
+	void Multi_SetReadyStatus_Implementation(bool InbIsReady);
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void Multi_SetIconAndColorOverheadWidget(bool bIsHidden, const FString& InPlayerNameColor);
+	void Multi_SetIconAndColorOverheadWidget_Implementation(bool bIsHidden, const FString& InPlayerNameColor);
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void Multi_PlayStartLevelMontage();
+	void Multi_PlayStartLevelMontage_Implementation();
+
+private:
+	UOverheadPlayerSpot* CharacterOverhead;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Anim Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* StartLevelMontage;
 };
