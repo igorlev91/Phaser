@@ -121,7 +121,7 @@ void ALobbyPlayerController::Client_UpdateNumberOfPlayers_Implementation(int32 C
 	this->Lobby->SetCurrentPlayersFormat(CurrentAndMaxPlayersFormat);
 }
 
-void ALobbyPlayerController::Client_AssignHeroeToPlayer_Implementation(TSubclassOf<ARCharacterBase> HeroeClass)
+void ALobbyPlayerController::Client_AssignHeroeToPlayer_Implementation(TSubclassOf<ARLobbyCharacter> HeroeClass)
 {
 	if (this->PlayerSettings.bPlayerReadyState)
 		return;
@@ -173,22 +173,22 @@ void ALobbyPlayerController::Multi_UpdateReadyStatusInPlayerKickList_Implementat
 #pragma endregion Client
 
 
-void ALobbyPlayerController::SetCurrentCharacter(ARCharacterBase* InCurrentCharacter)
+void ALobbyPlayerController::SetCurrentCharacter(ARLobbyCharacter* InCurrentCharacter)
 {
 	this->CurrentCharacter = InCurrentCharacter;
 }
 
-ARCharacterBase* ALobbyPlayerController::GetCurrentCharacter()
+ARLobbyCharacter* ALobbyPlayerController::GetCurrentCharacter()
 {
 	return this->CurrentCharacter;
 }
 
-void ALobbyPlayerController::SetSubclassHeroeSelected(TSubclassOf<ARCharacterBase> InSubclassHeroeSelected)
+void ALobbyPlayerController::SetSubclassHeroeSelected(TSubclassOf<ARLobbyCharacter> InSubclassHeroeSelected)
 {
 	this->SubclassHeroeSelected = InSubclassHeroeSelected;
 }
 
-TSubclassOf<ARCharacterBase> ALobbyPlayerController::GetSubclassHeroeSelected()
+TSubclassOf<ARLobbyCharacter> ALobbyPlayerController::GetSubclassHeroeSelected()
 {
 	return this->SubclassHeroeSelected;
 }

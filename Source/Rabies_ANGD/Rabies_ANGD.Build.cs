@@ -9,7 +9,7 @@ public class Rabies_ANGD : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "CommonUI", "Core", "CoreUObject", "Engine", "InputCore" , 
-            "EnhancedInput"});
+            "EnhancedInput", "OnlineSubsystem"});
 
         PrivateDependencyModuleNames.AddRange(new string[] { "CommonUI", "InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTags", "GameplayTasks", "Slate", "SlateCore", "UMG", "AIModule", "OnlineSubsystem", "OnlineSubsystemUtils", "OnlineSubsystemEOS", "CinematicCamera", "LevelSequence", "MovieScene", "NavigationSystem"  , "Niagara", "NiagaraCore", "AdvancedWidgets" });
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Character/RCharacterBase.h"
+#include "../../Character/RLobbyCharacter.h"
 #include "LobbyPlayerInfo.generated.h"
 
 USTRUCT(BlueprintType)
@@ -19,7 +19,7 @@ public:
     FString PlayerName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lobby Player Info")
-    TSubclassOf<ARCharacterBase> HeroeSelected;
+    TSubclassOf<ARLobbyCharacter> HeroeSelected;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lobby Player Info")
     int32 PlayerIndex;

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "../Character/RCharacterBase.h"
+#include "../Character/RLobbyCharacter.h"
 #include "InGamePlayerController.generated.h"
 
 /**
@@ -16,9 +16,9 @@ class  AInGamePlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
-	void SetCurrentCharacter(ARCharacterBase* InCurrentCharacter);
-	ARCharacterBase* GetCurrentCharacter();
+	void SetCurrentCharacter(ARLobbyCharacter* InCurrentCharacter);
+	ARLobbyCharacter* GetCurrentCharacter();
 
 private:
-	ARCharacterBase* CurrentCharacter;
+	ARLobbyCharacter* CurrentCharacter;
 };

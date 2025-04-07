@@ -13,7 +13,7 @@
 #include "../Widgets/Lobby/HeroeCard/HeroeSelection.h"
 #include "LobbyPlayerController.generated.h"
 
-class ARCharacterBase;
+class ARLobbyCharacter;
 
 /**
  *
@@ -24,18 +24,19 @@ class ALobbyPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+
 	ALobbyPlayerController(const FObjectInitializer& ObjectInitializer);
 
-	void SetCurrentCharacter(ARCharacterBase* InCurrentCharacter);
-	ARCharacterBase* GetCurrentCharacter();
-	void SetSubclassHeroeSelected(TSubclassOf<ARCharacterBase> InSubclassHeroeSelected);
-	TSubclassOf<ARCharacterBase> GetSubclassHeroeSelected();
+	void SetCurrentCharacter(ARLobbyCharacter* InCurrentCharacter);
+	ARLobbyCharacter* GetCurrentCharacter();
+	void SetSubclassHeroeSelected(TSubclassOf<ARLobbyCharacter> InSubclassHeroeSelected);
+	TSubclassOf<ARLobbyCharacter> GetSubclassHeroeSelected();
 	void SetLobbyHeroeSpot(const FLobbyHeroeSpot& InLobbyHeroeSpot);
 	FLobbyHeroeSpot GetLobbyHeroeSpot();
 	void SetPlayerIndex(int32 InIndex);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* CommonPlayerControllerMappingContext;
+	class UInputMappingContext* CommonPlayerControllerMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ChatWindowAction;
@@ -78,8 +79,8 @@ public:
 	void Client_UpdateNumberOfPlayers_Implementation(int32 CurrentPlayers, int32 MaxPlayers);
 
 	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void Client_AssignHeroeToPlayer(TSubclassOf<ARCharacterBase> HeroeClass);
-	void Client_AssignHeroeToPlayer_Implementation(TSubclassOf<ARCharacterBase> HeroeClass);
+	void Client_AssignHeroeToPlayer(TSubclassOf<ARLobbyCharacter> HeroeClass);
+	void Client_AssignHeroeToPlayer_Implementation(TSubclassOf<ARLobbyCharacter> HeroeClass);
 
 	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void Client_ShowLoadingScreen();
@@ -114,6 +115,6 @@ private:
 	class ALobbyGameMode* LobbyGameMode;
 	class UCandyChaosLobbyGameInstance* CandyChaosLobbyGameInstance;
 	AActor* ViewTarget;
-	ARCharacterBase* CurrentCharacter;
-	TSubclassOf<ARCharacterBase> SubclassHeroeSelected;
+	ARLobbyCharacter* CurrentCharacter;
+	TSubclassOf<ARLobbyCharacter> SubclassHeroeSelected;
 };

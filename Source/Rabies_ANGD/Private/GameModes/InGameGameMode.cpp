@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 
 
+
 AInGameGameMode::AInGameGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	this->CandyChaosLobbyGameInstance = UCandyChaosLoobyBlueprintLibrary::GetCandyChaosLobbyGameInstance(this);
@@ -46,7 +47,7 @@ void AInGameGameMode::Server_RespawnPlayer_Implementation(AInGamePlayerControlle
 
 	FInGamePlayerInfo* InGamePlayerInfo = this->GetPlayerInfoByIndex((InPlayerIndex + 1));
 
-	ARCharacterBase* CharacterBase = Cast<ARCharacterBase>(GetWorld()->SpawnActor<ARCharacterBase>(InGamePlayerInfo->HeroeSelected, Transform, params));
+	ARLobbyCharacter* LobbyCharacter = Cast<ARLobbyCharacter>(GetWorld()->SpawnActor<ARLobbyCharacter>(InGamePlayerInfo->HeroeSelected, Transform, params));
 
 	FTimerHandle MemberTimerHandle;
 	FTimerDelegate TimerDel;
@@ -55,8 +56,8 @@ void AInGameGameMode::Server_RespawnPlayer_Implementation(AInGamePlayerControlle
 
 	GetWorld()->GetTimerManager().SetTimer(MemberTimerHandle, TimerDel, 0.1f, false);
 
-	InGamePlayerController->SetCurrentCharacter(CharacterBase);
-	InGamePlayerController->Possess(CharacterBase);
+	InGamePlayerController->SetCurrentCharacter(LobbyCharacter);
+	InGamePlayerController->Possess(LobbyCharacter);
 }
 
 void AInGameGameMode::Server_UpdatePlayerName_Implementation()
@@ -69,10 +70,10 @@ void AInGameGameMode::Server_SetOverheadPlayer_Implementation(bool bIsHiddenIcon
 {
 	for (AInGamePlayerController* InGamePlayerController : this->AllPlayerControllers) {
 
-		ARCharacterBase* CharacterBase = InGamePlayerController->GetCurrentCharacter();
+		ARLobbyCharacter* LobbyCharacter = InGamePlayerController->GetCurrentCharacter();
 
-		if (IsValid(CharacterBase))
-			CharacterBase->Multi_SetIconAndColorOverheadWidget(bIsHiddenIcon, ColorName);
+		if (IsValid(LobbyCharacter))
+			LobbyCharacter->Multi_SetIconAndColorOverheadWidget(bIsHiddenIcon, ColorName);
 	}
 
 }
@@ -81,10 +82,10 @@ void AInGameGameMode::UpdatePlayerName(AInGamePlayerController* InGamePlayerCont
 {
 	ACandyChaosLobbyPlayerState* CandyChaosLobbyPlayerState = InGamePlayerController->GetPlayerState<ACandyChaosLobbyPlayerState>();
 
-	ARCharacterBase* CharacterBase = InGamePlayerController->GetCurrentCharacter();
+	ARLobbyCharacter* LobbyCharacter = InGamePlayerController->GetCurrentCharacter();
 
-	if (IsValid(CharacterBase) && IsValid(CandyChaosLobbyPlayerState))
-		CharacterBase->Multi_SetPlayerName(CandyChaosLobbyPlayerState->GetPlayerName());
+	if (IsValid(LobbyCharacter) && IsValid(CandyChaosLobbyPlayerState))
+		LobbyCharacter->Multi_SetPlayerName(CandyChaosLobbyPlayerState->GetPlayerName());
 }
 
 

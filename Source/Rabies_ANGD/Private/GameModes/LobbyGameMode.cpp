@@ -81,7 +81,7 @@ bool ALobbyGameMode::IsAllPlayerReady()
 	return true;
 }
 
-void ALobbyGameMode::Server_SwapCharacter_Implementation(APlayerController* PlayerController, TSubclassOf<ARCharacterBase> InHeroeSelected, bool bChangeStatus)
+void ALobbyGameMode::Server_SwapCharacter_Implementation(APlayerController* PlayerController, TSubclassOf<ARLobbyCharacter> InHeroeSelected, bool bChangeStatus)
 {
     if (!bChangeStatus) {
 
@@ -195,7 +195,7 @@ void ALobbyGameMode::SpawnCharacterOnPlayerSpot(ALobbyPlayerController* LobbyPla
 
 	if (LobbyHeroeSpotByIndex != nullptr)
 	{
-		ARCharacterBase* SpawnCharacter = Cast<ARCharacterBase>(GetWorld()->SpawnActor<ARCharacterBase>(LobbyPlayerController->GetSubclassHeroeSelected(), LobbyHeroeSpotByIndex->LocationHeroe.Location, LobbyHeroeSpotByIndex->LocationHeroe.Rotation, params));
+		ARLobbyCharacter* SpawnCharacter = Cast<ARLobbyCharacter>(GetWorld()->SpawnActor<ARLobbyCharacter>(LobbyPlayerController->GetSubclassHeroeSelected(), LobbyHeroeSpotByIndex->LocationHeroe.Location, LobbyHeroeSpotByIndex->LocationHeroe.Rotation, params));
 
 		LobbyPlayerController->SetCurrentCharacter(SpawnCharacter);
 
@@ -209,7 +209,7 @@ void ALobbyGameMode::SpawnCharacterOnPlayerSpot(ALobbyPlayerController* LobbyPla
 
 void ALobbyGameMode::DestroyCharacterSelectedIfExits(ALobbyPlayerController* LobbyPlayerController)
 {
-	ARCharacterBase* CharacterBase = LobbyPlayerController->GetCurrentCharacter();
+	ARLobbyCharacter* CharacterBase = LobbyPlayerController->GetCurrentCharacter();
 
 	if (IsValid(CharacterBase))
 		CharacterBase->Destroy();
@@ -231,19 +231,19 @@ void ALobbyGameMode::UpdatePlayerName(ALobbyPlayerController* LobbyPlayerControl
 {
 	ACandyChaosLobbyPlayerState* CandyChaosLobbyPlayerState = LobbyPlayerController->GetPlayerState<ACandyChaosLobbyPlayerState>();
 
-	ARCharacterBase* CharacterBase = LobbyPlayerController->GetCurrentCharacter();
+	ARLobbyCharacter* LobbyCharacter = LobbyPlayerController->GetCurrentCharacter();
 
-	if (IsValid(CharacterBase) && IsValid(CandyChaosLobbyPlayerState)) {
+	if (IsValid(LobbyCharacter) && IsValid(CandyChaosLobbyPlayerState)) {
 
 		LobbyPlayerController->PlayerSettings.PlayerName = CandyChaosLobbyPlayerState->GetPlayerName();		
 
-		CharacterBase->Multi_SetPlayerName(LobbyPlayerController->PlayerSettings.PlayerName);
+		LobbyCharacter->Multi_SetPlayerName(LobbyPlayerController->PlayerSettings.PlayerName);
 	}
 }
 
 void ALobbyGameMode::UpdateReadyStatus(ALobbyPlayerController* LobbyPlayerController)
 {
-	ARCharacterBase* CharacterBase = LobbyPlayerController->GetCurrentCharacter();
+	ARLobbyCharacter* CharacterBase = LobbyPlayerController->GetCurrentCharacter();
 
 	if (IsValid(CharacterBase))
 		CharacterBase->Multi_SetReadyStatus(LobbyPlayerController->PlayerSettings.bPlayerReadyState);	

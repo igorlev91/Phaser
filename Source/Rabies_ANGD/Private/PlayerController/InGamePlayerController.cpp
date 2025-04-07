@@ -4,12 +4,12 @@
 #include "InGamePlayerController.h"
 
 
-void AInGamePlayerController::SetCurrentCharacter(ARCharacterBase* InCurrentCharacter)
+void AInGamePlayerController::SetCurrentCharacter(ARLobbyCharacter* InCurrentCharacter)
 {
     this->CurrentCharacter = InCurrentCharacter;
 }
 
-ARCharacterBase* AInGamePlayerController::GetCurrentCharacter()
+ARLobbyCharacter* AInGamePlayerController::GetCurrentCharacter()
 {
     return this->CurrentCharacter;
 }

@@ -42,9 +42,6 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Touch.h"
 
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-
 #define ECC_EnemyRangedAttack ECC_GameTraceChannel2
 #define ECC_AllyRangedAttack ECC_GameTraceChannel3
 
@@ -170,21 +167,6 @@ void ARCharacterBase::BeginPlay()
 		WeakpointWidgetComp->SetWidget(WeakpointUI);
 		WeakpointWidgetComp->SetDrawAtDesiredSize(true);
 		WeakpointUI->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-
-	this->CharacterOverhead = Cast<UOverheadPlayerSpot>(this->OverheadPlayerSpot->GetUserWidgetObject());
-
-	if (IsValid(OverheadPlayerSpot)) {
-		this->CharacterOverhead->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -1137,67 +1119,9 @@ void ARCharacterBase::UpdateAITarget_Implementation(AActor* newTargetActor)
 void ARCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
 	DOREPLIFETIME_CONDITION(ARCharacterBase, TeamId, COND_None);
 	DOREPLIFETIME_CONDITION(ARCharacterBase, AITarget, COND_None);
 	DOREPLIFETIME_CONDITION(ARCharacterBase, AILevel, COND_None);
-
-
-	DOREPLIFETIME(ARCharacterBase, bIsReady);
-	DOREPLIFETIME(ARCharacterBase, PlayerName);
-}
-
-
-void ARCharacterBase::Multi_SetReadyStatus_Implementation(bool InbIsReady)
-{
-	this->bIsReady = InbIsReady;
-
-	if (IsValid(this->CharacterOverhead)) {
-		this->CharacterOverhead->UpdateReadyStatus(this->bIsReady);
-		this->CharacterOverhead->SetVisibility(ESlateVisibility::Visible);
-	}
-	else {
-
-		FTimerHandle MemberTimerHandle;
-		FTimerDelegate TimerDel;
-
-		TimerDel.BindUFunction(this, FName("Multi_SetReadyStatus"), InbIsReady);
-
-		GetWorld()->GetTimerManager().SetTimer(MemberTimerHandle, TimerDel, 0.03f, false);
-	}
-}
-
-void ARCharacterBase::Multi_SetPlayerName_Implementation(const FString& InPlayerName)
-{
-	this->PlayerName = InPlayerName;
-
-	if (this->CharacterOverhead != nullptr)
-		this->CharacterOverhead->UpdatePlayerName(this->PlayerName);
-	else
-	{
-		FTimerHandle MemberTimerHandle;
-		FTimerDelegate TimerDel;
-
-		TimerDel.BindUFunction(this, FName("Multi_SetPlayerName"), InPlayerName);
-
-		GetWorld()->GetTimerManager().SetTimer(MemberTimerHandle, TimerDel, 0.03f, false);
-	}
-}
-
-void ARCharacterBase::Multi_SetIconAndColorOverheadWidget_Implementation(bool bIsHidden, const FString& InPlayerNameColor)
-{
-
-	if (IsValid(this->CharacterOverhead))
-	{
-		this->CharacterOverhead->SetPlayerNameColor(InPlayerNameColor);
-		this->CharacterOverhead->SetReadyStatusVisibility(bIsHidden);
-	}
-}
-
-void ARCharacterBase::Multi_PlayStartLevelMontage_Implementation()
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-	if (IsValid(AnimInstance))
-		AnimInstance->Montage_Play(this->StartLevelMontage);
 }
 

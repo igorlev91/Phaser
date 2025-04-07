@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
-#include "../Character/RCharacterBase.h"
+#include "../Character/RLobbyCharacter.h"
 #include "../Common/Struct/LobbyHeroeSpot.h"
 #include "../Widgets/Lobby/LobbyPlayerSpots.h"
 #include "../PlayerController/LobbyPlayerController.h"
@@ -12,9 +12,7 @@
 
 #include "LobbyGameMode.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class ALobbyGameMode : public AGameMode
 {
@@ -29,8 +27,8 @@ public:
 	bool IsAllPlayerReady();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void Server_SwapCharacter(APlayerController* PlayerController, TSubclassOf<ARCharacterBase> InHeroeSelected, bool bChangeStatus);
-	void Server_SwapCharacter_Implementation(APlayerController* PlayerController, TSubclassOf<ARCharacterBase> InHeroeSelected, bool bChangeStatus);
+	void Server_SwapCharacter(APlayerController* PlayerController, TSubclassOf<ARLobbyCharacter> InHeroeSelected, bool bChangeStatus);
+	void Server_SwapCharacter_Implementation(APlayerController* PlayerController, TSubclassOf<ARLobbyCharacter> InHeroeSelected, bool bChangeStatus);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void Server_UpdateGameSettings(UTexture2D* mapImage, const FString& mapName);

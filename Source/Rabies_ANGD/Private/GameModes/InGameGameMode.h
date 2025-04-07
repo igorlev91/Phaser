@@ -9,9 +9,8 @@
 #include "GameFramework/PlayerStart.h"
 #include "InGameGameMode.generated.h"
 
-/**
- * 
- */
+class ALobbyCharacter;
+
 UCLASS()
 class AInGameGameMode : public AGameMode
 {
