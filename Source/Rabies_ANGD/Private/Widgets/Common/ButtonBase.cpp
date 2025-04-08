@@ -15,7 +15,5 @@ bool UButtonBase::Initialize()
 
 void UButtonBase::SetText(FText InText)
 {
-
-    //this->ButtonTitle->SetText(InText);
-
+    this->ButtonTitle->SetText(InText);
 }

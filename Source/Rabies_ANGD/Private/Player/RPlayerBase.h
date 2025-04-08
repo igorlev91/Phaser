@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/RCharacterBase.h"
+#include "Character/RLobbyCharacter.h"
 #include "GameplayEffectTypes.h"
 #include "RPlayerBase.generated.h"
 
@@ -17,7 +17,7 @@ DECLARE_MULTICAST_DELEGATE(FOnPlayerInteraction);
  * 
  */
 UCLASS()
-class ARPlayerBase : public ARCharacterBase
+class ARPlayerBase : public ARLobbyCharacter
 {
 	GENERATED_BODY()
 	
