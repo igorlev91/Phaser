@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "HeroeAttribute.h"
-#include "../../Character/RCharacterBase.h"
+#include "../../Character/RLobbyCharacter.h"
 #include "Heroes.generated.h"
 
 /**
@@ -17,7 +17,7 @@ struct FHeroes
     GENERATED_BODY()
 
 public:
-    FHeroes(FString InName, FString InHeroeIcon, TSubclassOf<ARCharacterBase> InTargetClass, TArray<struct FHeroeAttribute> InAttributes);
+    FHeroes(FString InName, FString InHeroeIcon, TSubclassOf<ARLobbyCharacter> InTargetClass, TArray<struct FHeroeAttribute> InAttributes);
     FHeroes();
     ~FHeroes();
 
@@ -25,7 +25,7 @@ public:
     FString Name;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heroe Attributes")
-    TSubclassOf<ARCharacterBase> TargetClass;
+    TSubclassOf<ARLobbyCharacter> TargetClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heroe Attributes")
     FString Icon;

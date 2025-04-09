@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../../Character/RCharacterBase.h"
+#include "../../Character/RLobbyCharacter.h"
 #include "InGamePlayerInfo.generated.h"
 
 USTRUCT(BlueprintType)
@@ -19,7 +19,7 @@ public:
     FString PlayerName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InGame Player Info")
-    TSubclassOf<ARCharacterBase> HeroeSelected;
+    TSubclassOf<ARLobbyCharacter> HeroeSelected;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InGame Player Info")
     int32 PlayerIndex;

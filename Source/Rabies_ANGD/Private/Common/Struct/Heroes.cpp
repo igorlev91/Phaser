@@ -5,7 +5,7 @@
 
 FHeroes::FHeroes(FString InName,
     FString InIcon,
-    TSubclassOf<ARCharacterBase> InTargetClass,
+    TSubclassOf<ARLobbyCharacter> InTargetClass,
     TArray<struct FHeroeAttribute> InAttributes)
 {
     this->Name = InName;    
