@@ -13,7 +13,7 @@ public class Rabies_ANGD : ModuleRules
 
         PrivateDependencyModuleNames.AddRange(new string[] { "CommonUI", "InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTags", "GameplayTasks", "Slate", "SlateCore", "UMG", "AIModule", "OnlineSubsystem", "OnlineSubsystemUtils", "OnlineSubsystemEOS", "CinematicCamera", "LevelSequence", "MovieScene", "NavigationSystem"  , "Niagara", "NiagaraCore", "AdvancedWidgets" });
 
-        PrivateDependencyModuleNames.AddRange(new string[] {  });
+        PrivateDependencyModuleNames.AddRange(new string[] { "ReplicationGraph" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

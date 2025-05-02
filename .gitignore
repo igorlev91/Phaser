@@ -48,10 +48,11 @@ EOS_DevAuthTool/*
 # Binary Files
 Binaries/*
 Plugins/*/Binaries/*
+Plugins/*/*/Binaries/*
 
 # Builds
 Build/*
-Content/* 
+ 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/
 Build/*/**

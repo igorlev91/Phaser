@@ -13,7 +13,8 @@
 				"UMG",
 				"GameplayAbilities",
 				"CoreUObject",
-				"AIModule"
+				"AIModule",
+				"ReplicationGraph"
 			]
 		}
 	],
@@ -71,6 +72,10 @@
 		},
 		{
 			"Name": "OnlineSubsystemSteam",
+			"Enabled": true
+		},
+		{
+			"Name": "ReplicationGraph",
 			"Enabled": true
 		}
 	]

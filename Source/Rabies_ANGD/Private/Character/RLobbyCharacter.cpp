@@ -35,6 +35,7 @@ void ARLobbyCharacter::BeginPlay()
 	}
 
 	this->CharacterOverhead = Cast<UOverheadPlayerSpot>(this->OverheadPlayerSpot->GetUserWidgetObject());
+	if (!CharacterOverhead) return;
 
 	if (IsValid(OverheadPlayerSpot)) {
 		this->CharacterOverhead->SetVisibility(ESlateVisibility::Hidden);
