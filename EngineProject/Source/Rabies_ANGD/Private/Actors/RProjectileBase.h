@@ -18,9 +18,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "ChestDetail")
 	class USphereComponent* SphereCollider;
 
-	UPROPERTY(VisibleAnywhere, Category = "ProjectileStats")
-	class UStaticMeshComponent* ProjMesh;
-
 	UPROPERTY(EditDefaultsOnly, Category = "ProjectileStats")
 	class UNiagaraComponent* NiagaraEffect;
 
@@ -56,6 +53,9 @@ private:
 	void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
 	
 public:	
+	UPROPERTY(VisibleAnywhere, Category = "ProjectileStats")
+	class UStaticMeshComponent* ProjMesh;
+
 	FOnHitCharacter OnHitCharacter;
 
 	FOnBounceCharacter OnBounceCharacter;

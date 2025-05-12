@@ -13,6 +13,7 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
+#include "Player/BoltHead/RBoltHead_RangedProj.h"
 
 #include "Player/Dot/RDot_RangedRevUpCooldown.h"
 #include "Player/Dot/RDot_RangedAttack_Cooldown.h"
@@ -54,7 +55,17 @@ void UGA_BoltHead_Ranged::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	playTargettingMontageTask->OnCancelled.AddDynamic(this, &UGA_BoltHead_Ranged::K2_EndAbility);
 	playTargettingMontageTask->ReadyForActivation();*/
 
-	Player->ServerPlay_Torso_AnimMontage(ShootingMontage);
+	bool bFound = false;
+	float attackCooldown = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetRangedAttackCooldownReductionAttribute(), bFound);
+	float attackSpeed = 1.0f;
+
+	if (bFound == true)
+	{
+		attackSpeed = 2.8f - 2.0f * (attackCooldown - 0.1f) / (1.0f - 0.1f);
+		//UE_LOG(LogTemp, Error, TEXT("Attack Speed: %f"), attackSpeed);
+	}
+
+	Player->ServerPlay_Torso_AnimMontage(ShootingMontage, attackSpeed);
 
 	UAbilityTask_WaitGameplayEvent* WaitForDamage = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetRangedAttackRightActivationTag());
 	WaitForDamage->EventReceived.AddDynamic(this, &UGA_BoltHead_Ranged::Fire);
@@ -69,9 +80,9 @@ void UGA_BoltHead_Ranged::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		}
 	}
 
-	//GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &UGA_ChesterRanged::Fire, 0.2f, false);
+	FTimerHandle endTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(endTimerHandle, this, &UGA_BoltHead_Ranged::ForceEnd, 0.2f, false);
 
-	K2_EndAbility();
 }
 
 
@@ -79,28 +90,26 @@ void UGA_BoltHead_Ranged::Fire(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
-		/*if (Player->ChesterBall)
-		{
-
-			Player->ChesterBall->SetActiveState(true);
-		}
-
-
 		//UE_LOG(LogTemp, Error, TEXT("Sending Attack"));
 		FVector viewLoc;
 		FRotator viewRot;
 
 		Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
 		FVector spawnPos = Player->GetActorLocation();
-		viewRot.Yaw += -2.0f;
-		viewRot.Pitch += 4.0f;
 		spawnPos += (viewRot.Vector()) * 50.0f;
-		ARChester_RangeProj* newProjectile = GetWorld()->SpawnActor<ARChester_RangeProj>(ChesterProjectile, spawnPos, viewRot);
+
+		ARBoltHead_RangedProj* newProjectile = GetWorld()->SpawnActor<ARBoltHead_RangedProj>(BoltHeadProjectile, spawnPos, viewRot);
 		newProjectile->Init(RangedDamage, Player);
 		newProjectile->InitOwningCharacter(Player);
 		newProjectile->SetOwner(Player);
-		*/
+
+		K2_EndAbility();
 	}
+}
+
+void UGA_BoltHead_Ranged::ForceEnd()
+{
+	K2_EndAbility();
 }
 
 

@@ -1,0 +1,1 @@
+"C:/UnrealEngine_Source/UnrealEngine/Engine/Binaries/Win64/UnrealEditor.exe" "C:/P4Dev/2025_ANGD_4440/Rabies/EngineProject/Rabies_ANGD.uproject" -game -log -epicapp=Rabies_ANGD

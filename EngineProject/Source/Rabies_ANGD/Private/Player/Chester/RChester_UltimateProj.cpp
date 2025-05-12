@@ -62,12 +62,12 @@ void ARChester_UltimateProj::HitCharacter(ARCharacterBase* usingCharacter, ARCha
 	FGameplayEffectSpec* spec = effectSpechandle.Data.Get();
 	if (spec)
 	{
-		usingCharacter->HitSpecialAttack(hitCharacter);
 
 		//UE_LOG(LogTemp, Warning, TEXT("Damaging Target"));
 		hitCharacter->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 
 		UAISense_Damage::ReportDamageEvent(this, hitCharacter, usingCharacter, 1, hitCharacter->GetActorLocation(), hitCharacter->GetActorLocation());
+		usingCharacter->DealtDamage(hitCharacter);
 	}
 }
 
@@ -120,6 +120,8 @@ void ARChester_UltimateProj::Explosion(ARCharacterBase* usingCharacter)
 				{
 					alreadyDamaged.Add(enemy);
 					enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*newSpec);
+
+					usingCharacter->DealtDamage(enemy); // make sure to do it afterwards so you can check health
 				}
 			}
 		}

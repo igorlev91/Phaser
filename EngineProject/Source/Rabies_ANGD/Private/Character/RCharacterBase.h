@@ -396,7 +396,7 @@ public:
 	void ServerPlayAnimMontage(UAnimMontage* montage);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void ServerPlay_Torso_AnimMontage(UAnimMontage* montage);
+	void ServerPlay_Torso_AnimMontage(UAnimMontage* montage, float animSpeedScale);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void ServerStopAnimMontage(UAnimMontage* montage);

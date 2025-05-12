@@ -1250,7 +1250,7 @@ void ARCharacterBase::ServerStopAnimMontage_Implementation(UAnimMontage* montage
 	StopAnimMontage(montage);
 }
 
-void ARCharacterBase::ServerPlay_Torso_AnimMontage_Implementation(UAnimMontage* montage)
+void ARCharacterBase::ServerPlay_Torso_AnimMontage_Implementation(UAnimMontage* montage, float animSpeedScale)
 {
 	TArray<USkeletalMeshComponent*> SkeletalComponents;
 	GetComponents<USkeletalMeshComponent>(SkeletalComponents);
@@ -1263,7 +1263,7 @@ void ARCharacterBase::ServerPlay_Torso_AnimMontage_Implementation(UAnimMontage* 
 			{
 				if (Skeletal->GetAnimInstance())
 				{
-					Skeletal->GetAnimInstance()->Montage_Play(montage);
+					Skeletal->GetAnimInstance()->Montage_Play(montage, animSpeedScale);
 				}
 			}
 		}

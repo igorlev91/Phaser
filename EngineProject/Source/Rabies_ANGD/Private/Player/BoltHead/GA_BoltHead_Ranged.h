@@ -26,6 +26,9 @@ private:
 	UFUNCTION()
 	void Fire(FGameplayEventData Payload);
 
+	UFUNCTION()
+	void ForceEnd();
+
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	UAnimMontage* ShootingMontage;
 
@@ -37,8 +40,8 @@ private:
 
 	FTimerHandle AttackTimerHandle;
 
-	//UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	//TSubclassOf<class ARChester_RangeProj> ChesterProjectile;
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	TSubclassOf<class ARBoltHead_RangedProj> BoltHeadProjectile;
 
 	UPROPERTY()
 	class ARPlayerBase* Player;

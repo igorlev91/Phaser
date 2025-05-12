@@ -9,7 +9,7 @@
 
 float URBoltHead_Ranged_Cooldown::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
 {
-    float baseSpeed = 2.0f;
+    float baseSpeed = 1.2f;
 
     const UAbilitySystemComponent* SourceASC = Spec.GetContext().GetOriginalInstigatorAbilitySystemComponent();
 

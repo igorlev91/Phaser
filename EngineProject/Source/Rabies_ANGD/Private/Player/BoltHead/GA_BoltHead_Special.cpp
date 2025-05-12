@@ -51,7 +51,7 @@ void UGA_BoltHead_Special::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	if (Player == nullptr)
 		return;
 
-	Player->ServerPlay_Torso_AnimMontage(TargettingMontage);
+	Player->ServerPlay_Torso_AnimMontage(TargettingMontage, 1.0f);
 
 	UAbilityTask_WaitTargetData* waitTargetDataTask = UAbilityTask_WaitTargetData::WaitTargetData(this, NAME_None, EGameplayTargetingConfirmation::UserConfirmed, targetActorClass);
 	waitTargetDataTask->ValidData.AddDynamic(this, &UGA_BoltHead_Special::TargetAquired);
@@ -96,7 +96,7 @@ void UGA_BoltHead_Special::TargetAquired(const FGameplayAbilityTargetDataHandle&
 
 	GetWorld()->GetTimerManager().SetTimer(DelayEndHandle, this, &UGA_BoltHead_Special::DelayEnd, 1.0f, false);
 
-	Player->ServerPlay_Torso_AnimMontage(CastingMontage);
+	Player->ServerPlay_Torso_AnimMontage(CastingMontage, 1.0f);
 }
 
 void UGA_BoltHead_Special::HandleDamage(FGameplayEventData Payload)
