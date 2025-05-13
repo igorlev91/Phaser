@@ -20,6 +20,7 @@ public:
 private:
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	UFUNCTION()
 	void TargetAquired(const FGameplayAbilityTargetDataHandle& Data);
@@ -55,4 +56,10 @@ private:
 
 	UPROPERTY()
 	class ARPlayerBase* Player;
+
+	FTimerHandle PunchHandle;
+
+	float CurrentHoldDuration;
+
+	void Hold(float timeRemaining);
 };

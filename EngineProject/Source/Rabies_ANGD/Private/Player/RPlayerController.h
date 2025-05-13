@@ -29,6 +29,9 @@ public:
 	void ChangeTakeOffState(bool state, float charge);
 
 	UFUNCTION()
+	void ChangeSuperPunchState(bool state, float charge);
+
+	UFUNCTION()
 	void ChangeRevivalState(bool state, float charge);
 
 	UFUNCTION()

@@ -44,6 +44,9 @@ public:
 	void SetRevivalBarState(bool state, float charge);
 
 	UFUNCTION()
+	void SetChargeSuperPunchState(bool state, float charge);
+
+	UFUNCTION()
 	void AddItem(class URItemDataAsset* itemAsset);
 
 	UFUNCTION()
@@ -199,6 +202,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UChageBar* ReviveChargeBar;
+
+	UPROPERTY(meta = (BindWidget))
+	class UChageBar* SuperPunchChargeBar;
 
 	//************************//
 	//     Test n' Online      //

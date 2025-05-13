@@ -72,6 +72,30 @@ void UGA_BoltHead_Special::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		dotPickActor->SetTargettingRange(5000.0f);
 	}
 	waitTargetDataTask->FinishSpawningActor(this, dotPickActor);
+
+	GetWorld()->GetTimerManager().ClearTimer(PunchHandle);
+	CurrentHoldDuration = 0.0f;
+
+	PunchHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Special::Hold, CurrentHoldDuration));
+
+}
+
+void UGA_BoltHead_Special::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
+	Player->playerController->ChangeSuperPunchState(false, 0);
+}
+
+void UGA_BoltHead_Special::Hold(float timeRemaining)
+{
+	if (CurrentHoldDuration <= 2)
+	{
+		CurrentHoldDuration += GetWorld()->GetDeltaSeconds();
+		Player->playerController->ChangeSuperPunchState(true, CurrentHoldDuration);
+
+		PunchHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Special::Hold, CurrentHoldDuration));
+	}
 }
 
 void UGA_BoltHead_Special::TargetAquired(const FGameplayAbilityTargetDataHandle& Data)
@@ -80,17 +104,20 @@ void UGA_BoltHead_Special::TargetAquired(const FGameplayAbilityTargetDataHandle&
 	{
 		if (!K2_CommitAbility())
 		{
+			Player->playerController->ChangeSuperPunchState(false, 0);
 			K2_EndAbility();
 			return;
 		}
 	}
+
+	GetWorld()->GetTimerManager().ClearTimer(PunchHandle);
 
 	FVector viewLoc;
 	FRotator viewRot;
 
 	Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
 
-	float charge = 100.0f;
+	float charge = CurrentHoldDuration * 60.0f;
 	FVector LaunchVelocity = viewRot.Vector() * (1500.f + (charge * 60.0));  // Adjust strength as needed
 	Player->LaunchBozo(LaunchVelocity);
 
@@ -137,6 +164,7 @@ void UGA_BoltHead_Special::HandleDamage(FGameplayEventData Payload)
 
 void UGA_BoltHead_Special::DelayEnd()
 {
+	Player->playerController->ChangeSuperPunchState(false, 0);
 	K2_EndAbility();
 }
 

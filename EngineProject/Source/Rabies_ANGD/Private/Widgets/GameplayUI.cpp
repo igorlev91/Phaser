@@ -225,6 +225,13 @@ void UGameplayUI::SetRevivalBarState(bool state, float charge)
 	ReviveChargeBar->Charge(charge);
 }
 
+void UGameplayUI::SetChargeSuperPunchState(bool state, float charge)
+{
+	SuperPunchChargeBar->SetVisibility((state) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+	SuperPunchChargeBar->Charge(charge);
+}
+
 void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 {
 	if (PlayerItemInventory)

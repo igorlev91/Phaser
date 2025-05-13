@@ -1172,7 +1172,7 @@ void ARCharacterBase::LaunchBozo_Implementation(FVector launchVelocity)
 	{
 		GetCharacterMovement()->StopMovementImmediately();
 		
-		FVector NewLocation = GetActorLocation() + FVector(0, 0, 100);
+		FVector NewLocation = GetActorLocation() + FVector(0, 0, 40);
 		SetActorLocation(NewLocation, true);
 
 		LaunchCharacter(launchVelocity, true, true);

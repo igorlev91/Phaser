@@ -277,6 +277,11 @@ void ARPlayerBase::BeginPlay()
 
 	ReviveUI->SetRenderScale(FVector2D{ 2.5f });
 	ReviveUI->SetVisibility(ESlateVisibility::Hidden);
+
+	if (bInstantPassive)
+	{
+		GetAbilitySystemComponent()->PressInputID((int)EAbilityInputID::Passive);
+	}
 }
 
 void ARPlayerBase::PawnClientRestart()

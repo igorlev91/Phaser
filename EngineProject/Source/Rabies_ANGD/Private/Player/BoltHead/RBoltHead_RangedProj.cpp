@@ -162,10 +162,10 @@ void ARBoltHead_RangedProj::Tick(float DeltaTime)
 
 	TArray<FOverlapResult> OverlappingResults;
 
-	FCollisionShape Sphere = FCollisionShape::MakeSphere(1200);
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(900);
 	FCollisionQueryParams QueryParams;
 
-	//DrawDebugSphere(GetWorld(), GetActorLocation(), 1200, 32, FColor::Red, false, 1.0f);
+	//DrawDebugSphere(GetWorld(), GetActorLocation(), 900, 32, FColor::Red, false, 1.0f);
 
 	bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
 

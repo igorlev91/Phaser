@@ -420,6 +420,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Passive")
 	bool bAlternateAim;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Passive")
+	bool bInstantPassive;
+
 	/////////////////////////////////
 	/*          Online             */
 	////////////////////////////////
