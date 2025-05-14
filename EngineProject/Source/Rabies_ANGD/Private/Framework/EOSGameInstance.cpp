@@ -108,6 +108,8 @@ void UEOSGameInstance::CreateSession(const FName& SessionName)
 		sessionPtr->CreateSession(0, SessionName, SessionSettings);
 	}*/
 
+	//if(SessionName)
+	// RIGHT HERE, CHECK TO SEE IF YOU ALREADY HAVE THE SESSION NAME HERE
 
 	FGuid NewSesionUniqueId = FGuid::NewGuid();
 	FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
@@ -457,6 +459,16 @@ void UEOSGameInstance::FindCreatedSessionResultsReceived(bool bWasSuccessful, FG
 			}
 
 			StopFindingCreatedSession();
+
+			if (GetWorld()->GetNetMode() == ENetMode::NM_DedicatedServer)
+			{
+
+			}
+			else
+			{
+				MenuController->CreateLoadingScreenUI();
+			}
+
 			return;
 		}
 	}

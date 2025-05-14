@@ -10,10 +10,11 @@
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 #include "Player/RPlayerController.h"
+#include "Components/CapsuleComponent.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Framework/EOSActionGameState.h"
 #include "Engine/World.h"
 
 #include "Net/UnrealNetwork.h"
@@ -27,6 +28,7 @@
 #include "Sound/SoundCue.h"
 
 #include "Player/BoltHead/RBoltHead_Head.h"
+#include "Player/BoltHead/RBoltHead_Actor.h"
 
 UGA_BoltHead_Passive::UGA_BoltHead_Passive()
 {
@@ -53,26 +55,26 @@ void UGA_BoltHead_Passive::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		}
 	}
 
-	TArray<USkeletalMeshComponent*> SkeletalComponents;
-	Player->GetComponents<USkeletalMeshComponent>(SkeletalComponents);
+	bReboot = true;
 
-	for (USkeletalMeshComponent* Skeletal : SkeletalComponents)
+	TArray<AActor*> AttachedActors;
+	Player->GetAttachedActors(AttachedActors);
+
+	for (AActor* actor : AttachedActors)
 	{
-		if (Skeletal)
+		ARBoltHead_Actor* boltHeadActor = Cast<ARBoltHead_Actor>(actor);
+		if (boltHeadActor)
 		{
-			if (Skeletal->GetName() == TEXT("Head"))
+			BoltHead = boltHeadActor;
+			if (BoltHead)
 			{
-				BoltHead = Cast<URBoltHead_Head>(Skeletal);
-				if (BoltHead)
+				bBusy = false;
+				DeathCheckerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::Checker));
+
+				/*if(BoltHead->GetAnimInstance())
 				{
-					bBusy = false;
-					DeathCheckerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::Checker));
 
-					if (BoltHead->GetAnimInstance())
-					{
-
-					}
-				}
+				}*/
 			}
 		}
 	}
@@ -96,21 +98,49 @@ void UGA_BoltHead_Passive::Checker()
 
 	for (AActor* Actor : AllActors)
 	{
+		if (bBusy == true)
+			continue;
+
 		ARPlayerBase* allyPlayer = Cast<ARPlayerBase>(Actor);
 
 		if (!allyPlayer)
 			continue;
 
+		if (allyPlayer == Player && bBusy == false)
+		{
+			if(bReboot == false)
+				continue;
+
+			if ((allyPlayer->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == true))
+			{
+				if (Player->GetPlayerBaseState())
+				{
+					bReboot = false;
+					Player->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+					Player->SetPlayerReviveState(false);
+					Player->playerController->Server_RequestRevive(Player->GetPlayerBaseState());
+
+					AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+					if (gameState)
+					{
+						gameState->Server_RequestSpawnVFXOnCharacter(DeathParticle, Player, Player->GetActorLocation(), Player->GetActorLocation(), 0);
+					}
+
+					continue;
+				}
+			}
+		}
+
 		if (allyPlayer->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == true)
 		{
 			bBusy = true;
-			WeeWoo(allyPlayer);
-			return;
+			WeeWoo(allyPlayer, 0.0f);
+			continue;
 		}
 	}
 }
 
-void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer)
+void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer, float reviveProgress)
 {
 	if (BoltHead && Player)
 	{
@@ -122,23 +152,83 @@ void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer)
 		float reviveSpeed = 1.0f;
 		reviveSpeed = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetReviveSpeedAttribute(), bFound);
 
-		if (damagedPlayer->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == false)
+		if (damagedPlayer->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == false || damagedPlayer->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetFullyDeadTag()) == true)
 		{
+			bBusy = false;
+			GoHomeHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::GoHome));
 			return;
 		}
 
-		BoltHead->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		BoltHead->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-		FVector CurrentLocation = BoltHead->GetComponentLocation();
+		FRotator LookAtRotation = (damagedPlayer->GetActorLocation() - BoltHead->GetActorLocation()).Rotation();
+		BoltHead->SetActorRotation(FRotator(LookAtRotation.Pitch, LookAtRotation.Yaw, LookAtRotation.Roll));
 
-		FVector NewLocation = FMath::VInterpTo(CurrentLocation, damagedPlayer->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.001f));
-		BoltHead->SetWorldLocation(NewLocation);
+		const float Distance = FVector::Dist(BoltHead->GetActorLocation(), damagedPlayer->GetActorLocation());
+		const float StopThreshold = 100.f;
 
+		if (Distance <= StopThreshold)
+		{
+			reviveProgress += GetWorld()->GetDeltaSeconds() * reviveSpeed;
+			BoltHead->ServerPlay_Head_AnimMontage(healingMontage, reviveSpeed);
+			AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+			if (gameState)
+			{
+				gameState->Multicast_ShootTexUltimate(HealingParticle, BoltHead, BoltHead->GetActorLocation(), damagedPlayer->GetActorLocation(), damagedPlayer->GetActorLocation());
+			}
 
-		FinishedHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::WeeWoo, damagedPlayer));
+			if (reviveProgress >= 10.0f)
+			{
+				AEOSPlayerState* EOSPlayeState = damagedPlayer->GetPlayerBaseState();
+				if (EOSPlayeState && Player)
+				{
+					damagedPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+					damagedPlayer->SetPlayerReviveState(false);
+					Player->playerController->Server_RequestRevive(EOSPlayeState);
+				} // send it home
+				bBusy = false;
+				GoHomeHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::GoHome));
+				return;
+			}
+		}
+		else
+		{
+			FVector NewLocation = FMath::VInterpTo(BoltHead->GetActorLocation(), damagedPlayer->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.0005f));
+			BoltHead->SetActorLocation(NewLocation);
+		}
+
+		FinishedHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::WeeWoo, damagedPlayer, reviveProgress));
 	}
 }
 
+void UGA_BoltHead_Passive::GoHome()
+{
+	if (BoltHead && Player)
+	{
+		bool bFound = false;
+		float movementSpeed = 700.0f;
+		movementSpeed = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetMovementSpeedAttribute(), bFound);
+
+		const float Distance = FVector::Dist(BoltHead->GetActorLocation(), Player->GetActorLocation());
+		const float StopThreshold = 100.f;
+
+		if (Distance <= StopThreshold)
+		{
+			BoltHead->AttachToComponent(Player->GetCapsuleComponent(), FAttachmentTransformRules::KeepWorldTransform);
+			BoltHead->SetActorRelativeLocation(FVector(10, 0, 20));
+			BoltHead->SetActorRelativeRotation(FRotator(0, -90, 0));
+
+			return;
+		}
+		else
+		{
+			FVector NewLocation = FMath::VInterpTo(BoltHead->GetActorLocation(), Player->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.002f));
+			BoltHead->SetActorLocation(NewLocation);
+		}
+
+		GoHomeHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::GoHome));
+	}
+}
 
 void UGA_BoltHead_Passive::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {

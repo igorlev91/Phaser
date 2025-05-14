@@ -28,14 +28,29 @@ private:
 	class ARPlayerBase* Player;
 
 	UPROPERTY()
-	class URBoltHead_Head* BoltHead;
+	class ARBoltHead_Actor* BoltHead;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* HealingParticle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* DeathParticle;
 
 	FTimerHandle DeathCheckerHandle;
 	FTimerHandle FinishedHandle;
 
+	FTimerHandle GoHomeHandle;
+
+	bool bReboot;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Anim")
+	class UAnimMontage* healingMontage;
+
 	void Checker();
 
-	void WeeWoo(class ARPlayerBase* damagedPlayer);
+	void WeeWoo(class ARPlayerBase* damagedPlayer, float reviveProgress);
+
+	void GoHome();
 
 	bool bBusy;
 };

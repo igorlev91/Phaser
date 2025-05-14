@@ -13,7 +13,7 @@
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Framework/EOSActionGameState.h"
 #include "Engine/World.h"
 
 #include "Net/UnrealNetwork.h"
@@ -54,6 +54,14 @@ void UGA_TexPassive::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 		{
 			Player->PlayVoiceLine(AbilitySoundEfx, 60);
 		}
+	}
+
+	AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+	if (gameState)
+	{
+		FVector spawnLoc = Player->GetActorLocation();
+		spawnLoc.Z -= 30.0f;
+		gameState->Multicast_RequestSpawnVFX(SmokeFromInvis, spawnLoc, Player->GetActorUpVector(), 0);
 	}
 
 	// apply the material and listen for when you basic attack

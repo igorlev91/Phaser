@@ -859,7 +859,7 @@ bool AEOSActionGameState::GetKeyCard()
 }
 
 
-void AEOSActionGameState::Multicast_ShootTexUltimate_Implementation(UNiagaraSystem* SystemToSpawn, ARCharacterBase* characterAttached, FVector SpawnLocation, FVector Direction, FVector endPos)
+void AEOSActionGameState::Multicast_ShootTexUltimate_Implementation(UNiagaraSystem* SystemToSpawn, AActor* characterAttached, FVector SpawnLocation, FVector Direction, FVector endPos)
 {
     if (!SystemToSpawn) return;
     if (!characterAttached) return;

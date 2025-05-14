@@ -74,7 +74,7 @@ public:
 	void Multicast_AdjustIceOnCharacter(UNiagaraSystem* SystemToSpawn, class ARCharacterBase* characterAttached, FVector SpawnLocation, FVector Direction, float otherValue);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_ShootTexUltimate(UNiagaraSystem* SystemToSpawn, class ARCharacterBase* characterAttached, FVector SpawnLocation, FVector Direction, FVector endPos);
+	void Multicast_ShootTexUltimate(UNiagaraSystem* SystemToSpawn, AActor* characterAttached, FVector SpawnLocation, FVector Direction, FVector endPos);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_RobotGiblets(FVector SpawnLocation, FVector Direction, int amount);

@@ -4,37 +4,50 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilities/GA_AbilityBase.h"
-#include "GA_TexPassive.generated.h"
+#include "GA_BoltHead_Ultimate.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UGA_TexPassive : public UGA_AbilityBase
+class UGA_BoltHead_Ultimate : public UGA_AbilityBase
 {
 	GENERATED_BODY()
-
+	
 public:
-	UGA_TexPassive();
+	UGA_BoltHead_Ultimate();
 
 private:
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Bonus Stats")
-	TSubclassOf<class UGameplayEffect> BonusStatsClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	class UNiagaraSystem* SmokeFromInvis;
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* Montage;
 
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	TArray<USoundBase*> AbilitySoundEfx;
 
-	UFUNCTION()
-	void FinishStealth(FGameplayEventData Payload);
-
-	FActiveGameplayEffectHandle StatsEffectHandle;
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TArray<TSubclassOf<class UGameplayEffect>> AttackDamages;
 
 	UPROPERTY()
 	class ARPlayerBase* Player;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* UltimateModeMat;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* RadioSystem;
+
+	UFUNCTION()
+	void DoExplosion();
+
+	UFUNCTION()
+	void UltimateLerp(float value, float desiredValue, float times);
+
+	FTimerHandle UltimateModeTimer;
+
+	class APostProcessVolume* PostProcessVolume;
 };

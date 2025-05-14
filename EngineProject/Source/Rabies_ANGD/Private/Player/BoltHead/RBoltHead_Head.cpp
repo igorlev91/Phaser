@@ -21,6 +21,7 @@
 
 URBoltHead_Head::URBoltHead_Head()
 {
+	//bReplicates = true;
 }
 
 void URBoltHead_Head::WeeWoo(ARPlayerBase* damagedPlayer, float movementSpeed, float ReviveSpeed)
