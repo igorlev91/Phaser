@@ -53,9 +53,6 @@ AItemChest::AItemChest()
 	SphereCollider->SetupAttachment(GetRootComponent());
 	SphereCollider->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
 
-	SphereCollider->OnComponentBeginOverlap.AddDynamic(this, &AItemChest::OnOverlapBegin);
-	SphereCollider->OnComponentEndOverlap.AddDynamic(this, &AItemChest::OnOverlapEnd);
-
 	InteractWidgetComp = CreateDefaultSubobject<UWidgetComponent>("Status Widget Comp");
 	InteractWidgetComp->SetupAttachment(GetRootComponent());
 
@@ -73,6 +70,12 @@ void AItemChest::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetWorld()->GetTimerManager().SetTimer(FixTimer, this, &AItemChest::FixDisplay, 0.2f, false);
+}
+
+void AItemChest::FixDisplay()
+{
+	SetUpUI_Implementation(false);
 }
 
 // Called every frame
@@ -110,6 +113,12 @@ void AItemChest::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* 
 		return;
 	}
 
+	if (SphereCollider->IsOverlappingActor(player))
+	{
+		// Still overlapping
+		return;
+	}
+
 	bWithinInteraction = false;
 
 	if (InteractWidget != nullptr)
@@ -126,6 +135,8 @@ void AItemChest::SetUpUI_Implementation(bool SetInteraction)
 	if (InteractWidgetComp == nullptr)
 		return;
 
+	SphereCollider->OnComponentBeginOverlap.AddDynamic(this, &AItemChest::OnOverlapBegin);
+	SphereCollider->OnComponentEndOverlap.AddDynamic(this, &AItemChest::OnOverlapEnd);
 
 	//if (InteractWidget != nullptr)
 		//return;
@@ -229,13 +240,13 @@ void AItemChest::UpdateChestOpened_Implementation()
 {
 	if (InteractWidget != nullptr)
 	{
-		InteractWidget->SetVisibility(ESlateVisibility::Hidden);
+		InteractWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	if (ChestTopMesh != nullptr)
+	/*if (ChestTopMesh != nullptr)
 	{
 		//ChestTopMesh->SetVisibility(false);
-	}
+	}*/
 
 	if (AudioComp && ChestOpenAudio)
 	{

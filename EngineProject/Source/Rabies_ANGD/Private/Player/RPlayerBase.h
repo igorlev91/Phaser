@@ -444,6 +444,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Passive")
 	bool bMiniLock;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Passive")
+	bool bBolthead;
+
+	UFUNCTION()
+	USkeletalMeshComponent* GetItemAttachmentMesh(FName itemName);
+
 	UFUNCTION(NetMulticast, Unreliable)
 	void SetPlayerReviveState(bool state);
 

@@ -617,7 +617,13 @@ void AEOSActionGameState::Multicast_SpawnItemOnPlayer_Implementation(URItemDataA
             MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             MeshComp->SetStaticMesh(itemData->ItemPlayerMesh);
 
-
+            if (targetingPlayer->bBolthead)
+            {
+                FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+                MeshComp->AttachToComponent(targetingPlayer->GetItemAttachmentMesh(itemData->ItemName), AttachmentRules, itemData->ItemName);
+                return;
+            }
+            
             FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
             MeshComp->AttachToComponent(targetingPlayer->GetMesh(), AttachmentRules, itemData->ItemName);
         }
@@ -897,7 +903,7 @@ void AEOSActionGameState::Multicast_RequestPlayAudio_Implementation(USoundBase* 
 
 void AEOSActionGameState::Server_RequestChangeItem_Implementation(AItemPickup* ChoosingItem, URItemDataAsset* chosenItem)
 {
-    for (AItemPickup* item : AllItems)
+    for (AItemPickup* item : AllItems) // send back a failure so that they don't softlock
     {
         if (item == ChoosingItem)
         {

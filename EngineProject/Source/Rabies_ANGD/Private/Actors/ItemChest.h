@@ -27,6 +27,11 @@ public:
 
 private:
 
+	FTimerHandle FixTimer;
+
+	UFUNCTION()
+	void FixDisplay();
+
 	bool bWithinInteraction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Info")

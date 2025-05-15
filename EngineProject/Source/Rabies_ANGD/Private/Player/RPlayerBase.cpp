@@ -46,6 +46,8 @@
 
 #include "Framework/RGameMode.h"
 
+#include "Player/BoltHead/RBoltHead_Actor.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -970,6 +972,68 @@ void ARPlayerBase::InvisStatusUpdated(bool bIsDead)
 		GetMesh()->SetMaterial(0, TexDefaultMat);
 	}
 }
+
+USkeletalMeshComponent* ARPlayerBase::GetItemAttachmentMesh(FName itemName)
+{
+	TArray<USkeletalMeshComponent*> SkeletalComponents;
+	GetComponents<USkeletalMeshComponent>(SkeletalComponents);
+
+	USkeletalMeshComponent* torsoMesh = nullptr;
+
+	for (USkeletalMeshComponent* Skeletal : SkeletalComponents)
+	{
+		if (Skeletal)
+		{
+			if (Skeletal->GetName() == TEXT("Torso"))
+			{
+				torsoMesh = Skeletal;
+			}
+		}
+	}
+
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors);
+
+	for (AActor* actor : AttachedActors)
+	{
+		ARBoltHead_Actor* boltHeadActor = Cast<ARBoltHead_Actor>(actor);
+		if (boltHeadActor)
+		{
+			if (itemName == "Friendship Bracelet")
+				return boltHeadActor->GetHeadMesh();
+
+			if (itemName == "Hard Hat")
+				return boltHeadActor->GetHeadMesh();
+
+			if (itemName == "Radio")
+				return boltHeadActor->GetHeadMesh();
+
+			if (itemName == "Spray Bottle")
+				return boltHeadActor->GetHeadMesh();
+		}
+	}
+
+	if (itemName == "Ammo Box")
+		return GetMesh();
+
+	if (itemName == "Blood Bag")
+		return GetMesh();
+
+	if (itemName == "Canned Food")
+		return GetMesh();
+
+	if (itemName == "Rod of Uranium")
+		return GetMesh();
+
+
+	if (torsoMesh)
+	{
+		return torsoMesh;
+	}
+
+	return GetMesh();
+}
+
 
 void ARPlayerBase::CheckChesterHeal()
 {

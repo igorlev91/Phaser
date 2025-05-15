@@ -7,9 +7,12 @@
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
-#include "GameplayAbilities/RAbilityGenericTags.h"
 #include "Player/Dot/RDot_SpecialProj.h"
 #include "Framework/EOSActionGameState.h"
+
+#include "GameplayAbilities/RAbilityGenericTags.h"
+#include "GameplayAbilities/RAttributeSet.h"
+#include "GameplayAbilities/RAbilitySystemComponent.h"
 
 #include "Targeting/RTargetActor_DotSpecial.h"
 #include "Player/RPlayerController.h"
@@ -118,7 +121,7 @@ void UGA_BoltHead_Special::TargetAquired(const FGameplayAbilityTargetDataHandle&
 	Player->playerController->GetPlayerViewPoint(viewLoc, viewRot);
 
 	float charge = CurrentHoldDuration * 60.0f;
-	FVector LaunchVelocity = viewRot.Vector() * (1500.f + (charge * 60.0));  // Adjust strength as needed
+	FVector LaunchVelocity = viewRot.Vector() * (1500.f + (charge * 30.0));  // Adjust strength as needed
 	Player->LaunchBozo(LaunchVelocity);
 
 	GetWorld()->GetTimerManager().SetTimer(DelayEndHandle, this, &UGA_BoltHead_Special::DelayEnd, 1.0f, false);
@@ -130,7 +133,14 @@ void UGA_BoltHead_Special::HandleDamage(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
+		bool bFound = false;
+		float strength = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetAbilityStrengthAttribute(), bFound);
+
+		if (bFound == false)
+			return;
+
 		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(AttackDamages[0], GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		EffectSpec.Data.Get()->SetSetByCallerMagnitude(URAbilityGenericTags::GetGenericTargetAquiredTag(), -((CurrentHoldDuration + 0.2f) * strength));
 		ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
 		SignalDamageStimuliEvent(Payload.TargetData);
 
