@@ -330,7 +330,7 @@ void AEOSActionGameState::SelectItem(AItemPickup* selectedItem, ARPlayerBase* ta
 
 void AEOSActionGameState::LeaveLevel_Implementation()
 {
-    /*if (HasAuthority())
+    /*if (HasAuthority() && (GameSettings == ESettingsType::Medium || GameSettings == ESettingsType::Hard || GameSettings == ESettingsType::Lunitic))
     {
         for (APlayerState* playerState : PlayerArray)
         {

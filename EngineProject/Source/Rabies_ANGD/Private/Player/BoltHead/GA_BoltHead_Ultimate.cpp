@@ -11,7 +11,7 @@
 #include "Player/Dot/RDot_SpecialProj.h"
 #include "Framework/EOSActionGameState.h"
 #include "Enemy/REnemyBase.h"
-#include "Player/Chester/ChesterBallActor.h"
+#include "Player/BoltHead/RBoltHead_Actor.h"
 
 #include "Targeting/RTargetActor_DotSpecial.h"
 #include "Player/Chester/RChester_UltimateProj.h"
@@ -44,7 +44,7 @@ UGA_BoltHead_Ultimate::UGA_BoltHead_Ultimate()
 {
 	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag("ability.ultimate.activate"));
 	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("ability.ultimate.activate"));
-	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetScopingTag());
+	//ActivationOwnedTags.AddTag(URAbilityGenericTags::GetScopingTag());
 
 	/*FAbilityTriggerData TriggerData;
 	TriggerData.TriggerTag = URAbilityGenericTags::GetBasicAttackActivationTag();
@@ -71,6 +71,32 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	Player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
 	if (Player == nullptr)
 		return;
+
+	TArray<USkeletalMeshComponent*> SkeletalComponents;
+	Player->GetComponents<USkeletalMeshComponent>(SkeletalComponents);
+
+	for (USkeletalMeshComponent* Skeletal : SkeletalComponents)
+	{
+		if (Skeletal)
+		{
+			if (Skeletal->GetName() == TEXT("Torso"))
+			{
+				TorsoSkeletalMesh = Skeletal;
+			}
+		}
+	}
+
+	TArray<AActor*> AttachedActors;
+	Player->GetAttachedActors(AttachedActors);
+
+	for (AActor* actor : AttachedActors)
+	{
+		ARBoltHead_Actor* boltHeadActor = Cast<ARBoltHead_Actor>(actor);
+		if (boltHeadActor)
+		{
+			BoltHead = boltHeadActor;
+		}
+	}
 
 	for (TActorIterator<APostProcessVolume> It(GetWorld()); It; ++It)
 	{
@@ -101,7 +127,7 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 					UltimateModeMat = DynamicMat;
 
 					GetWorld()->GetTimerManager().ClearTimer(UltimateModeTimer);
-					UltimateModeTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Ultimate::UltimateLerp, 1.0f, 0.0f, 1.0f));
+					UltimateModeTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Ultimate::UltimateLerp, 1.0f, 0.0f, 8.0f));
 
 					break;
 				}
@@ -109,10 +135,10 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		}
 	}
 
-	Player->ServerPlay_Torso_AnimMontage(Montage, 1.0f);
 
 	FTimerHandle UltTimater;
-	GetWorld()->GetTimerManager().SetTimer(UltTimater, this, &UGA_BoltHead_Ultimate::DoExplosion, 0.9f, false);
+	UltTimater = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Ultimate::DoUltimate, 8.0f));
+
 
 	if (K2_HasAuthority())
 	{
@@ -126,6 +152,14 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 void UGA_BoltHead_Ultimate::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
+	if (K2_HasAuthority())
+	{
+		/*Player->ServerSetWorldRotation_Mesh(Player->GetMesh(), FRotator(0, 0, 0));
+		Player->ServerSpin_Torso(Player->GetMesh(), FRotator(0, 0, -90));
+		Player->ServerSpin_Torso(TorsoSkeletalMesh, FRotator(0, 0, -90));
+		BoltHead->GetHeadMesh()->SetRelativeRotation(FRotator(0, 0, -90));*/
+	}
 
 	if (PostProcessVolume)
 	{
@@ -141,69 +175,44 @@ void UGA_BoltHead_Ultimate::EndAbility(const FGameplayAbilitySpecHandle Handle, 
 	}
 }
 
-void UGA_BoltHead_Ultimate::DoExplosion()
+void UGA_BoltHead_Ultimate::DoUltimate(float timeRemaining)
 {
 	if (K2_HasAuthority())
 	{
-		TArray<FOverlapResult> OverlappingResults;
-
-		FCollisionShape Sphere = FCollisionShape::MakeSphere(5000);
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(Player);
-
-		AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
-		if (gameState)
+		/*if (BoltHead && TorsoSkeletalMesh)
 		{
-			gameState->Multicast_SpawnRadio(RadioSystem, Player, Player->GetActorLocation(), Player->GetActorLocation(), 500);
-		}
+			float SpinSpeed = 180.f;
+			float DeltaYaw = SpinSpeed * GetWorld()->GetDeltaSeconds();
 
-		//DrawDebugSphere(GetWorld(), Player->GetActorLocation(), 5000, 32, FColor::Red, false, 2.0f);
+			// Spin the BoltHead mesh
+			FRotator CurrentRotation = BoltHead->GetHeadMesh()->GetComponentRotation();
+			CurrentRotation.Yaw += DeltaYaw * 100.0f;
+			BoltHead->GetHeadMesh()->SetWorldRotation(CurrentRotation);
 
-		bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, Player->GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
+			// Spin the Torso mesh
+			FRotator TorsoRotation = TorsoSkeletalMesh->GetComponentRotation();
+			TorsoRotation.Yaw += DeltaYaw;
 
-		TArray<AREnemyBase*> alreadyDamaged;
+			Player->ServerSpin_Torso(TorsoSkeletalMesh, TorsoRotation);
 
-		for (const FOverlapResult& result : OverlappingResults)
+			FRotator SpiderRotation = Player->GetMesh()->GetRelativeRotation();
+			SpiderRotation.Yaw += DeltaYaw * 100.0f;
+
+			Player->ServerSpin_Torso(Player->GetMesh(), SpiderRotation);
+		}*/
+
+
+		timeRemaining -= GetWorld()->GetDeltaSeconds();
+
+		if (timeRemaining > 0)
 		{
-			AREnemyBase* enemy = Cast<AREnemyBase>(result.GetActor());
-			if (enemy)
-			{
-				if (alreadyDamaged.Contains(enemy) == false)
-				{
-					FGameplayEffectSpecHandle specHandle = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(AttackDamages[0], 1.0f, Player->GetAbilitySystemComponent()->MakeEffectContext());
-					FGameplayEffectSpecHandle specHandle3 = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(AttackDamages[2], 1.0f, Player->GetAbilitySystemComponent()->MakeEffectContext());
-
-					FGameplayEffectSpec* spec = specHandle.Data.Get();
-					FGameplayEffectSpec* spec3 = specHandle3.Data.Get();
-					if (spec)
-					{
-						if (gameState)
-						{
-							gameState->Multicast_SpawnRadio(RadioSystem, enemy, enemy->GetActorLocation(), enemy->GetActorLocation(), 500);
-						}
-
-						alreadyDamaged.Add(enemy);
-						enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
-					}
-
-					if (spec3)
-					{
-						enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec3);
-					}
-				}
-			}
+			FTimerHandle UltTimater;
+			UltTimater = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Ultimate::DoUltimate, timeRemaining));
 		}
-
-
-		FGameplayEffectSpecHandle specHandle2 = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(AttackDamages[1], 1.0f, Player->GetAbilitySystemComponent()->MakeEffectContext());
-		FGameplayEffectSpec* spec2 = specHandle2.Data.Get();
-		if (spec2)
+		else
 		{
-			Player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec2);
+			K2_EndAbility();
 		}
-
-
-		K2_EndAbility();
 	}
 }
 

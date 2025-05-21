@@ -161,9 +161,6 @@ void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer, float reviveProgr
 
 		BoltHead->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-		FRotator LookAtRotation = (damagedPlayer->GetActorLocation() - BoltHead->GetActorLocation()).Rotation();
-		BoltHead->SetActorRotation(FRotator(LookAtRotation.Pitch, LookAtRotation.Yaw, LookAtRotation.Roll));
-
 		const float Distance = FVector::Dist(BoltHead->GetActorLocation(), damagedPlayer->GetActorLocation());
 		const float StopThreshold = 100.f;
 
@@ -195,6 +192,12 @@ void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer, float reviveProgr
 		{
 			FVector NewLocation = FMath::VInterpTo(BoltHead->GetActorLocation(), damagedPlayer->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.0005f));
 			BoltHead->SetActorLocation(NewLocation);
+
+			FRotator TargetRotation = (damagedPlayer->GetActorLocation() - NewLocation).Rotation();
+			TargetRotation.Yaw -= 90.0f;
+			FRotator SmoothedRotation = FMath::RInterpTo(BoltHead->GetHeadMesh()->GetComponentRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), 5.0f);
+			BoltHead->GetHeadMesh()->SetWorldRotation(SmoothedRotation);
+
 		}
 
 		FinishedHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::WeeWoo, damagedPlayer, reviveProgress));
@@ -224,6 +227,11 @@ void UGA_BoltHead_Passive::GoHome()
 		{
 			FVector NewLocation = FMath::VInterpTo(BoltHead->GetActorLocation(), Player->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.002f));
 			BoltHead->SetActorLocation(NewLocation);
+
+			FRotator TargetRotation = (Player->GetActorLocation() - NewLocation).Rotation();
+			TargetRotation.Yaw -= 90.0f;
+			FRotator SmoothedRotation = FMath::RInterpTo(BoltHead->GetHeadMesh()->GetComponentRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), 5.0f);
+			BoltHead->GetHeadMesh()->SetWorldRotation(SmoothedRotation);
 		}
 
 		GoHomeHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::GoHome));

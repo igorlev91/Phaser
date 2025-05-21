@@ -8,6 +8,7 @@
 #include "Animation/AnimInstance.h"
 #include "Net/UnrealNetwork.h"
 #include "Framework/EOSActionGameState.h"
+#include "Player/RPlayerBase.h"
 
 // Sets default values
 ARBoltHead_Actor::ARBoltHead_Actor()
@@ -33,7 +34,6 @@ void ARBoltHead_Actor::BeginPlay()
 void ARBoltHead_Actor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ARBoltHead_Actor::ServerPlay_Head_AnimMontage_Implementation(UAnimMontage* montage, float animSpeedScale)

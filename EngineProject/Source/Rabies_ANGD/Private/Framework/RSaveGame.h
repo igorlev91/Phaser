@@ -30,4 +30,19 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Audio")
 	bool bItemSuggestions = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bWonAsChester = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bWonAsToni = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bWonAsTex = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bWonAsDot = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bWonAsBoltHead = false;
 };

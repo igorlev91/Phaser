@@ -41,6 +41,8 @@ private:
 
 	void SetBestItem(class UImage* iconToChange, bool isBest, bool hideIt);
 
+	void ShowStar(bool hasStar);
+
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* BestItemsText;
 
@@ -64,6 +66,10 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* passiveText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* StarImage;
+
 
 	UPROPERTY(meta = (BindWidget))
 	class UImage* BigStickImage;

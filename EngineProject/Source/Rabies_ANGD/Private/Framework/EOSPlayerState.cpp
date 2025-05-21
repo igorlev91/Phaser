@@ -17,6 +17,9 @@
 #include "Components/SphereComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Framework/RSaveGame.h"
+#include "Framework/EOSGameInstance.h"
 
 
 void AEOSPlayerState::OnRep_PickedCharacter()
@@ -132,6 +135,54 @@ AEOSPlayerState::AEOSPlayerState()
 void AEOSPlayerState::Client_Load_Implementation()
 {
 	OnLoadNewScene.Broadcast();
+
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
+	{
+		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+		URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+		if (LoadedGame && PickedCharacter)
+		{
+			if(PickedCharacter->CharacterName == "Chester")
+				LoadedGame->bWonAsChester = true;
+
+			if (PickedCharacter->CharacterName == "Toni")
+				LoadedGame->bWonAsToni = true;
+
+			if (PickedCharacter->CharacterName == "Tex")
+				LoadedGame->bWonAsTex = true;
+
+			if (PickedCharacter->CharacterName == "Dot")
+				LoadedGame->bWonAsDot = true;
+
+			if (PickedCharacter->CharacterName == "BoltHead")
+				LoadedGame->bWonAsBoltHead = true;
+
+			UGameplayStatics::SaveGameToSlot(LoadedGame, TEXT("RabiesSaveData"), 0);
+		}
+	}
+	else
+	{
+		URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
+		if (NewSave && PickedCharacter)
+		{
+			if (PickedCharacter->CharacterName == "Chester")
+				NewSave->bWonAsChester = true;
+
+			if (PickedCharacter->CharacterName == "Toni")
+				NewSave->bWonAsToni = true;
+
+			if (PickedCharacter->CharacterName == "Tex")
+				NewSave->bWonAsTex = true;
+
+			if (PickedCharacter->CharacterName == "Dot")
+				NewSave->bWonAsDot = true;
+
+			if (PickedCharacter->CharacterName == "BoltHead")
+				NewSave->bWonAsBoltHead = true;
+
+			UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
+		}
+	}
 }
 
 bool AEOSPlayerState::Client_Load_Validate()

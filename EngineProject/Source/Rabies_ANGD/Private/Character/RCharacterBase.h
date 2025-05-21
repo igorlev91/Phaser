@@ -399,6 +399,12 @@ public:
 	void ServerPlay_Torso_AnimMontage(UAnimMontage* montage, float animSpeedScale);
 
 	UFUNCTION(NetMulticast, Reliable)
+	void ServerSpin_Torso(USkeletalMeshComponent* TorsoSkeletalMesh, FRotator NewRotation);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void ServerSetWorldRotation_Mesh(USkeletalMeshComponent* SkeletalMesh, FRotator NewRotation);
+
+	UFUNCTION(NetMulticast, Reliable)
 	void ServerStopAnimMontage(UAnimMontage* montage);
 
 	UFUNCTION(NetMulticast, Unreliable)

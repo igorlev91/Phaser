@@ -1286,6 +1286,23 @@ void ARCharacterBase::ClientStopAnimMontage_Implementation(UAnimMontage* montage
 	}
 }
 
+void ARCharacterBase::ServerSpin_Torso_Implementation(USkeletalMeshComponent* TorsoSkeletalMesh, FRotator NewRotation)
+{
+	if (TorsoSkeletalMesh)
+	{
+		TorsoSkeletalMesh->SetRelativeRotation(NewRotation);
+	}
+}
+
+void ARCharacterBase::ServerSetWorldRotation_Mesh_Implementation(USkeletalMeshComponent* SkeletalMesh, FRotator NewRotation)
+{
+	if (SkeletalMesh)
+	{
+		SkeletalMesh->SetWorldRotation(NewRotation);
+	}
+}
+
+
 AActor* ARCharacterBase::GetTarget()
 {
 	return AITarget;

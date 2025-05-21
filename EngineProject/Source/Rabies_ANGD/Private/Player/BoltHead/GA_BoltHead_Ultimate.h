@@ -23,14 +23,8 @@ private:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
-	UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	UAnimMontage* Montage;
-
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	TArray<USoundBase*> AbilitySoundEfx;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	TArray<TSubclassOf<class UGameplayEffect>> AttackDamages;
 
 	UPROPERTY()
 	class ARPlayerBase* Player;
@@ -38,11 +32,14 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* UltimateModeMat;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	class UNiagaraSystem* RadioSystem;
+	UPROPERTY()
+	USkeletalMeshComponent* TorsoSkeletalMesh;
+
+	UPROPERTY()
+	class ARBoltHead_Actor* BoltHead;
 
 	UFUNCTION()
-	void DoExplosion();
+	void DoUltimate(float timeRemaining);
 
 	UFUNCTION()
 	void UltimateLerp(float value, float desiredValue, float times);

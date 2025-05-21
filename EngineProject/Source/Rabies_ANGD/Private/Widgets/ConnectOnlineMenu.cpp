@@ -56,7 +56,20 @@ void UConnectOnlineMenu::CreateSessionButtonClicked()
 	{
 		UGameplayStatics::PlaySound2D(this, ClickAudio);
 
-		GameInst->CreateSession(FName{ SessionNameText->GetText().ToString() });
+		if (NameTable1.Num() == 0 || NameTable2.Num() == 0)
+		{
+			return;
+		}
+
+		// Pick random elements
+		int32 Index1 = FMath::RandRange(0, NameTable1.Num() - 1);
+		int32 Index2 = FMath::RandRange(0, NameTable2.Num() - 1);
+
+		// Combine them
+		FString lobbyName = NameTable1[Index1] + TEXT("_") + NameTable2[Index2];
+
+		//GameInst->CreateSession(FName{ SessionNameText->GetText().ToString() });
+		GameInst->CreateSession(FName{ lobbyName });
 	}
 }
 

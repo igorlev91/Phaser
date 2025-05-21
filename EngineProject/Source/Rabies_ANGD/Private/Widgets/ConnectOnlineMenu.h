@@ -79,4 +79,11 @@ private:
 
 	UFUNCTION()
 	void JoinLobby();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Name Generation")
+	TArray<FString> NameTable1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Name Generation")
+	TArray<FString> NameTable2;
 };

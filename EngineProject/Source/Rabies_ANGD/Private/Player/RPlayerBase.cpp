@@ -78,7 +78,7 @@ ARPlayerBase::ARPlayerBase()
 
 	shakePivot->SetupAttachment(viewSpringArm, USpringArmComponent::SocketName);
 
-	//viewCamera->SetupAttachment(shakePivot);
+	viewCamera->SetupAttachment(shakePivot);
 
 	//viewCamera->SetRelativeLocation(DefaultCameraLocal);
 	//viewCamera->bUsePawnControlRotation = false;

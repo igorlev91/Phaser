@@ -33,6 +33,7 @@ void UClipboardInfo::SetCharacterInfo(URCharacterDefination* Character)
 	passiveText->SetText(Character->PassiveText);
 
 	bool bHideIt = false;
+	ShowStar(false);
 
 	USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
 	if (baseSave)
@@ -41,6 +42,27 @@ void UClipboardInfo::SetCharacterInfo(URCharacterDefination* Character)
 		if (LoadedGame)
 		{
 			bHideIt = !LoadedGame->bItemSuggestions;
+
+			if (Character->CharacterName == "Chester")
+			{
+				ShowStar(LoadedGame->bWonAsChester);
+			}
+			else if (Character->CharacterName == "Toni")
+			{
+				ShowStar(LoadedGame->bWonAsToni);
+			}
+			else if (Character->CharacterName == "Tex")
+			{
+				ShowStar(LoadedGame->bWonAsTex);
+			}
+			else if (Character->CharacterName == "Dot")
+			{
+				ShowStar(LoadedGame->bWonAsDot);
+			}
+			else if (Character->CharacterName == "BoltHead")
+			{
+				ShowStar(LoadedGame->bWonAsBoltHead);
+			}
 		}
 	}
 
@@ -146,4 +168,10 @@ void UClipboardInfo::SetBestItem(UImage* iconToChange, bool isBest, bool hideIt)
 	brush.ImageSize = 70.0f;
 	brush.TintColor = (isBest) ? FSlateColor(FLinearColor(1,1,1,alpha)) : FSlateColor(FLinearColor(0.088542f, 0.088542f, 0.088542f, alpha));
 	iconToChange->SetBrush(brush);
+}
+
+void UClipboardInfo::ShowStar(bool hasStar)
+{
+	UE_LOG(LogTemp, Log, TEXT("b has star: %s"), hasStar ? TEXT("true") : TEXT("false"));
+	StarImage->SetRenderOpacity((hasStar) ? 1.0f : 0.0f );
 }
