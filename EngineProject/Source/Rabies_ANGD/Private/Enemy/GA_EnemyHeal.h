@@ -29,6 +29,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> Heal;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UAnimMontage* HealingMontage;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	class UNiagaraSystem* HealingParticle;
 

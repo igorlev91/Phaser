@@ -136,6 +136,7 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	}
 
 
+	spinAmount = 1.0f;
 	FTimerHandle UltTimater;
 	UltTimater = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Ultimate::DoUltimate, 8.0f));
 
@@ -155,10 +156,9 @@ void UGA_BoltHead_Ultimate::EndAbility(const FGameplayAbilitySpecHandle Handle, 
 
 	if (K2_HasAuthority())
 	{
-		/*Player->ServerSetWorldRotation_Mesh(Player->GetMesh(), FRotator(0, 0, 0));
-		Player->ServerSpin_Torso(Player->GetMesh(), FRotator(0, 0, -90));
-		Player->ServerSpin_Torso(TorsoSkeletalMesh, FRotator(0, 0, -90));
-		BoltHead->GetHeadMesh()->SetRelativeRotation(FRotator(0, 0, -90));*/
+		Player->ServerSpin_Torso(Player->GetMesh(), FRotator(0, -90, 0));
+		Player->ServerSpin_Torso(TorsoSkeletalMesh, FRotator(0, -90, 0));
+		BoltHead->GetHeadMesh()->SetRelativeRotation(FRotator(0, 0, 0));
 	}
 
 	if (PostProcessVolume)
@@ -179,28 +179,37 @@ void UGA_BoltHead_Ultimate::DoUltimate(float timeRemaining)
 {
 	if (K2_HasAuthority())
 	{
-		/*if (BoltHead && TorsoSkeletalMesh)
+		if (BoltHead && TorsoSkeletalMesh)
 		{
-			float SpinSpeed = 180.f;
-			float DeltaYaw = SpinSpeed * GetWorld()->GetDeltaSeconds();
+			float DeltaYaw = spinAmount * GetWorld()->GetDeltaSeconds();
 
 			// Spin the BoltHead mesh
 			FRotator CurrentRotation = BoltHead->GetHeadMesh()->GetComponentRotation();
-			CurrentRotation.Yaw += DeltaYaw * 100.0f;
+			CurrentRotation.Yaw += DeltaYaw;
 			BoltHead->GetHeadMesh()->SetWorldRotation(CurrentRotation);
 
 			// Spin the Torso mesh
 			FRotator TorsoRotation = TorsoSkeletalMesh->GetComponentRotation();
-			TorsoRotation.Yaw += DeltaYaw;
+			TorsoRotation.Yaw += DeltaYaw * 0.001f;
 
 			Player->ServerSpin_Torso(TorsoSkeletalMesh, TorsoRotation);
 
 			FRotator SpiderRotation = Player->GetMesh()->GetRelativeRotation();
-			SpiderRotation.Yaw += DeltaYaw * 100.0f;
+			SpiderRotation.Yaw += DeltaYaw;
 
 			Player->ServerSpin_Torso(Player->GetMesh(), SpiderRotation);
-		}*/
 
+			spinAmount += 10.0f;
+		}
+
+		AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+		if (gameState)
+		{
+			FVector spawnPos = Player->GetActorLocation();
+			spawnPos.Z -= 10.0f;
+
+			gameState->Multicast_RequestSpawnVFXOnCharacter(BoltHeadSpinParticle, Player, spawnPos, Player->GetActorLocation(), 0);
+		}
 
 		timeRemaining -= GetWorld()->GetDeltaSeconds();
 

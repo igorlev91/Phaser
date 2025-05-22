@@ -75,6 +75,8 @@ void UGA_EnemyHeal::TryCommitAttack(FGameplayEventData Payload)
 		if (Enemy)
 		{
 
+			Enemy->ServerPlayAnimMontage(HealingMontage);
+
 			UObject* target = EnemyAI->GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName);
 			TargetActor = Cast<AActor>(target);
 			AREnemyBase* TargetEnemy = Cast<AREnemyBase>(TargetActor);

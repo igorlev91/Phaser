@@ -101,7 +101,7 @@ void AEOSPlayerState::Server_ChangeHoveredCharacterPick_Implementation()
 {
 	HoveredCharacterIndex++;
 
-	if (HoveredCharacterIndex == 4)
+	if (HoveredCharacterIndex == 5)
 		HoveredCharacterIndex = 0;
 
 	OnHoveredCharacterIndexReplicated.Broadcast(HoveredCharacterIndex);
@@ -135,26 +135,36 @@ AEOSPlayerState::AEOSPlayerState()
 void AEOSPlayerState::Client_Load_Implementation()
 {
 	OnLoadNewScene.Broadcast();
+}
 
+bool AEOSPlayerState::Client_Load_Validate()
+{
+	return true;
+}
+
+
+void AEOSPlayerState::Server_WonTheGame_Implementation(const FString& characterName)
+{
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
 	{
 		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
 		URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
-		if (LoadedGame && PickedCharacter)
+		if (LoadedGame)
 		{
-			if(PickedCharacter->CharacterName == "Chester")
+
+			if (characterName.Contains("Chester"))
 				LoadedGame->bWonAsChester = true;
 
-			if (PickedCharacter->CharacterName == "Toni")
+			if (characterName.Contains("Toni"))
 				LoadedGame->bWonAsToni = true;
 
-			if (PickedCharacter->CharacterName == "Tex")
+			if (characterName.Contains("Tex"))
 				LoadedGame->bWonAsTex = true;
 
-			if (PickedCharacter->CharacterName == "Dot")
+			if (characterName.Contains("Dot"))
 				LoadedGame->bWonAsDot = true;
 
-			if (PickedCharacter->CharacterName == "BoltHead")
+			if (characterName.Contains("BoltHead"))
 				LoadedGame->bWonAsBoltHead = true;
 
 			UGameplayStatics::SaveGameToSlot(LoadedGame, TEXT("RabiesSaveData"), 0);
@@ -163,21 +173,22 @@ void AEOSPlayerState::Client_Load_Implementation()
 	else
 	{
 		URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
-		if (NewSave && PickedCharacter)
+		if (NewSave)
 		{
-			if (PickedCharacter->CharacterName == "Chester")
+
+			if (characterName.Contains("Chester"))
 				NewSave->bWonAsChester = true;
 
-			if (PickedCharacter->CharacterName == "Toni")
+			if (characterName.Contains("Toni"))
 				NewSave->bWonAsToni = true;
 
-			if (PickedCharacter->CharacterName == "Tex")
+			if (characterName.Contains("Tex"))
 				NewSave->bWonAsTex = true;
 
-			if (PickedCharacter->CharacterName == "Dot")
+			if (characterName.Contains("Dot"))
 				NewSave->bWonAsDot = true;
 
-			if (PickedCharacter->CharacterName == "BoltHead")
+			if (characterName.Contains("BoltHead"))
 				NewSave->bWonAsBoltHead = true;
 
 			UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
@@ -185,11 +196,10 @@ void AEOSPlayerState::Client_Load_Implementation()
 	}
 }
 
-bool AEOSPlayerState::Client_Load_Validate()
+bool AEOSPlayerState::Server_WonTheGame_Validate(const FString& characterName)
 {
 	return true;
 }
-
 
 void AEOSPlayerState::Client_DelayLoad()
 {

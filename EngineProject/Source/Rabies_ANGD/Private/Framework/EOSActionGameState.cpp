@@ -330,18 +330,21 @@ void AEOSActionGameState::SelectItem(AItemPickup* selectedItem, ARPlayerBase* ta
 
 void AEOSActionGameState::LeaveLevel_Implementation()
 {
-    /*if (HasAuthority() && (GameSettings == ESettingsType::Medium || GameSettings == ESettingsType::Hard || GameSettings == ESettingsType::Lunitic))
+    if (HasAuthority())
     {
-        for (APlayerState* playerState : PlayerArray)
+        if (GameSettings == ESettingsType::Medium || GameSettings == ESettingsType::Hard || GameSettings == ESettingsType::Lunitic)
         {
-            AEOSPlayerState* eosPlayerState = Cast<AEOSPlayerState>(playerState);
-            if (eosPlayerState)
+            for (APlayerState* playerState : PlayerArray)
             {
-                eosPlayerState->Client_Load();
+                AEOSPlayerState* eosPlayerState = Cast<AEOSPlayerState>(playerState);
+                if (eosPlayerState)
+                {
+                    eosPlayerState->Server_WonTheGame(eosPlayerState->GetPawn()->GetName());
+                }
             }
         }
 
-    }*/
+    }
 
     LoadMapAndListen(CinematicEnding);
 }

@@ -22,6 +22,7 @@ private:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	float spinAmount;
 
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	TArray<USoundBase*> AbilitySoundEfx;
@@ -40,6 +41,9 @@ private:
 
 	UFUNCTION()
 	void DoUltimate(float timeRemaining);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* BoltHeadSpinParticle;
 
 	UFUNCTION()
 	void UltimateLerp(float value, float desiredValue, float times);

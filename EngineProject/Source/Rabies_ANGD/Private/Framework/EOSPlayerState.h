@@ -127,6 +127,9 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_UpdateHoldingUltimate(bool state);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_WonTheGame(const FString& characterName);
+
 	UFUNCTION(Client, Reliable)
 	void Server_RevivePlayer();
 

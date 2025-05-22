@@ -83,6 +83,7 @@ void UGA_EnemyMissile::TryCommitAttack(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
+		Enemy->ServerPlayAnimMontage(AttackingAnim);
 
 		UObject* target = EnemyAI->GetBlackboardComponent()->GetValueAsObject(TargetBlackboardKeyName);
 		TargetActor = Cast<AActor>(target);
