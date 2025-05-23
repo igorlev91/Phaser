@@ -24,6 +24,11 @@ private:
 
 	float spinAmount;
 
+	FActiveGameplayEffectHandle SpeedupEffectHandle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> Speedup;
+
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	TArray<USoundBase*> AbilitySoundEfx;
 
@@ -41,6 +46,22 @@ private:
 
 	UFUNCTION()
 	void DoUltimate(float timeRemaining);
+
+	UFUNCTION()
+	void SpinDamageCheck();
+
+	UFUNCTION()
+	void HealingSpinCheck();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> UltimateDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> UltimateHeal;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	class UNiagaraSystem* UltimateHealParticle;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	class UNiagaraSystem* BoltHeadSpinParticle;

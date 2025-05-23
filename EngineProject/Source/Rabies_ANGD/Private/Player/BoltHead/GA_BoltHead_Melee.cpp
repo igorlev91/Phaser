@@ -153,6 +153,7 @@ void UGA_BoltHead_Melee::FireSpark(FGameplayEventData Payload)
 							gameState->Multicast_SpawnRadio(RadioSystem, enemy, enemy->GetActorLocation(), enemy->GetActorLocation(), 500);
 						}
 
+
 						alreadyDamaged.Add(enemy);
 						enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 					}
@@ -160,6 +161,7 @@ void UGA_BoltHead_Melee::FireSpark(FGameplayEventData Payload)
 					if (spec3)
 					{
 						enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec3);
+						Player->HitMeleeAttack(enemy);
 					}
 				}
 			}

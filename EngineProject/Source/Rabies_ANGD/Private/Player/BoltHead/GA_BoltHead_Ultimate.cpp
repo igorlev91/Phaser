@@ -12,6 +12,8 @@
 #include "Framework/EOSActionGameState.h"
 #include "Enemy/REnemyBase.h"
 #include "Player/BoltHead/RBoltHead_Actor.h"
+#include "Kismet/GameplayStatics.h"
+#include "Perception/AISense_Damage.h"
 
 #include "Targeting/RTargetActor_DotSpecial.h"
 #include "Player/Chester/RChester_UltimateProj.h"
@@ -86,15 +88,17 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		}
 	}
 
-	TArray<AActor*> AttachedActors;
-	Player->GetAttachedActors(AttachedActors);
-
-	for (AActor* actor : AttachedActors)
+	TArray<AActor*> BoltHeads;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARBoltHead_Actor::StaticClass(), BoltHeads);
+	for (AActor* bolHead : BoltHeads)
 	{
-		ARBoltHead_Actor* boltHeadActor = Cast<ARBoltHead_Actor>(actor);
+		ARBoltHead_Actor* boltHeadActor = Cast<ARBoltHead_Actor>(bolHead);
 		if (boltHeadActor)
 		{
-			BoltHead = boltHeadActor;
+			if (boltHeadActor->owningPlayer == Player)
+			{
+				BoltHead = boltHeadActor;
+			}
 		}
 	}
 
@@ -135,11 +139,12 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		}
 	}
 
-
 	spinAmount = 1.0f;
 	FTimerHandle UltTimater;
 	UltTimater = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Ultimate::DoUltimate, 8.0f));
 
+	FTimerHandle LoopTimer;
+	GetWorld()->GetTimerManager().SetTimer(LoopTimer, this, &UGA_BoltHead_Ultimate::HealingSpinCheck, 0.2f, true);
 
 	if (K2_HasAuthority())
 	{
@@ -158,7 +163,12 @@ void UGA_BoltHead_Ultimate::EndAbility(const FGameplayAbilitySpecHandle Handle, 
 	{
 		Player->ServerSpin_Torso(Player->GetMesh(), FRotator(0, -90, 0));
 		Player->ServerSpin_Torso(TorsoSkeletalMesh, FRotator(0, -90, 0));
-		BoltHead->GetHeadMesh()->SetRelativeRotation(FRotator(0, 0, 0));
+
+		if (BoltHead)
+		{
+			BoltHead->GetHeadMesh()->SetRelativeRotation(FRotator(0, 0, 0));
+		}
+
 	}
 
 	if (PostProcessVolume)
@@ -211,6 +221,11 @@ void UGA_BoltHead_Ultimate::DoUltimate(float timeRemaining)
 			gameState->Multicast_RequestSpawnVFXOnCharacter(BoltHeadSpinParticle, Player, spawnPos, Player->GetActorLocation(), 0);
 		}
 
+		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(Speedup, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
+
+		SpinDamageCheck();
+
 		timeRemaining -= GetWorld()->GetDeltaSeconds();
 
 		if (timeRemaining > 0)
@@ -221,6 +236,113 @@ void UGA_BoltHead_Ultimate::DoUltimate(float timeRemaining)
 		else
 		{
 			K2_EndAbility();
+		}
+	}
+}
+
+void UGA_BoltHead_Ultimate::HealingSpinCheck()
+{
+	if (K2_HasAuthority() && BoltHead)
+	{
+		TArray<FOverlapResult> OverlappingResults;
+
+		FCollisionShape Sphere = FCollisionShape::MakeSphere(1600);
+		FCollisionQueryParams QueryParams;
+
+		//DrawDebugSphere(GetWorld(), BoltHead->GetActorLocation(), 1600, 32, FColor::Red, false, 0.1f);
+
+		bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, BoltHead->GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
+
+		TArray<ARPlayerBase*> alreadyDamaged;
+
+		for (const FOverlapResult& result : OverlappingResults)
+		{
+			ARPlayerBase* character = Cast<ARPlayerBase>(result.GetActor());
+			if (character)
+			{
+				if (character->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == true)
+					continue;
+
+				if (character->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetFullHealthTag()) == true)
+					continue;
+
+				if (!alreadyDamaged.Contains(character))
+				{
+					alreadyDamaged.Add(character);
+
+					FGameplayEffectContextHandle contextHandle = Player->GetAbilitySystemComponent()->MakeEffectContext();
+					FGameplayEffectSpecHandle effectSpechandle = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(UltimateHeal, 1.0f, contextHandle);
+
+					FGameplayEffectSpec* spec = effectSpechandle.Data.Get();
+					if (spec)
+					{
+						AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+						if (gameState && BoltHead)
+						{
+							FVector spawnPos = BoltHead->GetActorLocation();
+							spawnPos.Z += 35.0f;
+							gameState->Multicast_ShootTexUltimate(UltimateHealParticle, BoltHead, spawnPos, character->GetActorLocation(), character->GetActorLocation());
+						}
+
+						character->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+					}
+				}
+			}
+		}
+	}
+}
+
+void UGA_BoltHead_Ultimate::SpinDamageCheck()
+{
+	if (K2_HasAuthority())
+	{
+		TArray<FOverlapResult> OverlappingResults;
+
+		FCollisionShape Sphere = FCollisionShape::MakeSphere(140);
+		FCollisionQueryParams QueryParams;
+
+		//DrawDebugSphere(GetWorld(), Player->GetActorLocation(), 140, 32, FColor::Red, false, 0.1f);
+
+		bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, Player->GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
+
+		TArray<ARCharacterBase*> alreadyDamaged;
+
+		for (const FOverlapResult& result : OverlappingResults)
+		{
+			ARCharacterBase* character = Cast<ARCharacterBase>(result.GetActor());
+			if (character)
+			{
+				if (character != Player)
+				{
+					if (!alreadyDamaged.Contains(character))
+					{
+						alreadyDamaged.Add(character);
+
+						FVector LaunchVelocity = Player->GetActorForwardVector() * (1800.f);  // Adjust strength as needed
+						LaunchVelocity.Z += (800.0f);
+						character->LaunchBozo(LaunchVelocity);
+
+						FGameplayEffectContextHandle contextHandle = Player->GetAbilitySystemComponent()->MakeEffectContext();
+						FGameplayEffectSpecHandle effectSpechandle = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(UltimateDamage, 1.0f, contextHandle);
+
+						FGameplayEffectSpec* spec = effectSpechandle.Data.Get();
+						if (spec)
+						{
+							//UE_LOG(LogTemp, Warning, TEXT("Damaging Target"));
+							character->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+							UAISense_Damage::ReportDamageEvent(this, character, Player, 1, Player->GetActorLocation(), Player->GetActorLocation());
+
+							Player->DealtDamage(character); // make sure to do it afterwards so you can check health
+
+							AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+							if (gameState)
+							{
+								gameState->Multicast_RobotGiblets(character->GetActorLocation(), -Player->GetActorForwardVector(), 6);
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }

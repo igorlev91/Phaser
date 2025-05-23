@@ -23,6 +23,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY()
+	class ARPlayerBase* owningPlayer;
+
 	UFUNCTION(NetMulticast, Reliable)
 	void ServerPlay_Head_AnimMontage(UAnimMontage* montage, float animSpeedScale);
 

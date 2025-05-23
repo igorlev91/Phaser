@@ -68,6 +68,8 @@ void UGA_BoltHead_Passive::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 			BoltHead = boltHeadActor;
 			if (BoltHead)
 			{
+				BoltHead->owningPlayer = Player;
+
 				bBusy = false;
 				DeathCheckerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::Checker));
 
