@@ -22,7 +22,7 @@ void UChesterLuckUI::Charge(float charge)
 	}
 
 	CurrentCharge += charge;
-	CurrentCharge = FMathf::Clamp(CurrentCharge, 0, MaxChargeValue);
+	CurrentCharge = FMath::Clamp(CurrentCharge, 0, MaxChargeValue);
 
 	float percent = 0.0f;
 	if (CurrentCharge == 1)
