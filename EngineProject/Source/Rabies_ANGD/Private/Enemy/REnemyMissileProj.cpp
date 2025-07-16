@@ -91,10 +91,10 @@ void AREnemyMissileProj::Explosion(ARCharacterBase* usingCharacter)
 
 	TArray<FOverlapResult> OverlappingResults;
 
-	FCollisionShape Sphere = FCollisionShape::MakeSphere(300);
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(260);
 	FCollisionQueryParams QueryParams;
 
-	//DrawDebugSphere(GetWorld(), GetActorLocation(), 300, 32, FColor::Red, false, 1.0f);
+	//DrawDebugSphere(GetWorld(), GetActorLocation(), 270, 32, FColor::Red, false, 1.0f);
 
 	bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
 
@@ -147,13 +147,37 @@ void AREnemyMissileProj::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bNoMoreExplosion == true || UsingCharacter == nullptr)
+		return;
+
 	FVector CurrentVelocity = ProjectileComponent->Velocity;
 	if (CurrentVelocity.Length() <= 0.1f)
 	{
-		if (UsingCharacter && bNoMoreExplosion == false)
-		{
-			bNoMoreExplosion = true;
-			Explosion(UsingCharacter);
-		}
+		bNoMoreExplosion = true;
+		Explosion(UsingCharacter);
 	}
+
+	/// explosion check
+	TArray<FOverlapResult> OverlappingExplosionResults;
+	FCollisionQueryParams QueryParams;
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);         // to hit other characters
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic); // to hit physics stuff
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);  // to hit terrain, walls, etc
+
+	QueryParams.AddIgnoredActor(this); // ignore self
+	QueryParams.AddIgnoredActor(UsingCharacter); // ignore owner
+
+	FCollisionShape SphereExplosionCheck = FCollisionShape::MakeSphere(80);
+	//DrawDebugSphere(GetWorld(), GetActorLocation(), 70, 32, FColor::Purple, 0.0f, false, 1.0f);
+
+	bool bHitExplosion = GetWorld()->OverlapMultiByObjectType(OverlappingExplosionResults, GetActorLocation(), FQuat::Identity, ObjectQueryParams, SphereExplosionCheck, QueryParams);
+
+	for (const FOverlapResult& result : OverlappingExplosionResults)
+	{
+		bNoMoreExplosion = true;
+		Explosion(UsingCharacter);
+		return;
+	}
+	/// explosion check
 }

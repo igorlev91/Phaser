@@ -269,6 +269,16 @@ void UGameplayUI::AddItem(URItemDataAsset* itemAsset)
 	}
 }
 
+bool UGameplayUI::IsItemUnique(URItemDataAsset* itemAssetToCheck)
+{
+	if (PlayerItemInventory)
+	{
+		return PlayerItemInventory->IsItemUnique(itemAssetToCheck);
+	}
+
+	return false;
+}
+
 void UGameplayUI::AddEnemyBossHealth(int level, AREnemyBase* bossEnemy)
 {
 	UBossHealthBar* enemyBoss = CreateWidget<UBossHealthBar>(this, BossHealthClass);

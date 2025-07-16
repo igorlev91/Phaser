@@ -92,10 +92,11 @@ private:
 	UFUNCTION()
 	void DelayServerDeathRequest();
 
+
+public:
 	UFUNCTION()
 	void DropItemServerDeathRequest();
 
-public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void UpdateEnemyDeath();
 

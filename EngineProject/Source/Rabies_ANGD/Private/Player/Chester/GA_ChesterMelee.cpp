@@ -11,6 +11,8 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
 
+#include "Enemy/REnemyBase.h"
+
 #include "Player/RPlayerBase.h"
 
 #include "Framework/EOSActionGameState.h"
@@ -165,6 +167,7 @@ void UGA_ChesterMelee::HandleDamage(FGameplayEventData Payload)
 								FGameplayEffectSpec* spec = specHandle.Data.Get();
 								if (spec)
 								{
+
 									hitCharacter->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 								}
 							}

@@ -1072,7 +1072,7 @@ void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEf
 					alreadyHealedPlayers.Add(player);
 					///////////////////////////////////// add to healing done value
 					float healingPower = (IVBag) ? AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetAbilityHealingStrengthAttribute(), bFound) : AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetFriendshipHealingStrengthAttribute(), bFound);
-					if (bFound == false || healingPower >= 0)
+					if (healingPower >= 0)
 					{
 						AddToHealingDone(player, healingPower);
 					}
@@ -1103,6 +1103,15 @@ void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEf
 			{
 				gameState->Multicast_RequestSpawnVFXOnCharacter(HealingSelf, this, this->GetActorLocation(), this->GetActorLocation(), 0);
 			}
+
+			///////////////////////////////////// add to healing done value
+			float healingPower = AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetFriendshipHealingStrengthAttribute(), bFound);
+			if (healingPower >= 0)
+			{
+				AddToHealingDone(this, healingPower);
+			}
+			//////////////////////////////////////
+
 			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 		}
 	}

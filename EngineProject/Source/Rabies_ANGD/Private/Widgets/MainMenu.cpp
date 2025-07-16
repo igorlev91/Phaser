@@ -41,6 +41,9 @@ void UMainMenu::NativeConstruct()
 	ReturnSettings->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::ReturnFromSettings);
 	ReturnAchivements->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::ReturnFromAchivments);
 
+	QuitMainMenuBtn->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::QuitMainMenu);
+	QuitMainMenuBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
+
 	MultiplayerBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 	SingeplayerBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 	SettingsBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
@@ -147,6 +150,15 @@ void UMainMenu::ReturnFromSettings()
 
 	ChangeMainMenuState(true);
 	ChangeSettingsState(false);
+}
+
+void UMainMenu::QuitMainMenu()
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController)
+	{
+		UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
+	}
 }
 
 void UMainMenu::ReturnFromAchivments()

@@ -362,6 +362,16 @@ bool ARPlayerController::CashMyLuck()
 	return GameplayUI->CashMyLuck();
 }
 
+bool ARPlayerController::IsItemUnique(URItemDataAsset* itemAssetToCheck)
+{
+	if (GameplayUI)
+	{
+		return GameplayUI->IsItemUnique(itemAssetToCheck);
+	}
+
+	return false;
+}
+
 void ARPlayerController::GameOver()
 {
 	if (GameplayUI)
@@ -378,8 +388,10 @@ void ARPlayerController::GameOver()
 
 void ARPlayerController::OpenToyBox(AItemPickup* itemToChange, FString itemSelection)
 {
-	if (GameplayUI && PlayerBase)
+	if (GameplayUI && PlayerBase && bToyBoxOpened == false)
 	{
+		bToyBoxOpened = true;
+
 		PlayerBase->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetUnActionableTag());
 
 		FInputModeGameAndUI input;
@@ -398,6 +410,8 @@ void ARPlayerController::CloseToyBox(AItemPickup* choosingItem, URItemDataAsset*
 	{
 		PlayerBase->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetUnActionableTag());
 	}
+
+	bToyBoxOpened = false;
 
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
 	GetWorld()->GetFirstPlayerController()->bEnableClickEvents = false;

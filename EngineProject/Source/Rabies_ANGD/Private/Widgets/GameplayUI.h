@@ -50,6 +50,9 @@ public:
 	void AddItem(class URItemDataAsset* itemAsset);
 
 	UFUNCTION()
+	bool IsItemUnique(URItemDataAsset* itemAssetToCheck);
+
+	UFUNCTION()
 	void AddEnemyBossHealth(int level, class AREnemyBase* bossEnemy);
 
 	UFUNCTION()

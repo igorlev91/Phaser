@@ -150,24 +150,42 @@ void ARBoltHead_RangedProj::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bNoMoreExplosion == true)
+		return;
+
 	FVector CurrentVelocity = ProjectileComponent->Velocity;
 	if (CurrentVelocity.Length() <= 0.1f)
 	{
-		if (bNoMoreExplosion == false)
-		{
-			bNoMoreExplosion = true;
-			Explosion();
-		}
+		bNoMoreExplosion = true;
+		Explosion();
 	}
 
 	TArray<FOverlapResult> OverlappingResults;
 
 	FCollisionShape Sphere = FCollisionShape::MakeSphere(900);
 	FCollisionQueryParams QueryParams;
-
-	//DrawDebugSphere(GetWorld(), GetActorLocation(), 900, 32, FColor::Red, false, 1.0f);
+	//DrawDebugSphere(GetWorld(), GetActorLocation(), 900, 32, FColor::Red, 0.0f, false, 1.0f);
 
 	bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
+
+	/// explosion check
+	TArray<FOverlapResult> OverlappingExplosionResults;
+
+	FCollisionShape SphereExplosionCheck = FCollisionShape::MakeSphere(70);
+	//DrawDebugSphere(GetWorld(), GetActorLocation(), 70, 32, FColor::Purple, 0.0f, false, 1.0f);
+
+	bool bHitExplosion = GetWorld()->OverlapMultiByChannel(OverlappingExplosionResults, GetActorLocation(), FQuat::Identity, ECC_Pawn, SphereExplosionCheck, QueryParams);
+
+	for (const FOverlapResult& result : OverlappingExplosionResults)
+	{
+		AREnemyBase* enemy = Cast<AREnemyBase>(result.GetActor());
+		if (enemy)
+		{
+			bNoMoreExplosion = true;
+			Explosion();
+		}
+	}
+	/// explosion check
 
 	AREnemyBase* foundEnemy = nullptr;
 	float nearestEnemy = 500000.0f;

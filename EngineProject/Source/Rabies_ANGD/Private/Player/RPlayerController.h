@@ -17,6 +17,9 @@ class ARPlayerController : public APlayerController
 public:
 
 	UFUNCTION()
+	bool IsItemUnique(class URItemDataAsset* itemAssetToCheck);
+
+	UFUNCTION()
 	void SetAirComboText(int kills);
 
 	UFUNCTION()
@@ -88,6 +91,8 @@ public:
 	void SensChange(float newSens);
 
 private:
+
+	bool bToyBoxOpened;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> EndCutscene;

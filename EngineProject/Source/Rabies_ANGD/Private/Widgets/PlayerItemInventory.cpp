@@ -64,6 +64,25 @@ void UPlayerItemInventory::AddItem(URItemDataAsset* itemAsset)
 
 }
 
+bool UPlayerItemInventory::IsItemUnique(URItemDataAsset* itemAssetToCheck)
+{
+	for (UPlayerItem* item : AllItems)
+	{
+		if (item->itemData == nullptr)
+			return false;
+
+		if (itemAssetToCheck == nullptr)
+			return false;
+
+		if (item->itemData->ItemName == itemAssetToCheck->ItemName)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void UPlayerItemInventory::NativeConstruct()
 {
 	Super::NativeConstruct();

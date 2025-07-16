@@ -605,6 +605,15 @@ void AEOSActionGameState::Multicast_SpawnItemOnPlayer_Implementation(URItemDataA
     if (targetingPlayer == nullptr)
         return;
 
+    if (targetingPlayer->playerController)
+    {
+        if (targetingPlayer->playerController->IsItemUnique(itemData) == false)
+        {
+            //UE_LOG(LogTemp, Warning, TEXT("Picked up dup item, not making another item"));
+            return;
+        }
+    }
+
     FActorSpawnParameters SpawnParams;
     AStaticMeshActor* newItemMesh = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
     if (newItemMesh)

@@ -20,6 +20,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Player Item")
     void AddItem(class URItemDataAsset* itemAsset);
 
+    UFUNCTION()
+    bool IsItemUnique(class URItemDataAsset* itemAssetToCheck);
+
 protected:
     virtual void NativeConstruct() override;
 

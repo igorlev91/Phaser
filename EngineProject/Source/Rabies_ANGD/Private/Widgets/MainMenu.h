@@ -69,6 +69,9 @@ private:
 	class URButton* SingeplayerBtn;
 
 	UPROPERTY(meta = (BindWidget))
+	class URButton* QuitMainMenuBtn;
+
+	UPROPERTY(meta = (BindWidget))
 	class URButton* MultiplayerBtn;
 
 	UPROPERTY(meta = (BindWidget))
@@ -97,6 +100,10 @@ private:
 
 	UFUNCTION()
 	void ReturnFromSettings();
+
+	UFUNCTION()
+	void QuitMainMenu();
+
 
 	UFUNCTION()
 	void ReturnFromAchivments();
