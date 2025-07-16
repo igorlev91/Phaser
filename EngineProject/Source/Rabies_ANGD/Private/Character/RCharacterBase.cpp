@@ -12,6 +12,7 @@
 #include "Components/ActorComponent.h"
 #include "Components/StaticMeshComponent.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Character.h"
@@ -165,10 +166,13 @@ void ARCharacterBase::BeginPlay()
 		}
 	}
 
-	DynamicMaterialInstance = UMaterialInstanceDynamic::Create(MyMaterial, GetMesh());
-	if (DynamicMaterialInstance)
+	if (MyMaterial)
 	{
-		GetMesh()->SetMaterial(0, DynamicMaterialInstance);
+		DynamicMaterialInstance = UMaterialInstanceDynamic::Create(MyMaterial, GetMesh());
+		if (DynamicMaterialInstance)
+		{
+			GetMesh()->SetMaterial(0, DynamicMaterialInstance);
+		}
 	}
 
 	if (Weapon_LeftHand && WeaponLeftSocketName != TEXT("Replace With Joint"))
@@ -234,6 +238,41 @@ void ARCharacterBase::Tick(float DeltaTime)
 	ProjectDropShadow();
 }
 
+void ARCharacterBase::AddToHealingDone(ARCharacterBase* characterHealed, int healing)
+{
+	if (characterHealed->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetFullHealthTag()))
+	{
+		return;
+	}
+	
+	bool bMaxHealth = false;
+	bool bCurrentHealth = false;
+	float maxHealth = characterHealed->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetMaxHealthAttribute(), bMaxHealth);
+	float currentHealth = characterHealed->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetHealthAttribute(), bCurrentHealth);
+
+	if (bMaxHealth == false || bCurrentHealth == false)
+	{
+		return;
+	}
+
+	float OldHealth = currentHealth;
+
+	// Apply healing, clamping to MaxHealth
+	currentHealth = FMath::Clamp(currentHealth + healing, 0.0f, maxHealth);
+
+	float ActualHealed = currentHealth - OldHealth;
+
+	///////////////////////////////////// add to healing done value
+	FGameplayEffectSpecHandle specHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(HealingDoneEffect, 1.0f, GetAbilitySystemComponent()->MakeEffectContext());
+	FGameplayEffectSpec* spec = specHandle.Data.Get();
+	if (spec)
+	{
+		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetGenericTargetAquiredTag(), ActualHealed);
+		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+	}
+	//////////////////////////////////////
+}
+
 void ARCharacterBase::ProjectDropShadow()
 {
 	//return;
@@ -293,6 +332,12 @@ void ARCharacterBase::PossessedBy(AController* NewController)
 
 void ARCharacterBase::InitStatusHUD()
 {
+	if (HealthBarWidgetComp == nullptr)
+		return;
+
+	if (HealthBarClass == nullptr)
+		return;
+
 	HealthBarWidgetComp->SetWidgetClass(HealthBarClass);
 	HealthBar = CreateWidget<UHealthBar>(GetWorld(), HealthBarWidgetComp->GetWidgetClass());
 	if (HealthBar)
@@ -619,6 +664,8 @@ void ARCharacterBase::HitSpecialAttack(ARCharacterBase* hitCharacter)
 	if (HasAuthority() == false)
 		return;
 
+	CheckIVBag();
+
 	if (hitCharacter->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
 	{
 		if (SpeedUpPassive == nullptr)
@@ -636,7 +683,6 @@ void ARCharacterBase::HitSpecialAttack(ARCharacterBase* hitCharacter)
 		return;
 	}
 
-	CheckIVBag();
 	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetUraniumEffectChanceAttribute(), RadiationEffect);
 	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetTaserStunChanceAttribute(), TaserEffect);
 	DealtDamage(hitCharacter);
@@ -662,12 +708,13 @@ void ARCharacterBase::HitMeleeAttack(ARCharacterBase* hitCharacter)
 	if (HasAuthority() == false)
 		return;
 
+	CheckHardhat();
+
 	if (hitCharacter->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
 	{
 		return;
 	}
 
-	CheckHardhat();
 	ApplyItemEffectAtRandom(hitCharacter, URAttributeSet::GetNailsEffectChanceAttribute(), NailsEfffect);
 	DealtDamage(hitCharacter);
 }
@@ -729,7 +776,8 @@ void ARCharacterBase::CheckHardhat()
 	FGameplayEffectSpec* spec = specHandle.Data.Get();
 	if (spec)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s Healed from melee attack!"), *GetName());
+		AddToHealingDone(this, meleeStrength * lifesteal);
+		//UE_LOG(LogTemp, Error, TEXT("%s Healed from melee attack!"), *GetName());
 		spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetGenericTargetAquiredTag(), meleeStrength * lifesteal);
 		GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 	}
@@ -792,6 +840,7 @@ void ARCharacterBase::CheckRadio(ARCharacterBase* hitCharacter)
 				if (spec)
 				{
 					alreadyDamaged.Add(enemy);
+					enemy->DamagedByPlayer = this;
 					enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 					RadioDelayTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ARCharacterBase::CheckRadioDelay, enemy));
 					//GetWorldTimerManager().SetTimer(RadioDelayTimer, this, &ARCharacterBase::CheckRadioDelay, 0.2f, enemy);
@@ -978,6 +1027,14 @@ void ARCharacterBase::HealingRadiusEffect(TSubclassOf<UGameplayEffect> healingEf
 					}
 
 					alreadyHealedPlayers.Add(player);
+					///////////////////////////////////// add to healing done value
+					float healingPower = (IVBag) ? AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetAbilityHealingStrengthAttribute(), bFound) : AbilitySystemComponent->GetGameplayAttributeValue(URAttributeSet::GetFriendshipHealingStrengthAttribute(), bFound);
+					if (bFound == false || healingPower >= 0)
+					{
+						AddToHealingDone(player, healingPower);
+					}
+					//////////////////////////////////////
+
 					player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 				}
 			}
@@ -1096,6 +1153,20 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 	if (ChangeData.NewValue <= 0 && !bHasDied)
 	{
 		bHasDied = true;
+
+		if (DamagedByPlayer)
+		{
+			if (DamagedByPlayer->IsFlying())
+			{
+				FGameplayEffectSpecHandle specHandle = DamagedByPlayer->GetAbilitySystemComponent()->MakeOutgoingSpec(AirComboAdd, 1.0f, DamagedByPlayer->GetAbilitySystemComponent()->MakeEffectContext());
+				FGameplayEffectSpec* spec = specHandle.Data.Get();
+				if (spec)
+				{
+					DamagedByPlayer->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+				}
+			}
+		}
+
 		StartDeath();
 		AEOSActionGameState* gameState = Cast<AEOSActionGameState>(GetWorld()->GetGameState());
 		if (HasAuthority() && ChangeData.GEModData && GetOwner() == gameState)
@@ -1103,6 +1174,8 @@ void ARCharacterBase::HealthUpdated(const FOnAttributeChangeData& ChangeData)
 			gameState->AwardEnemyKill(DeathEffect);
 		}
 	}
+
+	DamagedByPlayer = nullptr;
 }
 
 void ARCharacterBase::MaxHealthUpdated(const FOnAttributeChangeData& ChangeData)
@@ -1164,6 +1237,11 @@ void ARCharacterBase::ForwardSpeedUpdated(const FOnAttributeChangeData& ChangeDa
 
 		GetCharacterMovement()->AddImpulse(force, true);
 	}
+}
+
+void ARCharacterBase::ServerPlayOtherSkeletalMeshAnimMontage_Implementation(USkeletalMeshComponent* MeshToPlay, UAnimMontage* montage)
+{
+	MeshToPlay->PlayAnimation(montage, false);
 }
 
 void ARCharacterBase::LaunchBozo_Implementation(FVector launchVelocity)

@@ -65,6 +65,10 @@ public:
 	ATTRIBUTE_ACCESSORS(URAttributeSet, KeyCard)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, TestAttribute)
 	ATTRIBUTE_ACCESSORS(URAttributeSet, PassiveHealing)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, AirCombo)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, CritCombo)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, CritComboTimer)
+	ATTRIBUTE_ACCESSORS(URAttributeSet, HealingDone)
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
@@ -189,14 +193,23 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_PassiveHealing)
 	FGameplayAttributeData PassiveHealing;
 	
+	UPROPERTY(ReplicatedUsing = OnRep_AirCombo)
+	FGameplayAttributeData AirCombo;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CritCombo)
+	FGameplayAttributeData CritCombo;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CritComboTimer)
+	FGameplayAttributeData CritComboTimer;
+
+	UPROPERTY(ReplicatedUsing = OnRep_HealingDone)
+	FGameplayAttributeData HealingDone;
 
 	UFUNCTION()
 	void OnRep_PassiveHealing(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
 	void OnRep_TestAttribute(const FGameplayAttributeData& OldValue);
-
-
 
 	UFUNCTION()
 	void OnRep_Level(const FGameplayAttributeData& OldValue);
@@ -312,6 +325,17 @@ private:
 	UFUNCTION()
 	void OnRep_KeyCard(const FGameplayAttributeData& OldValue);
 
+	UFUNCTION()
+	void OnRep_AirCombo(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_CritCombo(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_CritComboTimer(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_HealingDone(const FGameplayAttributeData& OldValue);
 
 	virtual void GetLifetimeReplicatedProps(TArray< class FLifetimeProperty >& OutLifetimeProps) const override;
 };

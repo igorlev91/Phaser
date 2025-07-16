@@ -30,6 +30,9 @@ private:
 	FDelegateHandle ClientHitScanHandle;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> AddCritShot;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> UltimateDamage;
 
 	UPROPERTY(EditAnywhere, Category = "Audio")

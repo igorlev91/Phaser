@@ -126,10 +126,7 @@ void UGA_DotMelee::HandleDamage(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority() && bDealDamage)
 	{
-		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(AttackDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-		ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
-		SignalDamageStimuliEvent(Payload.TargetData);
-
+		ARCharacterBase* hitCharacter = nullptr;
 		for (int32 i = 0; i < Payload.TargetData.Num(); ++i)
 		{
 			const FGameplayAbilityTargetData* Data = Payload.TargetData.Get(i);
@@ -140,22 +137,33 @@ void UGA_DotMelee::HandleDamage(FGameplayEventData Payload)
 				{
 					if (WeakActorPtr.IsValid())
 					{
-						ARCharacterBase* hitCharacter = Cast<ARCharacterBase>(WeakActorPtr.Get());
-						if (hitCharacter)
-						{
-							/*AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
-							if (gameState)
-							{
-								AREnemyBase* enemy = Cast<AREnemyBase>(hitCharacter);
-								if(enemy)
-									gameState->Multicast_RobotGiblets(enemy->GetActorLocation(), enemy->GetActorUpVector(), enemy->GibletCount);
-							}*/
-
-							Player->HitMeleeAttack(hitCharacter);
-						}
+						hitCharacter = Cast<ARCharacterBase>(WeakActorPtr.Get());
 					}
 				}
 			}
+		}
+
+		if (hitCharacter)
+		{
+			hitCharacter->DamagedByPlayer = Player;
+
+		}
+
+		FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(AttackDamage, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
+		SignalDamageStimuliEvent(Payload.TargetData);
+
+		if (hitCharacter)
+		{
+			/*AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
+			if (gameState)
+			{
+				AREnemyBase* enemy = Cast<AREnemyBase>(hitCharacter);
+				if(enemy)
+					gameState->Multicast_RobotGiblets(enemy->GetActorLocation(), enemy->GetActorUpVector(), enemy->GibletCount);
+			}*/
+
+			Player->HitMeleeAttack(hitCharacter);
 		}
 	}
 }

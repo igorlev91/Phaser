@@ -11,6 +11,7 @@
 #include "Camera/CameraActor.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "Framework/RSaveGame.h"
 #include "LevelSequenceActor.h"
 #include "CineCameraActor.h"
 #include "LevelSequence.h"
@@ -25,7 +26,6 @@
 #include "Algo/Sort.h"
 #include "LevelSequencePlayer.h"
 #include "MovieSceneSequence.h"
-#include "Framework/RCharacterDefination.h"
 #include "Components/AudioComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Widgets/ClipboardInfo.h"
@@ -382,7 +382,7 @@ void ARCharacterSelectController::HoveredCharacterIndexChange(int newIndex)
 
 	GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, this, &ARCharacterSelectController::EnableClickButton, 0.7f, false);
 
-	GetNextCharacterCage();
+	GetNextCharacterCage(newIndex);
 	Clipboard->SetNewCharacter(GameState->GetDefinationFromIndex(MyPlayerState->HoveredCharacterIndex));
 }
 
@@ -400,7 +400,7 @@ void ARCharacterSelectController::EnableClickButton()
 }
 
 
-void ARCharacterSelectController::GetNextCharacterCage()
+void ARCharacterSelectController::GetNextCharacterCage(int newIndex)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Getting next character"));
 	CagedCharacters[0]->TickPosition(OffScreen, Sideline, true);
@@ -414,17 +414,55 @@ void ARCharacterSelectController::GetNextCharacterCage()
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ARCharacterSelectController::PlayConveyorStop, 0.8f, false);
 	}
 
+	int achivementsCompleted = 0;
+	USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+	URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+
+	if (LoadedGame)
+	{
+		if (LoadedGame->bChesterChallenge == true)
+		{
+			achivementsCompleted++;
+		}
+		if (LoadedGame->bToniChallenge == true)
+		{
+			achivementsCompleted++;
+		}
+		if (LoadedGame->bTexChallenge == true)
+		{
+			achivementsCompleted++;
+		}
+		if (LoadedGame->bDotChallenge == true)
+		{
+			achivementsCompleted++;
+		}
+		if (LoadedGame->bSecretChallenge == true)
+		{
+			achivementsCompleted++;
+		}
+	}
+
+	if (newIndex == 0 && achivementsCompleted <= 4)
+	{
+		GetNext();
+	}
+
+	GetNext();
+
+	CagedCharacters[0]->TickPosition(ShownCage, Sideline, false);
+
+	//Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController())->SetCurrentlyHoveredCharacter(CagedCharacters[0]->Character);
+	//return CagedCharacters[0]->Character;
+}
+
+void ARCharacterSelectController::GetNext()
+{
 	if (CagedCharacters.Num() > 1) // Only rotate if there's more than one element
 	{
 		ACagedCharacter* FirstElement = CagedCharacters[0];
 		CagedCharacters.RemoveAt(0);
 		CagedCharacters.Add(FirstElement);
 	}
-
-	CagedCharacters[0]->TickPosition(ShownCage, Sideline, false);
-
-	//Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController())->SetCurrentlyHoveredCharacter(CagedCharacters[0]->Character);
-	//return CagedCharacters[0]->Character;
 }
 
 void ARCharacterSelectController::SetSettingsState_Implementation(bool state)

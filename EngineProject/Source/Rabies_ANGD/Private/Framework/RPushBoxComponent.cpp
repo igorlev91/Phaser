@@ -11,6 +11,8 @@
 #include "DisplayDebugHelpers.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
 
+#include "Character/RCharacterBase.h"
+
 void URPushBoxComponent::StartDetection()
 {
 	AlreadyDetectedActors.Empty();
@@ -23,6 +25,8 @@ void URPushBoxComponent::DoAttackCheck()
 	FCollisionShape detectionShape;
 	const FVector extend = GetScaledBoxExtent();
 	detectionShape.SetBox(FVector3f{ (float)extend.X, (float)extend.Y, (float)extend.Z });
+
+	//ARCharacterBase* characterBase = Cast<ARCharacterBase>(GetOwner());
 
 	FCollisionQueryParams queryParams;
 	queryParams.AddIgnoredActor(GetOwner());
@@ -39,7 +43,7 @@ void URPushBoxComponent::DoAttackCheck()
 		}
 	}
 
-	//DrawDebugBox(GetWorld(), GetComponentLocation(), GetScaledBoxExtent(), FColor::Red, false, 1.f);
+	//DrawDebugBox(GetWorld(), GetComponentLocation(), GetScaledBoxExtent(), FColor::Red, false, 0.1f);
 }
 
 void URPushBoxComponent::EndDetection()
@@ -53,6 +57,11 @@ void URPushBoxComponent::TargetFound(AActor* OverlappedActor)
 	if (!GetOwner()->HasAuthority()) return;
 	if (OverlappedActor == GetOwner()) return;
 	if (AlreadyDetectedActors.Contains(OverlappedActor)) return;
+
+	if (OverlappedActor->GetName().Contains(TEXT("StaticMeshActor_4"))) // I don't understand, I don't want to understand, but somehow the armadillios always bonk on this static mesh actor and I don't know what it is
+	{
+		return;
+	}
 
 	AlreadyDetectedActors.Add(OverlappedActor);
 	FGameplayEventData data;

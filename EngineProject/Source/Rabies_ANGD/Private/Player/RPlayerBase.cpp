@@ -1133,6 +1133,8 @@ void ARPlayerBase::CheckChesterHeal()
 					spec2->SetSetByCallerMagnitude(URAbilityGenericTags::GetExpTag(), -healthRegen);
 					GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec2);
 
+					AddToHealingDone(player, healthRegen);
+
 					spec->SetSetByCallerMagnitude(URAbilityGenericTags::GetExpTag(), healthRegen);
 					player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 

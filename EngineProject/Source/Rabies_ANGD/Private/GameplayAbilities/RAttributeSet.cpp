@@ -257,6 +257,26 @@ void URAttributeSet::OnRep_KeyCard(const FGameplayAttributeData& OldValue)
 	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, KeyCard, OldValue);
 }
 
+void URAttributeSet::OnRep_AirCombo(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, AirCombo, OldValue);
+}
+
+void URAttributeSet::OnRep_CritCombo(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, CritCombo, OldValue);
+}
+
+void URAttributeSet::OnRep_CritComboTimer(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, CritComboTimer, OldValue);
+}
+
+void URAttributeSet::OnRep_HealingDone(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URAttributeSet, HealingDone, OldValue);
+}
+
 void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -303,6 +323,11 @@ void URAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, FuelCoolantEffectChance, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, HeaterEffectChance, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, UraniumEffectChance, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, AirCombo, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, CritCombo, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, CritComboTimer, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, HealingDone, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Fire, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URAttributeSet, Ice, COND_None, REPNOTIFY_Always);

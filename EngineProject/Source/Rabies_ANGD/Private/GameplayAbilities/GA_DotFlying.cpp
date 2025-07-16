@@ -51,7 +51,6 @@ void UGA_DotFlying::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 
 	bFlying = false;
-	Player->airKills = 0;
 
 	UAbilityTask_WaitGameplayEvent* EndTakeOffEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetEndTakeOffChargeTag());
 	EndTakeOffEvent->EventReceived.AddDynamic(this, &UGA_DotFlying::StopTakeOff);
@@ -69,9 +68,14 @@ void UGA_DotFlying::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	if (!Player->GetCharacterMovement() || Player->GetCharacterMovement()->IsFalling()) return;
 
+	if (AirComboReset)
+	{
+		FGameplayEffectSpecHandle EffectSpec333 = MakeOutgoingGameplayEffectSpec(AirComboReset, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec333);
+	}
+
 	Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 	Player->playerController->ChangeTakeOffState(true, CurrentHoldDuration);
-	Player->playerController->SetAirComboText(0);
 
 	if (Player->GetPlayerBaseState())
 	{
@@ -195,7 +199,7 @@ void UGA_DotFlying::ProcessFlying()
 				float ScaledStrength = ((OrigMax - strength) / (OrigMax - OrigMin)) * (TargetMax - TargetMin) + TargetMin;
 
 				float velocityLength = currentVelocity.Length() * 0.001f;
-				float velocityMultiplier = FMath::Clamp(velocityLength, 0.01f, 2.0f);
+				float velocityMultiplier = FMath::Clamp(velocityLength, 0.015f, 2.0f);
 				float multiplier = velocityMultiplier * ScaledStrength * 0.1f;
 
 				CurrentHoldDuration -= GetWorld()->GetDeltaSeconds() * multiplier;
@@ -324,6 +328,9 @@ void UGA_DotFlying::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 		ASC->RemoveActiveGameplayEffect(GravityFallEffectHandle);
 	}
 
+	FGameplayEffectSpecHandle EffectSpec = MakeOutgoingGameplayEffectSpec(AirComboReset, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+	ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec);
+
 	if (bHasTeammatePickedup && YoinkedPlayer)
 	{
 		AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
@@ -336,7 +343,6 @@ void UGA_DotFlying::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 		bHasTeammatePickedup = false;
 	}
 
-	Player->playerController->SetAirComboText(0);
 	Player->playerController->ChangeTakeOffState(false, 0);
 
 	if (Player->GetPlayerBaseState())

@@ -210,6 +210,10 @@ private:
 	void LevelUpdated(const FOnAttributeChangeData& ChangeData);
 	void ExpUpdated(const FOnAttributeChangeData& ChangeData);
 	void NextLevelExpUpdated(const FOnAttributeChangeData& ChangeData);
+	void AirComboUpdated(const FOnAttributeChangeData& ChangeData);
+	void CritComboUpdated(const FOnAttributeChangeData& ChangeData);
+	void CritComboTimerUpdated(const FOnAttributeChangeData& ChangeData);
+	void HealingDoneUpdated(const FOnAttributeChangeData& ChangeData);
 
 	void ChesterPassiveUpdated(const FOnAttributeChangeData& ChangeData);
 	void HealthUpdated(const FOnAttributeChangeData& ChangeData);

@@ -282,6 +282,14 @@ void UGA_BoltHead_Ultimate::HealingSpinCheck()
 							gameState->Multicast_ShootTexUltimate(UltimateHealParticle, BoltHead, spawnPos, character->GetActorLocation(), character->GetActorLocation());
 						}
 
+						bool bUltimateStrength = false;
+						float ultimateStrength = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetUltimateStrengthAttribute(), bUltimateStrength);
+
+						if (bUltimateStrength)
+						{
+							Player->AddToHealingDone(character, ultimateStrength / 0.75f);
+						}
+
 						character->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 					}
 				}

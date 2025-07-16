@@ -148,7 +148,7 @@ void AREnemyMissileProj::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FVector CurrentVelocity = ProjectileComponent->Velocity;
-	if (CurrentVelocity.Length() <= 0)
+	if (CurrentVelocity.Length() <= 0.1f)
 	{
 		if (UsingCharacter && bNoMoreExplosion == false)
 		{

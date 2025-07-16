@@ -296,6 +296,8 @@ void UGA_DotUltimate::CheckDamage()
 					gameState->Multicast_RobotGiblets(HitPos, enemy->GetActorUpVector(), (BigAttackDamage == CurrentDamage) ? enemy->GibletCount : enemy->GibletCount - 2);
 				}
 
+				enemy->DamagedByPlayer = Player;
+
 				enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 				//Player->ApplyItemEffectAtRandom(enemy, URAttributeSet::GetMaxHealthAttribute(), FireUltimateEffect);
 				Player->DealtDamage(enemy);

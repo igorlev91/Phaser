@@ -171,6 +171,13 @@ void UGA_TexUltimate::SendBounce()
 	if (hit)
 	{
 		FVector hitEnd = hitResult.ImpactPoint;
+
+		if (hasCrit)
+		{
+			FGameplayEffectSpecHandle EffectSpec2121 = MakeOutgoingGameplayEffectSpec(AddCritShot, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec2121);
+		}
+
 		RecieveAttackHitscan(hitResult.GetActor(), start, hitEnd, hasCrit);
 	}
 	//////////////////////////////////////////////////

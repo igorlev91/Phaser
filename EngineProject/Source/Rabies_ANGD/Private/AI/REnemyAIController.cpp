@@ -189,7 +189,7 @@ void AREnemyAIController::ProcessForgottonTarget(AActor* Target)
 		}
 	}
 
-	UE_LOG(LogTemp, Error, TEXT("Forgot player completely"));
+	//UE_LOG(LogTemp, Error, TEXT("Forgot player completely"));
 	Enemy->UpdateAITarget(nullptr);
 	GetBlackboardComponent()->ClearValue(TargetBlackboardKeyName);
 }
@@ -202,7 +202,7 @@ void AREnemyAIController::PlayerDeadStatusUpdated(bool bIsDead)
 		ARPlayerBase* player = Cast<ARPlayerBase>(currentTarget);
 		if (player)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Tracking player died"));
+			//UE_LOG(LogTemp, Error, TEXT("Tracking player died"));
 
 			PerceptionComponent->ForgetActor(currentTarget);
 			ProcessForgottonTarget(currentTarget);

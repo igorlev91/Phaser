@@ -63,6 +63,15 @@ private:
 	TSubclassOf<class UGameplayEffect> RangedDamage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> CritShotReset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> AddCritShot;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> AddTimeToCritTimer;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> CritRangedDamage;
 
 	FDelegateHandle ClientHitScanHandle;

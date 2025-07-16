@@ -27,7 +27,6 @@ UGA_ChesterSpecial::UGA_ChesterSpecial()
 	BlockAbilitiesWithTag.AddTag(URAbilityGenericTags::GetSpecialAttackActivationTag());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetScopingTag());
 	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetSpecialAttackAimingTag());
-	ActivationOwnedTags.AddTag(URAbilityGenericTags::GetImmuneTag());
 }
 
 void UGA_ChesterSpecial::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -151,6 +150,8 @@ void UGA_ChesterSpecial::RunForward()
 	if (bStopRunning)
 		return;
 
+	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetImmuneTag());
+
 	FVector frontFacingVector = Player->GetActorForwardVector();
 
 	Player->GetMovementComponent()->AddInputVector(frontFacingVector * 1000.0f, true);
@@ -209,6 +210,8 @@ void UGA_ChesterSpecial::TargetAquired(const FGameplayAbilityTargetDataHandle& D
 	playFinishMontageTask->OnCancelled.AddDynamic(this, &UGA_ChesterSpecial::K2_EndAbility);
 	playFinishMontageTask->ReadyForActivation();
 
+	Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetImmuneTag());
+
 	GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, this, &UGA_ChesterSpecial::RunForward, 0.1f, false);
 
 	//K2_EndAbility();
@@ -227,6 +230,8 @@ void UGA_ChesterSpecial::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 	{
 		ChesterAbilityHint->Destroy();
 	}
+
+	Player->GetAbilitySystemComponent()->RemoveLooseGameplayTag(URAbilityGenericTags::GetImmuneTag());
 
 	//StopDurationAudioEffect();
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();

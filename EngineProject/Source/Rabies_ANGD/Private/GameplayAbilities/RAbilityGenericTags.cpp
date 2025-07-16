@@ -248,9 +248,34 @@ FGameplayTag URAbilityGenericTags::GetCooldownRefreshTag()
 	return FGameplayTag::RequestGameplayTag("ability.widget.refreshCooldown");
 }
 
+FGameplayTag URAbilityGenericTags::GetShowRollerTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.showRoller");
+}
+
+FGameplayTag URAbilityGenericTags::GetHideRollerTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.hideRoller");
+}
+
+FGameplayTag URAbilityGenericTags::GetRollUpTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.rollUp");
+}
+
+FGameplayTag URAbilityGenericTags::GetUnrollTag()
+{
+	return FGameplayTag::RequestGameplayTag("stat.unroll");
+}
+
 FGameplayTag URAbilityGenericTags::GetImmuneTag()
 {
 	return FGameplayTag::RequestGameplayTag("stat.immune");
+}
+
+FGameplayTag URAbilityGenericTags::GetDefeatedEnemyTag()
+{
+	return FGameplayTag::RequestGameplayTag("ability.defeatedEnemy");
 }
 
 FGameplayTag URAbilityGenericTags::GetUltimateHold()

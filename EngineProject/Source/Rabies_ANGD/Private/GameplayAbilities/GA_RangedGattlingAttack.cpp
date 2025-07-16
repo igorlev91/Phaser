@@ -145,6 +145,8 @@ void UGA_RangedGattlingAttack::RecieveAttackHitscan(AActor* hitActor, FVector st
 				gameState->Multicast_RobotGiblets(endPos, -Player->GetActorForwardVector(), hitEnemy->GibletCount);
 			}
 
+			hitEnemy->DamagedByPlayer = Player;
+
 			FGameplayEventData Payload = FGameplayEventData();
 
 			Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(hitActor);

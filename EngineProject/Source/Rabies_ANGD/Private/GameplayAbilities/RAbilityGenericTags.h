@@ -69,7 +69,13 @@ public:
 	static FGameplayTag GetUltimateStrengthTag();
 	static FGameplayTag GetCooldownRefreshTag();
 
+	static FGameplayTag GetShowRollerTag();
+	static FGameplayTag GetHideRollerTag();
+	static FGameplayTag GetRollUpTag();
+	static FGameplayTag GetUnrollTag();
+
 	static FGameplayTag GetImmuneTag();
+	static FGameplayTag GetDefeatedEnemyTag();
 
 	static FGameplayTag GetUltimateHold();
 	static FGameplayTag GetUltimateRelease();

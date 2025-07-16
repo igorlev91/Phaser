@@ -17,7 +17,6 @@
 #include "Components/SphereComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Framework/RSaveGame.h"
 #include "Framework/EOSGameInstance.h"
 
@@ -101,8 +100,46 @@ void AEOSPlayerState::Server_ChangeHoveredCharacterPick_Implementation()
 {
 	HoveredCharacterIndex++;
 
+	if (HoveredCharacterIndex == 4)
+	{
+		int achivementsCompleted = 0;
+		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+		URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+
+		if (LoadedGame)
+		{
+			if (LoadedGame->bChesterChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bToniChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bTexChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bDotChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bSecretChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+		}
+
+		if (achivementsCompleted <= 4)
+		{
+			HoveredCharacterIndex = 0;
+		}
+	}
+
 	if (HoveredCharacterIndex == 5)
+	{
 		HoveredCharacterIndex = 0;
+	}
 
 	OnHoveredCharacterIndexReplicated.Broadcast(HoveredCharacterIndex);
 }
@@ -195,7 +232,19 @@ void AEOSPlayerState::Server_WonTheGame_Implementation(const FString& characterN
 				NewSave->bWonAsChester = true;
 
 			if (characterName.Contains("Toni"))
+			{
+				if (Player)
+				{
+					if (Player->playerController)
+					{
+						if (Player->playerController->GetElaspedTime() <= 120.0f)
+						{
+							NewSave->bToniChallenge = true;
+						}
+					}
+				}
 				NewSave->bWonAsToni = true;
+			}
 
 			if (characterName.Contains("Tex"))
 				NewSave->bWonAsTex = true;

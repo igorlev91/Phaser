@@ -130,8 +130,16 @@ void UGA_Scoping::HoldingScope()
 
 		if (DotProduct >= CosThreshold) // Actor is within the FOV angle
 		{
-			VisibleCharacters.Add(character);
-			character->SetAndShowWeakpointUI(Player);
+			if (character->GetMesh()->IsVisible())
+			{
+				VisibleCharacters.Add(character);
+				character->SetAndShowWeakpointUI(Player);
+			}
+			else if (character->GetMesh()->IsVisible() == false && VisibleCharacters.Contains(character))
+			{
+				VisibleCharacters.Remove(character);
+				character->HideWeakpointUI(Player);
+			}
 		}
 		else
 		{

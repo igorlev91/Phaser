@@ -102,6 +102,28 @@ void UGA_TexRanged::RecieveAttackHitscan(AActor* hitActor, FVector startPos, FVe
 {
 	if (K2_HasAuthority())
 	{
+		bool bFound = false;
+		float timer = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetCritComboTimerAttribute(), bFound);
+
+		if (timer <= 0)
+		{
+			FGameplayEffectSpecHandle EffectSpec45 = MakeOutgoingGameplayEffectSpec(CritShotReset, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec45);
+		}
+
+		FGameplayEffectSpecHandle EffectSpec2121 = MakeOutgoingGameplayEffectSpec((bIsCrit) ? AddCritShot : CritShotReset, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec2121);
+
+		if (timer <= 0 && bIsCrit)
+		{
+			FGameplayEffectSpecHandle specHandle = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(AddTimeToCritTimer, 1.0f, Player->GetAbilitySystemComponent()->MakeEffectContext());
+			FGameplayEffectSpec* spec = specHandle.Data.Get();
+			if (spec)
+			{
+				Player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+			}
+		}
+
 		if (hitActor == nullptr) return;
 		if (hitActor != Player)
 		{

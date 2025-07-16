@@ -45,7 +45,10 @@ public:
 	void NextCharacter(class ARRightButton* rightButton);
 
 	UFUNCTION()
-	void GetNextCharacterCage();
+	void GetNextCharacterCage(int newIndex);
+
+	UFUNCTION()
+	void GetNext();
 
 	UFUNCTION(Client, Reliable)
 	void SetSettingsState(bool state);

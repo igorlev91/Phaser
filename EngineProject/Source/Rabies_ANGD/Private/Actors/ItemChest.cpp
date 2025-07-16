@@ -87,11 +87,16 @@ void AItemChest::Tick(float DeltaTime)
 
 void AItemChest::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	player = Cast<ARPlayerBase>(OtherActor);
-	if (!player || bWasOpened)
-	{
+	ARPlayerBase* playermaybe = Cast<ARPlayerBase>(OtherActor);
+	if (!playermaybe)
 		return;
-	}
+
+	if (bWasOpened)
+		return;
+
+	player = playermaybe;
+	if (player == nullptr)
+		return;
 
 	bWithinInteraction = true;
 
@@ -101,22 +106,30 @@ void AItemChest::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 	}
 
 	player->SetInteractionChest(this);
+	player->PlayerInteraction.RemoveAll(this);
+	player->PlayerInteraction.Clear();
 	player->PlayerInteraction.AddUObject(this, &AItemChest::Interact);
 
 }
 
 void AItemChest::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	player = Cast<ARPlayerBase>(OtherActor);
-	if (!player)
-	{
+	ARPlayerBase* playermaybe = Cast<ARPlayerBase>(OtherActor);
+	if (playermaybe == nullptr)
 		return;
-	}
 
-	if (SphereCollider->IsOverlappingActor(player))
-	{
-		// Still overlapping
+	player = playermaybe;
+
+	if (player == nullptr)
 		return;
+
+	if (SphereCollider)
+	{
+		if (SphereCollider->IsOverlappingActor(player))
+		{
+			// Still overlapping
+			return;
+		}
 	}
 
 	bWithinInteraction = false;
@@ -127,6 +140,7 @@ void AItemChest::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* 
 	}
 
 	player->SetInteractionChest(nullptr);
+	player->PlayerInteraction.RemoveAll(this);
 	player->PlayerInteraction.Clear();
 }
 
@@ -135,8 +149,14 @@ void AItemChest::SetUpUI_Implementation(bool SetInteraction)
 	if (InteractWidgetComp == nullptr)
 		return;
 
-	SphereCollider->OnComponentBeginOverlap.AddDynamic(this, &AItemChest::OnOverlapBegin);
-	SphereCollider->OnComponentEndOverlap.AddDynamic(this, &AItemChest::OnOverlapEnd);
+	if (SphereCollider)
+	{
+		SphereCollider->OnComponentBeginOverlap.RemoveDynamic(this, &AItemChest::OnOverlapBegin);
+		SphereCollider->OnComponentEndOverlap.RemoveDynamic(this, &AItemChest::OnOverlapEnd);
+
+		SphereCollider->OnComponentBeginOverlap.AddDynamic(this, &AItemChest::OnOverlapBegin);
+		SphereCollider->OnComponentEndOverlap.AddDynamic(this, &AItemChest::OnOverlapEnd);
+	}
 
 	//if (InteractWidget != nullptr)
 		//return;

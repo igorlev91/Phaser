@@ -34,7 +34,7 @@ void UAnimNotifyState_Attacking::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 	}
 	else if (bIsPush && PushBoxComponent)
 	{
-		AttackingBoxComponent->DoAttackCheck();
+		PushBoxComponent->DoAttackCheck();
 	}
 }
 
@@ -48,6 +48,6 @@ void UAnimNotifyState_Attacking::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
 	}
 	else if (bIsPush && PushBoxComponent)
 	{
-		AttackingBoxComponent->EndDetection();
+		PushBoxComponent->EndDetection();
 	}
 }

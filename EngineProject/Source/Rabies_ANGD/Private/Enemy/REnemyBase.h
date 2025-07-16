@@ -36,6 +36,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	int GibletCount = 3;
 
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SetRollerVisibility(bool bShowRoller, bool bShowMain, float blendShape);
+
+	UFUNCTION()
+	void SetRollerVisibilityDelay(bool bShowRoller, bool bShowMain, USkeletalMeshComponent* roller);
+
 private:
 
 	UPROPERTY(EditAnywhere, Category = "Audio")

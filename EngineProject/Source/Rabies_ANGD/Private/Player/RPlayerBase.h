@@ -103,8 +103,6 @@ public:
 	UPROPERTY()
 	float Sensitvitiy;
 
-	int airKills;
-
 private:
 
 
@@ -136,6 +134,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> ChesterPassiveAdjustment;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> TexCritComboTimer;
 
 	UFUNCTION(Server, Reliable)
 	void Server_HandlePing(FVector hitPoint, AActor* hitActor);

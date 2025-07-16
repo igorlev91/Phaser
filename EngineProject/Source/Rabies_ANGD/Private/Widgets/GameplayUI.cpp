@@ -25,7 +25,6 @@
 
 #include "Components/HorizontalBox.h"
 #include "Components/VerticalBox.h"
-#include "Components/HorizontalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
@@ -36,7 +35,8 @@
 #include "Enemy/REnemyBase.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
-
+#include "Framework/RSaveGame.h"
+#include "Framework/EOSGameInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -45,8 +45,6 @@
 #include "Kismet/KismetTextLibrary.h"
 
 #include "Engine/PostProcessVolume.h"
-
-#include "Components/VerticalBox.h"
 
 #include "GameplayAbilitySpec.h"
 
@@ -63,6 +61,11 @@ void UGameplayUI::NativeConstruct()
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetLevelAttribute()).AddUObject(this, &UGameplayUI::LevelUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetExpAttribute()).AddUObject(this, &UGameplayUI::ExpUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetNextLevelExpAttribute()).AddUObject(this, &UGameplayUI::NextLevelExpUpdated);
+
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetAirComboAttribute()).AddUObject(this, &UGameplayUI::AirComboUpdated);
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetCritComboAttribute()).AddUObject(this, &UGameplayUI::CritComboUpdated);
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetCritComboTimerAttribute()).AddUObject(this, &UGameplayUI::CritComboTimerUpdated);
+		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealingDoneAttribute()).AddUObject(this, &UGameplayUI::HealingDoneUpdated);
 
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetPassiveHealingAttribute()).AddUObject(this, &UGameplayUI::ChesterPassiveUpdated);
 		OwnerASC->GetGameplayAttributeValueChangeDelegate(URAttributeSet::GetHealthAttribute()).AddUObject(this, &UGameplayUI::HealthUpdated);
@@ -345,11 +348,39 @@ void UGameplayUI::SetAirComboText(int kills)
 	AirComboText->SetFont(FontInfo);
 	FText Text = FText::Format(FText::FromString("- Air Combo: {0} -"), FText::AsNumber((int)kills));
 	AirComboText->SetText(Text);
+
+	if (kills >= 20)
+	{
+		FLinearColor Color = FLinearColor::Green;
+		AirComboText->SetColorAndOpacity(FSlateColor(Color));
+
+		if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
+		{
+			USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+			URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+			if (LoadedGame)
+			{
+				LoadedGame->bDotChallenge = true;
+
+				UGameplayStatics::SaveGameToSlot(LoadedGame, TEXT("RabiesSaveData"), 0);
+			}
+		}
+		else
+		{
+			URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
+			if (NewSave)
+			{
+				NewSave->bDotChallenge = true;
+
+				UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
+			}
+		}
+	}
 }
 
 void UGameplayUI::SetCritComboText(int kills, int timeRemaining)
 {
-	if (kills == 0)
+	if (kills == 0 || timeRemaining <= 0)
 	{
 		FText Text = FText::Format(FText::FromString(""), FText::AsNumber((int)kills));
 		CritComboText->SetText(Text);
@@ -357,18 +388,73 @@ void UGameplayUI::SetCritComboText(int kills, int timeRemaining)
 	}
 
 	FSlateFontInfo FontInfo = CritComboText->GetFont();
-	FontInfo.Size = 4 * kills; // Set desired font size
-	FontInfo.Size = FMath::Clamp(FontInfo.Size, 5, 60);
+	FontInfo.Size = (2 * kills) + 15; // Set desired font size
+	FontInfo.Size = FMath::Clamp(FontInfo.Size, 15, 45);
 
 	CritComboText->SetFont(FontInfo);
 	FText Text = FText::Format(FText::FromString("- Consecutive Crits: {0} TIME[{1}] -"), FText::AsNumber((int)kills), (int)timeRemaining);
 	CritComboText->SetText(Text);
+
+	if (kills >= 10 && timeRemaining >= 1)
+	{
+		FLinearColor Color = FLinearColor::Green;
+		CritComboText->SetColorAndOpacity(FSlateColor(Color));
+
+		if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
+		{
+			USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+			URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+			if (LoadedGame)
+			{
+				LoadedGame->bTexChallenge = true;
+
+				UGameplayStatics::SaveGameToSlot(LoadedGame, TEXT("RabiesSaveData"), 0);
+			}
+		}
+		else
+		{
+			URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
+			if (NewSave)
+			{
+				NewSave->bTexChallenge = true;
+
+				UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
+			}
+		}
+	}
 }
 
 void UGameplayUI::SetHealingGivenText(int health)
 {
-	FText Text = FText::Format(FText::FromString("Healing Done : {0}"), FText::AsNumber((int)health));
+	FText Text = FText::Format(FText::FromString("Healing Done: {0}"), FText::AsNumber((int)health));
 	HealthGivenText->SetText(Text);
+
+	if (health >= 1000)
+	{
+		if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
+		{
+			USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+			URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+			if (LoadedGame)
+			{
+				if (GetOwningPlayerPawn()->GetName().Contains("Chester"))
+					LoadedGame->bChesterChallenge = true;
+
+				UGameplayStatics::SaveGameToSlot(LoadedGame, TEXT("RabiesSaveData"), 0);
+			}
+		}
+		else
+		{
+			URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
+			if (NewSave)
+			{
+				if (GetOwningPlayerPawn()->GetName().Contains("Chester"))
+					NewSave->bChesterChallenge = true;
+
+				UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
+			}
+		}
+	}
 }
 
 void UGameplayUI::DeadTimer(float timeRemaining)
@@ -433,6 +519,26 @@ void UGameplayUI::ExpUpdated(const FOnAttributeChangeData& ChangeData)
 void UGameplayUI::NextLevelExpUpdated(const FOnAttributeChangeData& ChangeData)
 {
 
+}
+
+void UGameplayUI::AirComboUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	SetAirComboText(ChangeData.NewValue);
+}
+
+void UGameplayUI::CritComboUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	SetCritComboText(ChangeData.NewValue, GetAttributeValue(URAttributeSet::GetCritComboTimerAttribute()));
+}
+
+void UGameplayUI::CritComboTimerUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	SetCritComboText(GetAttributeValue(URAttributeSet::GetCritComboAttribute()), ChangeData.NewValue);
+}
+
+void UGameplayUI::HealingDoneUpdated(const FOnAttributeChangeData& ChangeData)
+{
+	SetHealingGivenText(ChangeData.NewValue);
 }
 
 void UGameplayUI::ChesterPassiveUpdated(const FOnAttributeChangeData& ChangeData)

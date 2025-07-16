@@ -32,6 +32,9 @@ private:
 	TSubclassOf<class UGameplayEffect> GravityFallClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> AirComboReset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> GravityJumpClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim")

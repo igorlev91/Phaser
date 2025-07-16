@@ -69,7 +69,11 @@ void ARDot_SpecialProj::ApplyEffect(int whichEffect, ARCharacterBase* usingChara
 				gameState->Multicast_RobotGiblets(hitCharacter->GetActorLocation(), usingCharacter->GetActorForwardVector(), enemy->GibletCount);
 			}
 
-			usingCharacter->HitSpecialAttack(hitCharacter);
+			if (whichEffect == 0)
+			{
+				hitCharacter->DamagedByPlayer = usingCharacter;
+				usingCharacter->HitSpecialAttack(hitCharacter);
+			}
 		}
 
 		//UE_LOG(LogTemp, Warning, TEXT("Damaging Target"));

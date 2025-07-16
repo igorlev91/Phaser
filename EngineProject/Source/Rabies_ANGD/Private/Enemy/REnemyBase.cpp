@@ -100,6 +100,47 @@ void AREnemyBase::RecievedDamage(float damage)
 	}
 }
 
+void AREnemyBase::Multicast_SetRollerVisibility_Implementation(bool bShowRoller, bool bShowMain, float blendShape)
+{
+	TArray<USkeletalMeshComponent*> SkeletalComponents;
+	GetComponents<USkeletalMeshComponent>(SkeletalComponents);
+
+	USkeletalMeshComponent* RollerSkeletalMesh = nullptr;
+
+	for (USkeletalMeshComponent* Skeletal : SkeletalComponents)
+	{
+		if (Skeletal)
+		{
+			if (Skeletal->GetName() == TEXT("Roll"))
+			{
+				RollerSkeletalMesh = Skeletal;
+			}
+		}
+	}
+
+	if (RollerSkeletalMesh == nullptr)
+		return;
+
+	FTimerDelegate TimerDel;
+	TimerDel.BindUObject(this, &AREnemyBase::SetRollerVisibilityDelay, bShowRoller, bShowMain, RollerSkeletalMesh);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDel);
+
+	GetMesh()->SetMorphTarget(FName("ArmadilloDrone_geo_Blendhshape"), blendShape); // Full strength
+}
+
+void AREnemyBase::SetRollerVisibilityDelay(bool bShowRoller, bool bShowMain, USkeletalMeshComponent* roller)
+{
+	if (roller)
+	{
+		roller->SetVisibility(bShowRoller);
+	}
+
+	if (GetMesh())
+	{
+		GetMesh()->SetVisibility(bShowMain);
+	}
+}
+
 void AREnemyBase::InitLevel_Implementation(int level)
 {
 	if (HasAuthority())
