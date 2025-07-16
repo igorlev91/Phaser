@@ -19,6 +19,21 @@ public:
 
 private:
 
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	class USoundBase* RollUp;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	class USoundBase* RevUp;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	class USoundBase* Rolling;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	class USoundBase* Crash;
+
+	UFUNCTION()
+	void PlayAudioLine(USoundBase* soundEffect, bool bIsRolling);
+
 	UPROPERTY()
 	class AREnemyBase* Enemy;
 

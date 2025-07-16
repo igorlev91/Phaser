@@ -32,13 +32,13 @@ void UConnectOnlineMenu::NativeConstruct()
 	CreateSessionBtn->RabiesButton->OnClicked.AddDynamic(this, &UConnectOnlineMenu::CreateSessionButtonClicked);
 	FindSessionsBtn->RabiesButton->OnClicked.AddDynamic(this, &UConnectOnlineMenu::FindSessionsButtonClicked);
 	SessionNameText->OnTextChanged.AddDynamic(this, &UConnectOnlineMenu::SessionNameTextChanged);
-	JoinLobbyBtn->RabiesButton->OnClicked.AddDynamic(this, &UConnectOnlineMenu::JoinLobbyButtonClicked);
-	JoinLobbyBtn->RabiesButton->SetIsEnabled(false);
+	//JoinLobbyBtn->RabiesButton->OnClicked.AddDynamic(this, &UConnectOnlineMenu::JoinLobbyButtonClicked);
+	//JoinLobbyBtn->RabiesButton->SetIsEnabled(false);
 
 	ReturnBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
 	CreateSessionBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
 	FindSessionsBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
-	JoinLobbyBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
+	//JoinLobbyBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
 
 	CreateSessionBtn->RabiesButton->SetIsEnabled(true);
 
@@ -109,7 +109,9 @@ void UConnectOnlineMenu::LobbySelected(int lobbyIndex)
 	SelectedLobbyIndex = lobbyIndex;
 	if (SelectedLobbyIndex != -1)
 	{
-		JoinLobbyBtn->RabiesButton->SetIsEnabled(true);
+		JoinLobbyButtonClicked();
+
+		//JoinLobbyBtn->RabiesButton->SetIsEnabled(true);
 	}
 }
 
@@ -136,7 +138,7 @@ void UConnectOnlineMenu::JoinLobbyButtonClicked()
 	UGameplayStatics::PlaySound2D(this, ClickAudio);
 
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UConnectOnlineMenu::JoinLobby, 0.2f, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UConnectOnlineMenu::JoinLobby, 0.1f, false);
 }
 
 void UConnectOnlineMenu::PlayHoverAudio()

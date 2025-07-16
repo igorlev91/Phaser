@@ -101,6 +101,12 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_RequestPlayAudio(USoundBase* Sound, FVector Location, FRotator Rotation, float VolumeMultiplier = 1.f, float PitchMultiplier = 1.f, float StartTime = 0.f, class USoundAttenuation* AttenuationSettings = nullptr);
 	
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_RequestPlayAudioComponentRolling(USoundBase* Sound, ARCharacterBase* characterToAttach, FVector Location, FRotator Rotation, float VolumeMultiplier = 1.f, float PitchMultiplier = 1.f, float StartTime = 0.f, class USoundAttenuation* AttenuationSettings = nullptr);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_StopComponentRolling(ARCharacterBase* characterToAttach);
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_Ping(FVector hitPoint, AActor* hitActor);
 
@@ -112,6 +118,9 @@ public:
 
 
 private:
+
+	UPROPERTY()
+	TMap<ARCharacterBase*, UAudioComponent*> RollingAudioComponentsByCharacter;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayAudio();

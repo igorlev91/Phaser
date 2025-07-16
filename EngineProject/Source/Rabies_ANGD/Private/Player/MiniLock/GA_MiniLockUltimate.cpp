@@ -118,6 +118,8 @@ void UGA_MiniLockUltimate::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		}
 	}
 
+	TriggerAudioCue();
+
 	Player->ServerPlayAnimMontage(CastingMontage);
 
 	FTimerHandle ultHandle;

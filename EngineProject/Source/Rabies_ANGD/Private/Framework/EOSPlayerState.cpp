@@ -96,39 +96,19 @@ bool AEOSPlayerState::Server_IssueCharacterPick_Validate(URCharacterDefination* 
 	return true;
 }
 
-void AEOSPlayerState::Server_ChangeHoveredCharacterPick_Implementation()
+void AEOSPlayerState::ApplyHoverChangeWithChallengeCheck()
 {
 	HoveredCharacterIndex++;
 
 	if (HoveredCharacterIndex == 4)
 	{
 		int achivementsCompleted = 0;
-		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
-		URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
 
-		if (LoadedGame)
-		{
-			if (LoadedGame->bChesterChallenge == true)
-			{
-				achivementsCompleted++;
-			}
-			if (LoadedGame->bToniChallenge == true)
-			{
-				achivementsCompleted++;
-			}
-			if (LoadedGame->bTexChallenge == true)
-			{
-				achivementsCompleted++;
-			}
-			if (LoadedGame->bDotChallenge == true)
-			{
-				achivementsCompleted++;
-			}
-			if (LoadedGame->bSecretChallenge == true)
-			{
-				achivementsCompleted++;
-			}
-		}
+		if (bChesterChallenge) achivementsCompleted++;
+		if (bToniChallenge) achivementsCompleted++;
+		if (bTexChallenge) achivementsCompleted++;
+		if (bDotChallenge) achivementsCompleted++;
+		if (bSecretChallenge) achivementsCompleted++;
 
 		if (achivementsCompleted <= 4)
 		{
@@ -144,9 +124,50 @@ void AEOSPlayerState::Server_ChangeHoveredCharacterPick_Implementation()
 	OnHoveredCharacterIndexReplicated.Broadcast(HoveredCharacterIndex);
 }
 
+void AEOSPlayerState::Server_ChangeHoveredCharacterPick_Implementation()
+{
+	if (bHasReceivedChallengeFlags)
+	{
+		ApplyHoverChangeWithChallengeCheck(); // a new function we’ll write
+	}
+	else
+	{
+		Client_RequestChallengeFlags(); // ask the client to send their flags
+	}
+}
+
 bool AEOSPlayerState::Server_ChangeHoveredCharacterPick_Validate()
 {
 	return true;
+}
+
+void AEOSPlayerState::Client_RequestChallengeFlags_Implementation()
+{
+	URSaveGame* Save = Cast<URSaveGame>(UGameplayStatics::LoadGameFromSlot("RabiesSaveData", 0));
+	if (Save)
+	{
+		Server_SendChallengeFlags(
+			Save->bChesterChallenge,
+			Save->bToniChallenge,
+			Save->bTexChallenge,
+			Save->bDotChallenge,
+			Save->bSecretChallenge
+		);
+	}
+}
+
+void AEOSPlayerState::Server_SendChallengeFlags_Implementation(bool Chester, bool Toni, bool Tex, bool Dot, bool Secret)
+{
+	bChesterChallenge = Chester;
+	bToniChallenge = Toni;
+	bTexChallenge = Tex;
+	bDotChallenge = Dot;
+	bSecretChallenge = Secret;
+
+	bHasReceivedChallengeFlags = true;
+
+	// Retry hover pick now that we have the data
+	ApplyHoverChangeWithChallengeCheck();
 }
 
 void AEOSPlayerState::CopyProperties(APlayerState* PlayerState)
@@ -181,6 +202,16 @@ bool AEOSPlayerState::Client_Load_Validate()
 
 
 void AEOSPlayerState::Server_WonTheGame_Implementation(const FString& characterName)
+{
+	Client_NotifyWonTheGam(characterName);
+}
+
+bool AEOSPlayerState::Server_WonTheGame_Validate(const FString& characterName)
+{
+	return true;
+}
+
+void AEOSPlayerState::Client_NotifyWonTheGam_Implementation(const FString& characterName)
 {
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
 	{
@@ -261,11 +292,6 @@ void AEOSPlayerState::Server_WonTheGame_Implementation(const FString& characterN
 			UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
 		}
 	}
-}
-
-bool AEOSPlayerState::Server_WonTheGame_Validate(const FString& characterName)
-{
-	return true;
 }
 
 void AEOSPlayerState::Client_DelayLoad()
@@ -592,4 +618,11 @@ void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, GameSettings, COND_None);
 
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, bOwnsSettings, COND_None);
+
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, bChesterChallenge, COND_None);
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, bToniChallenge, COND_None);
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, bTexChallenge, COND_None);
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, bDotChallenge, COND_None);
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, bSecretChallenge, COND_None);
+	DOREPLIFETIME_CONDITION(AEOSPlayerState, bHasReceivedChallengeFlags, COND_None);
 }

@@ -19,6 +19,9 @@ public:
 
 private:
 
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	TArray<USoundBase*> AbilitySoundEfx;
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UFUNCTION()
@@ -39,7 +42,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim")
 	UAnimMontage* AttackAnim;
-
-	UPROPERTY(EditAnywhere, Category = "Audio")
-	TArray<USoundBase*> AbilitySoundEfx;
 };

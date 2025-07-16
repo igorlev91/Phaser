@@ -69,12 +69,10 @@ void UGA_BoltHead_Melee::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	UAbilityTask_WaitGameplayEvent* WaitForDamage = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetRangedAttackRightActivationTag());
 	WaitForDamage->EventReceived.AddDynamic(this, &UGA_BoltHead_Melee::FireSpark);
 	WaitForDamage->ReadyForActivation();
-	TriggerAudioCue();
 
 	UAbilityTask_WaitGameplayEvent* WaitForDamage2 = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetRangedAttackLeftActivationTag());
 	WaitForDamage2->EventReceived.AddDynamic(this, &UGA_BoltHead_Melee::FireVFX);
 	WaitForDamage2->ReadyForActivation();
-	TriggerAudioCue();
 
 	if (K2_HasAuthority())
 	{

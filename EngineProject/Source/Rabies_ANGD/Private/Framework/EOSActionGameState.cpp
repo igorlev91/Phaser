@@ -464,7 +464,8 @@ void AEOSActionGameState::SpawnEnemyWave(int powerLevel)
         }
 
         FTimerHandle newSpawnHandle;
-        GetWorldTimerManager().SetTimer(newSpawnHandle, TimerDelegate, 0.1f, false);
+        float SpawnDelay = 0.1f * spawnsThisWave;
+        GetWorldTimerManager().SetTimer(newSpawnHandle, TimerDelegate, SpawnDelay, false);
         spawnsThisWave++;
         spawnLocations.RemoveAt(randomSpawn);
     }
@@ -905,6 +906,33 @@ void AEOSActionGameState::Multicast_RequestPlayAudio_Implementation(USoundBase* 
     UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, Location, Rotation, VolumeMultiplier, PitchMultiplier, StartTime, AttenuationSettings);
 }
 
+void AEOSActionGameState::Multicast_RequestPlayAudioComponentRolling_Implementation(USoundBase* Sound, ARCharacterBase* characterToAttach, FVector Location, FRotator Rotation, float VolumeMultiplier, float PitchMultiplier, float StartTime, USoundAttenuation* AttenuationSettings)
+{
+    if (AttenuationSettings == nullptr && VoiceAttenuationSettings != nullptr)
+        AttenuationSettings = VoiceAttenuationSettings;
+
+    //Multicast_StopComponentRolling(characterToAttach);
+
+    UAudioComponent* NewComponent = UGameplayStatics::SpawnSoundAttached(Sound, characterToAttach->GetMesh(), NAME_None, Location, EAttachLocation::KeepRelativeOffset, true, 1, 1, 0, VoiceAttenuationSettings);
+    if (NewComponent)
+    {
+        RollingAudioComponentsByCharacter.Add(characterToAttach, NewComponent);
+    }
+}
+
+void AEOSActionGameState::Multicast_StopComponentRolling_Implementation(ARCharacterBase* characterToAttach)
+{
+    if (UAudioComponent** CompPtr = RollingAudioComponentsByCharacter.Find(characterToAttach))
+    {
+        if (UAudioComponent* Comp = *CompPtr)
+        {
+            Comp->Stop();
+        }
+        RollingAudioComponentsByCharacter.Remove(characterToAttach);
+    }
+}
+
+
 void AEOSActionGameState::Server_RequestChangeItem_Implementation(AItemPickup* ChoosingItem, URItemDataAsset* chosenItem)
 {
     for (AItemPickup* item : AllItems) // send back a failure so that they don't softlock
@@ -1104,7 +1132,6 @@ void AEOSActionGameState::Multicast_CenterOnDot_Implementation(ARPlayerBase* sti
 
 void AEOSActionGameState::Multicast_AdjustIceOnCharacter_Implementation(UNiagaraSystem* SystemToSpawn, ARCharacterBase* characterAttached, FVector SpawnLocation, FVector Direction, float otherValue)
 {
-    //if (!SystemToSpawn) return;
     if (!characterAttached) return;
 
     if (otherValue <= 0)
@@ -1113,6 +1140,10 @@ void AEOSActionGameState::Multicast_AdjustIceOnCharacter_Implementation(UNiagara
         {
             characterAttached->DynamicMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(0.0f, 0.0f, 0.0f));
         }
+        if (characterAttached->DynamicOtherMaterialInstance)
+        {
+            characterAttached->DynamicOtherMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(0.0f, 0.0f, 0.0f));
+        }
         return;
     }
 
@@ -1120,6 +1151,11 @@ void AEOSActionGameState::Multicast_AdjustIceOnCharacter_Implementation(UNiagara
     {
         characterAttached->DynamicMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(0.0f, 0.868313f, 1.0f));
         characterAttached->DynamicMaterialInstance->SetScalarParameterValue(FName("Intensity"), 0.2f);
+    }
+    if (characterAttached->DynamicOtherMaterialInstance)
+    {
+        characterAttached->DynamicOtherMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(0.0f, 0.868313f, 1.0f));
+        characterAttached->DynamicOtherMaterialInstance->SetScalarParameterValue(FName("Intensity"), 0.2f);
     }
 }
 
@@ -1169,6 +1205,10 @@ void AEOSActionGameState::Multicast_AdjustFireOnCharacter_Implementation(UNiagar
         {
             characterAttached->DynamicMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(0.0f, 0.0f, 0.0f));
         }
+        if (characterAttached->DynamicOtherMaterialInstance)
+        {
+            characterAttached->DynamicOtherMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(0.0f, 0.0f, 0.0f));
+        }
         return;
     }
 
@@ -1179,6 +1219,15 @@ void AEOSActionGameState::Multicast_AdjustFireOnCharacter_Implementation(UNiagar
 
         characterAttached->DynamicMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(1.0f, 0.165817f, 0.0f));
         characterAttached->DynamicMaterialInstance->SetScalarParameterValue(FName("Intensity"), fireIntensity);
+    }
+
+    if (characterAttached->DynamicOtherMaterialInstance)
+    {
+        float normalized = min / 170.0f;
+        float fireIntensity = FMath::Lerp(2.0f, 0.1f, normalized);
+
+        characterAttached->DynamicOtherMaterialInstance->SetVectorParameterValue(FName("Color"), FVector(1.0f, 0.165817f, 0.0f));
+        characterAttached->DynamicOtherMaterialInstance->SetScalarParameterValue(FName("Intensity"), fireIntensity);
     }
 
     characterAttached->CurrentFire->SetFloatParameter(FName("BaseSizeMax"), max);
@@ -1234,6 +1283,8 @@ void AEOSActionGameState::Multicast_SpawnRadio_Implementation(UNiagaraSystem* Sy
 
     if (SpawnSystemAttached)
     {
+        size = FMath::Clamp(size, 0.0f, 150.0f);
+
         SpawnSystemAttached->SetFloatParameter(FName("amount"), size * 0.25f);
         SpawnSystemAttached->SetFloatParameter(FName("lifetime"), size * 0.1f);
         SpawnSystemAttached->SetFloatParameter(FName("finalSize"), size);

@@ -264,6 +264,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UMaterialInstanceDynamic* DynamicMaterialInstance;  // The dynamic material instance
 
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	UMaterialInstanceDynamic* DynamicOtherMaterialInstance;  // The dynamic material instance
+
 	UFUNCTION()
 	void SetPairedPing(class APingActor* myPing);
 
@@ -277,6 +280,9 @@ public:
 	void AddToHealingDone(ARCharacterBase* characterHealed, int healing);
 
 private:
+
+	UPROPERTY()
+	USkeletalMeshComponent* ballMesh;
 
 	UFUNCTION()
 	void ProjectDropShadow();
@@ -313,6 +319,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UMaterial* MyMaterial;  // The base material reference in the editor
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UMaterial* MyOtherMaterial;  // The base material reference in the editor
 
 	void LevelUp(int carryOverEXP);
 

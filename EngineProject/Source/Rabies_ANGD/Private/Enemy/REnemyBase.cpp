@@ -177,7 +177,7 @@ void AREnemyBase::HitDetected(UPrimitiveComponent* HitComponent, AActor* OtherAc
 
 void AREnemyBase::DeadStatusUpdated(bool bIsDead)
 {
-	UE_LOG(LogTemp, Error, TEXT("Dead"));
+	//UE_LOG(LogTemp, Error, TEXT("Dead"));
 
 	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
 		return;
@@ -223,6 +223,8 @@ void AREnemyBase::DeadStatusUpdated(bool bIsDead)
 
 		DropItemServerDeathRequest();
 		PlayAnimMontage(DeathMontage);
+		float Delay = FMath::FRandRange(-0.2f, 1.0f);
+		float finalDeathTimer = deathTimer - Delay;
 		GetWorld()->GetTimerManager().SetTimer(DeathHandle, this, &AREnemyBase::DelayServerDeathRequest, deathTimer, false);
 
 

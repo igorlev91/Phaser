@@ -108,7 +108,7 @@ void UGA_BoltHead_Passive::Checker()
 		if (!allyPlayer)
 			continue;
 
-		if (allyPlayer == Player && bBusy == false)
+		if (allyPlayer == Player)
 		{
 			if(bReboot == false)
 				continue;

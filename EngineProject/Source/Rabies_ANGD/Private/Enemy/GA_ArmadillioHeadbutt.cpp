@@ -109,6 +109,16 @@ void UGA_ArmadillioHeadbutt::Lunge(FGameplayEventData Payload)
 {
 	if (K2_HasAuthority())
 	{
+		AEOSActionGameState* GameState = GetWorld()->GetGameState<AEOSActionGameState>();
+		if (GameState)
+		{
+			FVector Location = Enemy->GetActorLocation();
+			FRotator Rotation = FRotator::ZeroRotator;
+			USoundAttenuation* Attenuation = nullptr;
+
+			GameState->Multicast_RequestPlayAudio(AbilitySoundEfx[0], Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+		}
+
 		FVector LaunchVelocity = Enemy->GetActorForwardVector() * (700.f);  // Adjust strength as needed
 		LaunchVelocity.Z += (200.0f);
 		Enemy->LaunchBozo(LaunchVelocity);

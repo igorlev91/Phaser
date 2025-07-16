@@ -175,6 +175,44 @@ void ARCharacterBase::BeginPlay()
 		}
 	}
 
+	if (MyOtherMaterial)
+	{
+		if (bBossName == "Deadlock")
+		{
+			DynamicOtherMaterialInstance = UMaterialInstanceDynamic::Create(MyOtherMaterial, GetMesh());
+			if (DynamicOtherMaterialInstance)
+			{
+				GetMesh()->SetMaterial(1, DynamicOtherMaterialInstance);
+			}
+		}
+		else
+		{
+			TArray<USkeletalMeshComponent*> SkeletalComponents;
+			GetComponents<USkeletalMeshComponent>(SkeletalComponents);
+
+
+			for (USkeletalMeshComponent* Skeletal : SkeletalComponents)
+			{
+				if (Skeletal)
+				{
+					if (Skeletal->GetName() == TEXT("Roll"))
+					{
+						ballMesh = Skeletal;
+					}
+				}
+			}
+
+			if (ballMesh == nullptr)
+				return;
+
+			DynamicOtherMaterialInstance = UMaterialInstanceDynamic::Create(MyOtherMaterial, GetMesh());
+			if (DynamicOtherMaterialInstance)
+			{
+				ballMesh->SetMaterial(0, DynamicOtherMaterialInstance);
+			}
+		}
+	}
+
 	if (Weapon_LeftHand && WeaponLeftSocketName != TEXT("Replace With Joint"))
 	{
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
@@ -933,6 +971,11 @@ void ARCharacterBase::CheckRadiationDamage()
 	{
 		bRadiated = true;
 		GetMesh()->SetOverlayMaterial(RadOutlineInstance);
+
+		if (ballMesh)
+		{
+			ballMesh->SetOverlayMaterial(RadOutlineInstance);
+		}
 	}
 
 	TArray<FOverlapResult> OverlappingResults;

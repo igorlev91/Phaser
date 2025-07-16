@@ -144,6 +144,8 @@ void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	FTimerHandle LoopTimer;
 	GetWorld()->GetTimerManager().SetTimer(LoopTimer, this, &UGA_BoltHead_Ultimate::HealingSpinCheck, 0.2f, true);
 
+	TriggerAudioCue();
+
 	if (K2_HasAuthority())
 	{
 		if (AbilitySoundEfx.Num() > 0)

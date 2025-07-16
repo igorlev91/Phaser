@@ -9,7 +9,7 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "Abilities/Tasks/AbilityTask_WaitCancel.h"
 #include "GameplayAbilities/RAbilityGenericTags.h"
-
+#include "Components/AudioComponent.h"
 #include "Player/RPlayerBase.h"
 
 #include "GameplayAbilities/RAbilitySystemComponent.h"
@@ -100,6 +100,8 @@ void UGA_ArmadilloRollOut::TryCommitAttack(FGameplayEventData Payload)
 
 			Enemy->ServerPlayOtherSkeletalMeshAnimMontage(RollerSkeletalMesh, Ball_RollIntoBall);
 
+			PlayAudioLine(RollUp, false);
+
 			playRollIntoBallMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, Basic_RollIntoBall);
 			playRollIntoBallMontageTask->OnBlendOut.AddDynamic(this, &UGA_ArmadilloRollOut::FinishRollingIntoBall);
 			playRollIntoBallMontageTask->OnInterrupted.AddDynamic(this, &UGA_ArmadilloRollOut::FinishRollingIntoBall);
@@ -123,6 +125,8 @@ void UGA_ArmadilloRollOut::FinishRollingIntoBall()
 				EnemyAI->GetBlackboardComponent()->SetValueAsBool(RollingBlackboardKeyName, true);
 			}
 
+			PlayAudioLine(RevUp, false);
+
 			FGameplayEffectSpecHandle pushSpec = MakeOutgoingGameplayEffectSpec(RollingClass, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
 			SpeedupEffectHandle = ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, pushSpec);
 
@@ -145,7 +149,10 @@ void UGA_ArmadilloRollOut::FinishRevingUp()
 			Enemy->ServerPlayOtherSkeletalMeshAnimMontage(RollerSkeletalMesh, Ball_RollLoop);
 
 			bStopRolling = false;
+			PlayAudioLine(Rolling, true);
+
 			GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_ArmadilloRollOut::RollForward));
+
 
 			playRollLoopMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, Basic_RollLoop);
 			playRollLoopMontageTask->OnBlendOut.AddDynamic(this, &UGA_ArmadilloRollOut::ExhaustedRolling);
@@ -161,6 +168,13 @@ void UGA_ArmadilloRollOut::RollForward()
 {
 	if (bStopRolling)
 		return;
+
+	if (Enemy->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+	{
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Enemy->GetOwner(), URAbilityGenericTags::GetUnrollTag(), FGameplayEventData());
+		FinishAbility();
+		return;
+	}
 
 	if (TargetActor)
 	{
@@ -210,6 +224,8 @@ void UGA_ArmadilloRollOut::HitCollide()
 	{
 		if (Enemy)
 		{
+			PlayAudioLine(Crash, false);
+
 			bStopRolling = true;
 
 			Enemy->ServerPlayOtherSkeletalMeshAnimMontage(RollerSkeletalMesh, Ball_RollToCollide);
@@ -229,6 +245,12 @@ void UGA_ArmadilloRollOut::FinishAbility()
 	if (EnemyAI && EnemyAI->GetBlackboardComponent())
 	{
 		EnemyAI->GetBlackboardComponent()->SetValueAsBool(RollingBlackboardKeyName, false);
+	}
+
+	AEOSActionGameState* GameState = GetWorld()->GetGameState<AEOSActionGameState>();
+	if (GameState)
+	{
+		GameState->Multicast_StopComponentRolling(Enemy);
 	}
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
@@ -281,6 +303,31 @@ void UGA_ArmadilloRollOut::HandleRollOutDamage(FGameplayEventData Payload)
 		SignalDamageStimuliEvent(Payload.TargetData);
 
 		HitCollide();
+	}
+}
+
+void UGA_ArmadilloRollOut::PlayAudioLine(USoundBase* soundEffect, bool bIsRolling)
+{
+	if (K2_HasAuthority())
+	{
+		AEOSActionGameState* GameState = GetWorld()->GetGameState<AEOSActionGameState>();
+		if (GameState)
+		{
+			FVector Location = Enemy->GetActorLocation();
+			FRotator Rotation = FRotator::ZeroRotator;
+			USoundAttenuation* Attenuation = nullptr;
+
+			if (bIsRolling)
+			{
+				GameState->Multicast_RequestPlayAudioComponentRolling(soundEffect, Enemy, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+			}
+			else
+			{
+				GameState->Multicast_RequestPlayAudio(soundEffect, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+			}
+
+		}
+
 	}
 }
 

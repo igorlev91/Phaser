@@ -34,8 +34,8 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class URButton* FindSessionsBtn;
 
-	UPROPERTY(meta = (BindWidget))
-	class URButton* JoinLobbyBtn;
+	//UPROPERTY(meta = (BindWidget))
+	//class URButton* JoinLobbyBtn;
 
 	UPROPERTY(meta = (BindWidget))
 	class UEditableText* SessionNameText;

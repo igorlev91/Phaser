@@ -50,6 +50,8 @@ private:
 	UPROPERTY(Replicated)
 	bool bSpareParts = false;
 
+	void ApplyHoverChangeWithChallengeCheck();
+
 public:
 	FOnPickedCharacterReplicated OnPickedCharacterReplicated;
 	FOnHoveredCharacterIndexReplicated OnHoveredCharacterIndexReplicated;
@@ -132,6 +134,15 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_WonTheGame(const FString& characterName);
+
+	UFUNCTION(Client, Reliable)
+	void Client_NotifyWonTheGam(const FString& characterName);
+
+	UFUNCTION(Client, Reliable)
+	void Client_RequestChallengeFlags();
+
+	UFUNCTION(Server, Reliable)
+	void Server_SendChallengeFlags(bool Chester, bool Toni, bool Tex, bool Dot, bool Secret);
 
 	UFUNCTION(Client, Reliable)
 	void Server_RevivePlayer();
@@ -238,6 +249,20 @@ private:
 
 	UFUNCTION()
 	void OnRep_PlayerDisplayName();
+
+	UPROPERTY(Replicated)
+	bool bChesterChallenge;
+	UPROPERTY(Replicated)
+	bool bToniChallenge;
+	UPROPERTY(Replicated)
+	bool bTexChallenge;
+	UPROPERTY(Replicated)
+	bool bDotChallenge;
+	UPROPERTY(Replicated)
+	bool bSecretChallenge;
+
+	UPROPERTY(Replicated)
+	bool bHasReceivedChallengeFlags = false;
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray< class FLifetimeProperty >& OutLifetimeProps) const override;
