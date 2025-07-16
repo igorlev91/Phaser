@@ -23,6 +23,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnInvisStatusChanged, bool /*bIsDead*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTaserStatusChanged, bool /*bIsTased*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnLevelUp, int /*new level*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDealtDamage, ARCharacterBase* /*damage dealt*/);
+DECLARE_MULTICAST_DELEGATE(FOnDefeatedEnemy /*damage dealt*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageRecieved, float /*damage recieved*/);
 DECLARE_MULTICAST_DELEGATE_FourParams(FOnClientHitScan, AActor* /*Hit Target*/, FVector /* Start Pos */, FVector /* End Pos */, bool /*crit*/);
 
@@ -37,6 +38,8 @@ public:
 	FOnInvisStatusChanged OnInvisStatusChanged;
 
 	FOnTaserStatusChanged OnTaserStatusChanged;
+
+	FOnDefeatedEnemy OnDefeatedEnemy;
 
 	FOnClientHitScan ClientHitScan;
 	FOnLevelUp onLevelUp;

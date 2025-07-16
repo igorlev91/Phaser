@@ -34,6 +34,9 @@ public:
 	void ChangeCreditsState(bool state);
 
 	UFUNCTION()
+	void ChangeAchivementsState(bool state);
+
+	UFUNCTION()
 	void OpenLoadingScreen(int whichLoadingScreen);
 	
 protected:
@@ -75,7 +78,13 @@ private:
 	class URButton* CreditsBtn;
 
 	UPROPERTY(meta = (BindWidget))
+	class URButton* AchivementsBtn;
+
+	UPROPERTY(meta = (BindWidget))
 	class URButton* ReturnCredits;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* AchivementsEarnedText;
 
 	UFUNCTION()
 	void ReturnFromCredits();
@@ -83,8 +92,14 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class URButton* ReturnSettings;
 
+	UPROPERTY(meta = (BindWidget))
+	class URButton* ReturnAchivements;
+
 	UFUNCTION()
 	void ReturnFromSettings();
+
+	UFUNCTION()
+	void ReturnFromAchivments();
 
 	UFUNCTION()
 	void HideLoadingScreens();
@@ -108,6 +123,9 @@ private:
 	class UOverlay* AuthorizingUserOverlay;
 
 	UPROPERTY(meta = (BindWidget))
+	class UOverlay* AchivementsOverlay;
+
+	UPROPERTY(meta = (BindWidget))
 	class UOverlay* AuthorizingUserOverlaySuccess;
 
 	UFUNCTION()
@@ -118,6 +136,9 @@ private:
 
 	UFUNCTION()
 	void SettingsClicked();
+
+	UFUNCTION()
+	void AchivementsClicked();
 
 	UFUNCTION()
 	void CreditsClicked();

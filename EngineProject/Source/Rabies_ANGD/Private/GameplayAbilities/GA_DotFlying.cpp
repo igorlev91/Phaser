@@ -51,6 +51,7 @@ void UGA_DotFlying::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 
 	bFlying = false;
+	Player->airKills = 0;
 
 	UAbilityTask_WaitGameplayEvent* EndTakeOffEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetEndTakeOffChargeTag());
 	EndTakeOffEvent->EventReceived.AddDynamic(this, &UGA_DotFlying::StopTakeOff);
@@ -62,7 +63,7 @@ void UGA_DotFlying::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	GetWorld()->GetTimerManager().ClearTimer(SlowFallHandle);
 	SlowFallHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_DotFlying::ProcessFlying));
-	
+
 	GetWorld()->GetTimerManager().ClearTimer(TakeOffHandle);
 	CurrentHoldDuration = 0.0f;
 
@@ -70,6 +71,7 @@ void UGA_DotFlying::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	Player->GetAbilitySystemComponent()->AddLooseGameplayTag(URAbilityGenericTags::GetTakeOffDelayTag());
 	Player->playerController->ChangeTakeOffState(true, CurrentHoldDuration);
+	Player->playerController->SetAirComboText(0);
 
 	if (Player->GetPlayerBaseState())
 	{
@@ -91,6 +93,9 @@ void UGA_DotFlying::TryPickUpTeammates()
 		}
 		return;
 	}
+
+	if (Player->bWindingUp)
+		return;
 
 	FVector FootLocation = Player->GetMesh()->GetSocketLocation("grabPoint");
 	float SphereRadius = 85.0f;
@@ -163,7 +168,6 @@ void UGA_DotFlying::ProcessFlying()
 				FVector currentVelocity = Player->PlayerVelocity;
 				if (currentVelocity.Z <= 0 && Player->IsMeleeAttacking() == false)
 				{
-					float currentGravity = Player->GetCharacterMovement()->GravityScale;
 					float fallValue = (CurrentHoldDuration > 0) ? currentVelocity.Z * 0.02f : (currentVelocity.Z * 0.001f) + 0.3f; // these are fall gravity values, bigger means slower fall
 					float newGravity = fallValue; //FMath::Lerp(currentGravity, fallValue, 20 * GetWorld()->GetDeltaSeconds());
 
@@ -175,7 +179,24 @@ void UGA_DotFlying::ProcessFlying()
 
 				currentVelocity.Z = 0;
 
-				float multiplier = (currentVelocity.Length() >= 300) ? 0.15f : 0.05f;
+				bool bFound = false;
+				float strength = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetMeleeAttackStrengthAttribute(), bFound);
+
+				if (bFound == false)
+					return;
+
+				float OrigMin = 10.0f;
+				float OrigMax = 90.0f;
+				float TargetMin = 0.07f;
+				float TargetMax = 2.0f;
+
+				strength = FMath::Clamp(strength, OrigMin, OrigMax);
+
+				float ScaledStrength = ((OrigMax - strength) / (OrigMax - OrigMin)) * (TargetMax - TargetMin) + TargetMin;
+
+				float velocityLength = currentVelocity.Length() * 0.001f;
+				float velocityMultiplier = FMath::Clamp(velocityLength, 0.01f, 2.0f);
+				float multiplier = velocityMultiplier * ScaledStrength * 0.1f;
 
 				CurrentHoldDuration -= GetWorld()->GetDeltaSeconds() * multiplier;
 				Player->playerController->ChangeTakeOffState(true, CurrentHoldDuration);
@@ -315,6 +336,7 @@ void UGA_DotFlying::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 		bHasTeammatePickedup = false;
 	}
 
+	Player->playerController->SetAirComboText(0);
 	Player->playerController->ChangeTakeOffState(false, 0);
 
 	if (Player->GetPlayerBaseState())

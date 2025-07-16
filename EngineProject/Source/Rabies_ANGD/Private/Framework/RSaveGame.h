@@ -45,4 +45,19 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Achivements")
 	bool bWonAsBoltHead = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bChesterChallenge = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bToniChallenge = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bTexChallenge = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bDotChallenge = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Achivements")
+	bool bSecretChallenge = false;
 };

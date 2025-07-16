@@ -56,19 +56,17 @@ UGA_BoltHead_Ultimate::UGA_BoltHead_Ultimate()
 
 void UGA_BoltHead_Ultimate::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Ending Attack no commitment"));
-		K2_EndAbility();
-		//EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 
-	if (!CheckCooldown(Handle, ActorInfo))
+	/*if (!CheckCooldown(Handle, ActorInfo))
 	{
 		K2_EndAbility();
 		return;
-	}
+	}*/
 
 	Player = Cast<ARPlayerBase>(GetOwningActorFromActorInfo());
 	if (Player == nullptr)

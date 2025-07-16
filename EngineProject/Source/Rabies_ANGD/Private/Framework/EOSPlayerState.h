@@ -173,6 +173,8 @@ public:
 	UFUNCTION()
 	class ARPlayerBase* GetPlayer();
 
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void SetPlayerDisplayName(const FString& NewName);
 	
 private:
 	FTimerHandle DotHandle;
@@ -230,6 +232,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_DotCenterLocation();
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerDisplayName)
+	FString PlayerDisplayName;
+
+	UFUNCTION()
+	void OnRep_PlayerDisplayName();
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray< class FLifetimeProperty >& OutLifetimeProps) const override;

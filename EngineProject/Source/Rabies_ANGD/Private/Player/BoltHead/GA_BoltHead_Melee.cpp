@@ -132,6 +132,13 @@ void UGA_BoltHead_Melee::FireSpark(FGameplayEventData Payload)
 
 		bool bHit = GetWorld()->OverlapMultiByChannel(OverlappingResults, Player->GetActorLocation(), FQuat::Identity, ECC_Pawn, Sphere, QueryParams);
 
+		FGameplayEffectSpecHandle specHandle2 = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(AttackDamages[1], 1.0f, Player->GetAbilitySystemComponent()->MakeEffectContext());
+		FGameplayEffectSpec* spec2 = specHandle2.Data.Get();
+		if (spec2)
+		{
+			Player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec2);
+		}
+
 		TArray<AREnemyBase*> alreadyDamaged;
 
 		for (const FOverlapResult& result : OverlappingResults)
@@ -156,23 +163,15 @@ void UGA_BoltHead_Melee::FireSpark(FGameplayEventData Payload)
 
 						alreadyDamaged.Add(enemy);
 						enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
+						Player->HitMeleeAttack(enemy);
 					}
 
 					if (spec3)
 					{
 						enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec3);
-						Player->HitMeleeAttack(enemy);
 					}
 				}
 			}
-		}
-
-
-		FGameplayEffectSpecHandle specHandle2 = Player->GetAbilitySystemComponent()->MakeOutgoingSpec(AttackDamages[1], 1.0f, Player->GetAbilitySystemComponent()->MakeEffectContext());
-		FGameplayEffectSpec* spec2 = specHandle2.Data.Get();
-		if (spec2)
-		{
-			Player->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec2);
 		}
 
 

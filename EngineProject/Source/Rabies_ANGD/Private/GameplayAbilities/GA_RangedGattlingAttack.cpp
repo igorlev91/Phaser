@@ -6,6 +6,8 @@
 #include "GameplayAbilities/RAbilitySystemComponent.h"
 #include "GameplayAbilities/RAttributeSet.h"
 
+#include "Player/RPlayerController.h"
+
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
@@ -151,7 +153,9 @@ void UGA_RangedGattlingAttack::RecieveAttackHitscan(AActor* hitActor, FVector st
 			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpec, Payload.TargetData);
 
 			if (ARCharacterBase* hitCharacter = Cast<ARCharacterBase>(hitActor))
+			{
 				Player->HitRangedAttack(hitCharacter); // make sure to do it afterwards so you can check health
+			}
 
 			SignalDamageStimuliEvent(Payload.TargetData);
 		}

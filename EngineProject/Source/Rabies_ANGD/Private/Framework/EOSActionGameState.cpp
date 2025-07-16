@@ -1064,15 +1064,20 @@ void AEOSActionGameState::Multicast_StickPlayerOnDot_Implementation(ARPlayerBase
         }
 
         ECollisionResponse response = (bStick) ? ECR_Ignore : ECR_Block;
-        stickingPlayer->SetReplicateMovement(!bStick);
+        //stickingPlayer->SetReplicateMovement(!bStick);
         stickingPlayer->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, response);
-        stickingPlayer->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, response);
-        stickingPlayer->GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, response);
 
-        FVector FootLocation = dot->GetActorLocation();//dot->GetMesh()->GetSocketLocation("grabPoint");
+        FVector FootLocation = dot->GetMesh()->GetSocketLocation("grabPoint");
 
         stickingPlayer->NetMulticast_SetDotHijack((bStick) ? dot : nullptr);
-        stickingPlayer->SetActorLocation(FootLocation /*FTransform::Identity*/);
+        
+        FHitResult HitResult;
+        bool bSuccess = stickingPlayer->SetActorLocation(FootLocation, true, &HitResult);
+        if (bSuccess && stickingPlayer->bWindingUp == false)
+        {
+            stickingPlayer->GetCharacterMovement()->StopMovementImmediately();
+            stickingPlayer->SetActorLocation(FootLocation /*FTransform::Identity*/);
+        }
     }
 }
 
@@ -1084,9 +1089,16 @@ void AEOSActionGameState::Multicast_CenterOnDot_Implementation(ARPlayerBase* sti
     AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>();
     if (GameState == nullptr)
         return;
+    
+    FVector FootLocation = dot->GetMesh()->GetSocketLocation("grabPoint");
 
-    FVector FootLocation = dot->GetActorLocation();//dot->GetMesh()->GetSocketLocation("grabPoint");
-    stickingPlayer->SetActorLocation(FootLocation);
+    FHitResult HitResult;
+    bool bSuccess = stickingPlayer->SetActorLocation(FootLocation, true, &HitResult);
+    if (bSuccess && stickingPlayer->bWindingUp == false)
+    {
+       stickingPlayer->GetCharacterMovement()->StopMovementImmediately();
+       stickingPlayer->SetActorLocation(FootLocation);
+    }
 }
 
 

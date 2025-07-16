@@ -151,10 +151,10 @@ void UGameplayUI::NativeConstruct()
 		ownerCharacter->OnDeadStatusChanged.AddUObject(this, &UGameplayUI::DeadStatusUpdated);
 	}
 
-	ARPlayerBase* ownerPlayer = Cast<ARPlayerBase>(GetOwningPlayerPawn());
-	if (ownerPlayer)
+	OwnerPlayer = Cast<ARPlayerBase>(GetOwningPlayerPawn());
+	if (OwnerPlayer)
 	{
-		ChesterLuckUI->Init(ownerPlayer->bFeelinLucky);
+		ChesterLuckUI->Init(OwnerPlayer->bFeelinLucky);
 	}
 
 	if (ToyBoxUI)
@@ -183,9 +183,9 @@ void UGameplayUI::NativeConstruct()
 	TimerTickHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGameplayUI::TickTimer));
 }
 
-
 void UGameplayUI::TickTimer()
 {
+
 	if (TimerElaspedText == nullptr)
 		return;
 
@@ -329,11 +329,53 @@ void UGameplayUI::GameOver()
 	}
 }
 
+void UGameplayUI::SetAirComboText(int kills)
+{
+	if (kills == 0)
+	{
+		FText Text = FText::Format(FText::FromString(""), FText::AsNumber((int)kills));
+		AirComboText->SetText(Text);
+		return;
+	}
+
+	FSlateFontInfo FontInfo = AirComboText->GetFont();
+	FontInfo.Size = 3 * kills; // Set desired font size
+	FontInfo.Size = FMath::Clamp(FontInfo.Size, 5, 60);
+
+	AirComboText->SetFont(FontInfo);
+	FText Text = FText::Format(FText::FromString("- Air Combo: {0} -"), FText::AsNumber((int)kills));
+	AirComboText->SetText(Text);
+}
+
+void UGameplayUI::SetCritComboText(int kills, int timeRemaining)
+{
+	if (kills == 0)
+	{
+		FText Text = FText::Format(FText::FromString(""), FText::AsNumber((int)kills));
+		CritComboText->SetText(Text);
+		return;
+	}
+
+	FSlateFontInfo FontInfo = CritComboText->GetFont();
+	FontInfo.Size = 4 * kills; // Set desired font size
+	FontInfo.Size = FMath::Clamp(FontInfo.Size, 5, 60);
+
+	CritComboText->SetFont(FontInfo);
+	FText Text = FText::Format(FText::FromString("- Consecutive Crits: {0} TIME[{1}] -"), FText::AsNumber((int)kills), (int)timeRemaining);
+	CritComboText->SetText(Text);
+}
+
+void UGameplayUI::SetHealingGivenText(int health)
+{
+	FText Text = FText::Format(FText::FromString("Healing Done : {0}"), FText::AsNumber((int)health));
+	HealthGivenText->SetText(Text);
+}
+
 void UGameplayUI::DeadTimer(float timeRemaining)
 {
 	if (CurrentDeathDuration > 0)
 	{
-		float rateOfChange = (0.0005f * GetAttributeValue(URAttributeSet::GetDownSurvivalTimeAttribute()));
+		float rateOfChange = (0.00045f * GetAttributeValue(URAttributeSet::GetDownSurvivalTimeAttribute()));
 		float remainingTime = (CurrentDeathDuration / rateOfChange);
 		CurrentDeathDuration -= rateOfChange;
 		DownTimeSlider->SetValue(CurrentDeathDuration / 1.0f);

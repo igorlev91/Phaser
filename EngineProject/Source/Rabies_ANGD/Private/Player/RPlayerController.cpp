@@ -39,6 +39,42 @@ void ARPlayerController::TryPossessExistingPawn()
 	}
 }
 
+float ARPlayerController::GetElaspedTime()
+{
+	if (GameplayUI)
+	{
+		return GameplayUI->timeElasped;
+
+	}
+	return 600.0f;
+}
+
+void ARPlayerController::SetAirComboText(int kills) // always returns null for some god forsaken reason
+{
+	if (!IsLocalPlayerController() || GameplayUI == nullptr)
+	{
+		return;
+	}
+
+	GameplayUI->SetAirComboText(kills);
+}
+
+void ARPlayerController::SetCritComboText(int kills, int timeRemaining)
+{
+	if (GameplayUI)
+	{
+		GameplayUI->SetCritComboText(kills, timeRemaining);
+	}
+}
+
+void ARPlayerController::SetHealingGivenText(int health)
+{
+	if (GameplayUI)
+	{
+		GameplayUI->SetHealingGivenText(health);
+	}
+}
+
 void ARPlayerController::OnPossess(APawn* NewPawn)
 {
 	Super::OnPossess(NewPawn);

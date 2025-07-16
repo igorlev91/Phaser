@@ -9,6 +9,8 @@
 #include "Framework/EOSPlayerState.h"
 #include "Actors/ItemPickup.h"
 
+#include "Widgets/HealthBar.h"
+
 #include "Actors/DamagePopupActor.h"
 
 #include "Player/Chester/ChesterBallActor.h"
@@ -122,7 +124,7 @@ void ARPlayerBase::Tick(float DeltaTime)
 	{
 		if (dotHijack)
 		{
-			EOSPlayerState->Server_UpdateDotCenterLocation(dotHijack->GetActorLocation()); //dotHijack->GetMesh()->GetSocketLocation("grabPoint"));
+			EOSPlayerState->Server_UpdateDotCenterLocation(dotHijack->GetMesh()->GetSocketLocation("grabPoint"));
 		}
 
 		//UE_LOG(LogTemp, Error, TEXT(""), *GetName());
@@ -170,6 +172,15 @@ void ARPlayerBase::FocusGame()
 	FInputModeGameOnly input;
 	GetWorld()->GetFirstPlayerController()->SetInputMode(input);
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
+}
+
+void ARPlayerBase::SetDisplayName_Implementation()
+{
+	if (EOSPlayerState)
+	{
+		EOSPlayerState->SetPlayerDisplayName(EOSPlayerState->GetPlayerName());
+		HealthBar->SetAllyDisplayName(EOSPlayerState->GetPlayerName());
+	}
 }
 
 void ARPlayerBase::CheckGameOver()
@@ -222,8 +233,16 @@ void ARPlayerBase::BeginPlay()
 	GetWorldTimerManager().SetTimer(GameOverHandle, this, &ARPlayerBase::CheckGameOver, 2.0f, true);
 
 	FTimerHandle focusOnGame;
-	GetWorldTimerManager().SetTimer(focusOnGame, this, &ARPlayerBase::FocusGame, 0.5f, false);
+	GetWorldTimerManager().SetTimer(focusOnGame, this, &ARPlayerBase::FocusGame, 0.3f, false);
 
+	FTimerHandle Display1;
+	GetWorldTimerManager().SetTimer(Display1, this, &ARPlayerBase::SetDisplayName, 1.f, false);
+
+	FTimerHandle Display2;
+	GetWorldTimerManager().SetTimer(Display2, this, &ARPlayerBase::SetDisplayName, 5.f, false);
+
+	FTimerHandle DisplayFinal;
+	GetWorldTimerManager().SetTimer(DisplayFinal, this, &ARPlayerBase::SetDisplayName, 20.f, false);
 
 	attackSpeedBeforeSpecial = 1.0f;
 
@@ -370,8 +389,8 @@ void ARPlayerBase::Look(const FInputActionValue& InputValue)
 	//input.X *= Sensitvitiy + 0.5f;
 	//input.Y *= Sensitvitiy + 0.5f ;
 
-	AddControllerYawInput(input.X * (Sensitvitiy + 0.5f));
-	AddControllerPitchInput(-input.Y * (Sensitvitiy + 0.5f));
+	AddControllerYawInput(input.X * (Sensitvitiy + 0.2f));
+	AddControllerPitchInput(-input.Y * (Sensitvitiy + 0.2f));
 
 	/*FRotator newRot = viewPivot->GetComponentRotation();
 	newRot.Pitch += input.Y;

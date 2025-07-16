@@ -65,8 +65,21 @@ public:
 	UFUNCTION()
 	void GameOver();
 
+	float timeElasped;
+
+	UFUNCTION()
+	void SetAirComboText(int kills);
+
+	UFUNCTION()
+	void SetCritComboText(int kills, int timeRemaining);
+
+	UFUNCTION()
+	void SetHealingGivenText(int health);
+
+
 private:
-	// stats
+
+	class ARPlayerBase* OwnerPlayer;
 
 	void TickTimer();
 
@@ -75,7 +88,6 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* TimerElaspedText;
 
-	float timeElasped;
 
 private:
 
@@ -126,6 +138,15 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* LEvelText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* AirComboText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* HealthGivenText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* CritComboText;
 
 	UPROPERTY(meta = (BindWidget))
 	class UHealthBar* PlayerHealth;

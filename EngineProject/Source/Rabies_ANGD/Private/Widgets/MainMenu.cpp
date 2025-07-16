@@ -11,7 +11,7 @@
 
 #include "Widgets/ConnectOnlineMenu.h"
 #include "Widgets/RButton.h"
-
+#include "Components/TextBlock.h"
 #include "Engine/Engine.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UObject/SoftObjectPtr.h"
@@ -35,16 +35,20 @@ void UMainMenu::NativeConstruct()
 	SingeplayerBtn->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::SingleplayerClicked);
 	SettingsBtn->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::SettingsClicked);
 	CreditsBtn->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::CreditsClicked);
+	AchivementsBtn->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::AchivementsClicked);
 
 	ReturnCredits->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::ReturnFromCredits);
 	ReturnSettings->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::ReturnFromSettings);
+	ReturnAchivements->RabiesButton->OnClicked.AddDynamic(this, &UMainMenu::ReturnFromAchivments);
 
 	MultiplayerBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 	SingeplayerBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 	SettingsBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 	CreditsBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
+	AchivementsBtn->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 	ReturnCredits->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 	ReturnSettings->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
+	ReturnAchivements->RabiesButton->OnHovered.AddDynamic(this, &UMainMenu::PlayHoverAudio);
 
 	GameInst = GetGameInstance<UEOSGameInstance>();
 
@@ -74,6 +78,7 @@ void UMainMenu::NativeConstruct()
 	ChangeConnectMenuState(false);
 	ChangeSettingsState(false);
 	ChangeCreditsState(false);
+	ChangeAchivementsState(false);
 }
 
 void UMainMenu::SensChange(float newValue)
@@ -144,6 +149,14 @@ void UMainMenu::ReturnFromSettings()
 	ChangeSettingsState(false);
 }
 
+void UMainMenu::ReturnFromAchivments()
+{
+	UGameplayStatics::PlaySound2D(this, ClickAudio);
+
+	ChangeMainMenuState(true);
+	ChangeAchivementsState(false);
+}
+
 void UMainMenu::HideLoadingScreens()
 {
 
@@ -182,6 +195,14 @@ void UMainMenu::SettingsClicked()
 
 	ChangeMainMenuState(false);
 	ChangeSettingsState(true);
+}
+
+void UMainMenu::AchivementsClicked()
+{
+	UGameplayStatics::PlaySound2D(this, ClickAudio);
+
+	ChangeMainMenuState(false);
+	ChangeAchivementsState(true);
 }
 
 void UMainMenu::CreditsClicked()
@@ -256,6 +277,51 @@ void UMainMenu::ChangeCreditsState(bool state)
 	{
 
 		CreditsOverlay->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UMainMenu::ChangeAchivementsState(bool state)
+{
+	if (state)
+	{
+		HideLoadingScreens();
+		AchivementsOverlay->SetVisibility(ESlateVisibility::Visible);
+
+		int achivementsCompleted = 0;
+		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+		URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+
+		if (LoadedGame)
+		{
+			if (LoadedGame->bChesterChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bToniChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bTexChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bDotChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+			if (LoadedGame->bSecretChallenge == true)
+			{
+				achivementsCompleted++;
+			}
+		}
+
+		FText Text = FText::Format(FText::FromString("Achievements Completed {0} / 5"), FText::AsNumber((int)achivementsCompleted));
+		AchivementsEarnedText->SetText(Text);
+	}
+	else
+	{
+
+		AchivementsOverlay->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 

@@ -103,8 +103,10 @@ public:
 	UPROPERTY()
 	float Sensitvitiy;
 
+	int airKills;
 
 private:
+
 
 	UFUNCTION()
 	void FocusGame();
@@ -360,6 +362,8 @@ private:
 	UFUNCTION()
 	void FinishUltimateAttack();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void SetDisplayName();
 
 	UFUNCTION()
 	void Interact();

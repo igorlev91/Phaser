@@ -16,6 +16,18 @@ class ARPlayerController : public APlayerController
 	
 public:
 
+	UFUNCTION()
+	void SetAirComboText(int kills);
+
+	UFUNCTION()
+	void SetCritComboText(int kills, int timeRemaining);
+
+	UFUNCTION()
+	void SetHealingGivenText(int health);
+
+	UFUNCTION()
+	float GetElaspedTime();
+
 	//this function calls only on the server
 	virtual void OnPossess(APawn* NewPawn) override;
 
