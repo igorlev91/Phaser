@@ -416,6 +416,7 @@ void UEOSGameInstance::JoinCreatedSessionCompleted(FName sessionName, EOnJoinSes
 		
 		FString TravelURL;
 		sessionPtr->GetResolvedConnectString(newSessionName, TravelURL);
+		UE_LOG(LogTemp, Warning, TEXT("Attempting to connect to TravelURL: %s"), *TravelURL);
 
 		FURL Url{nullptr, *TravelURL, ETravelType::TRAVEL_Absolute};
 		Url.Port = Port;
@@ -423,7 +424,7 @@ void UEOSGameInstance::JoinCreatedSessionCompleted(FName sessionName, EOnJoinSes
 		if (IsLocalTesting())
 		{
 			//Url.Host = "127.0.0.1";
-			Url.Host = "10.40.14.25";
+			Url.Host = "192.168.1.252";
 		}
 
 		GetFirstLocalPlayerController(GetWorld())->ClientTravel(Url.ToString(), TRAVEL_Absolute);
@@ -579,10 +580,10 @@ FString UEOSGameInstance::GetCoordinatorURLStr() const
 	FParse::Value(FCommandLine::Get(), *FString::Printf(TEXT("%s="), *GetCoordinatorURLStrKey().ToString()), CoordiantorURL);
 	UE_LOG(LogTemp, Warning, TEXT("Found Coordinator URL: %s"), *(CoordiantorURL));
 	if (CoordiantorURL == "")
-		return "3.148.242.156";
+		return "3.16.76.63";
 
 	return CoordiantorURL;
-	//return "3.148.242.156";
+	//return "3.16.76.63";
 }
 
 void UEOSGameInstance::SesssionCreationRequestCompleted(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bProcessdSuccessfully, FGuid SessionUniqueId)

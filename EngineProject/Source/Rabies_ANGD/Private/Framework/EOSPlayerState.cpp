@@ -244,6 +244,16 @@ bool AEOSPlayerState::Server_UpdateHitscanRotator_Validate(FRotator newRot, FVec
 	return true;
 }
 
+void AEOSPlayerState::Server_UpdateDotCenterLocation_Implementation(FVector newLocation)
+{
+	DotCenterLocation = newLocation;
+}
+
+bool AEOSPlayerState::Server_UpdateDotCenterLocation_Validate(FVector newLocation)
+{
+	return true;
+}
+
 void AEOSPlayerState::Server_UpdateCameraShake_Implementation(FVector newLoc)
 {
 	cameraShakeLocation = newLoc;
@@ -314,6 +324,18 @@ void AEOSPlayerState::SetFullyDead(bool state, ARPlayerBase* player)
 		Player = player;
 
 	bFullyDead = state;
+}
+
+void AEOSPlayerState::SetStickDot(bool state, ARPlayerBase* dot)
+{
+	if (Player == nullptr)
+		return;
+
+	ECollisionResponse response = (state) ? ECR_Ignore : ECR_Block;
+	Player->SetReplicateMovement(!state);
+	Player->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, response);
+	Player->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, response);
+	Player->GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, response);
 }
 
 ARPlayerBase* AEOSPlayerState::GetPlayer()
@@ -435,6 +457,14 @@ void AEOSPlayerState::OnRep_FullyDead()
 	}
 }
 
+void AEOSPlayerState::OnRep_DotCenterLocation()
+{
+	if (Player == nullptr)
+		return;
+
+	Player->SetActorLocation(DotCenterLocation);
+}
+
 void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -451,6 +481,7 @@ void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, cameraShakeLocation, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, hitscanLocation, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, bFullyDead, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AEOSPlayerState, DotCenterLocation, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, Ranged_SocketLocation, COND_None);
 	DOREPLIFETIME_CONDITION(AEOSPlayerState, AltRanged_SocketLocation, COND_None);

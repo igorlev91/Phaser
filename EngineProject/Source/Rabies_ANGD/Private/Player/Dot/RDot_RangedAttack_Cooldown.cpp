@@ -9,7 +9,7 @@
 
 float URDot_RangedAttack_Cooldown::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
 {
-    float baseSpeed = 0.2f;
+    float baseSpeed = 0.15f;
 
     const UAbilitySystemComponent* SourceASC = Spec.GetContext().GetOriginalInstigatorAbilitySystemComponent();
 

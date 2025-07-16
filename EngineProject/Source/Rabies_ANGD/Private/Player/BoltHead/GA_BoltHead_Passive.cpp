@@ -86,10 +86,13 @@ void UGA_BoltHead_Passive::Checker()
 {
 	DeathCheckerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::Checker));
 
-	if (bBusy)
+	if (Player == nullptr)
 		return;
 
-	if (Player == nullptr)
+	if (Player->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == true && bReboot == false)
+		return;
+
+	if (bBusy)
 		return;
 
 	if (Player->playerController == nullptr)
@@ -100,9 +103,6 @@ void UGA_BoltHead_Passive::Checker()
 
 	for (AActor* Actor : AllActors)
 	{
-		if (bBusy == true)
-			continue;
-
 		ARPlayerBase* allyPlayer = Cast<ARPlayerBase>(Actor);
 
 		if (!allyPlayer)

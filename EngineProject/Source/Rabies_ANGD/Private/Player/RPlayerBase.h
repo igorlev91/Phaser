@@ -168,7 +168,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	class UNiagaraSystem* ChesterHealParticle;
 
+	ARPlayerBase* dotHijack;
+
 public:
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_SetDotHijack(ARPlayerBase* dot);
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerDetail")
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -440,6 +445,8 @@ private:
 	void Server_SetCameraShake(FVector pos);
 
 public:
+
+	bool bWindingUp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Passive")
 	bool bMiniLock;

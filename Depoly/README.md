@@ -1,6 +1,8 @@
 # How to deploy
 
 * Build the Linux Server and put the content under ./server/server
+
+* Current IP: 13.59.167.31
   
 * Zip this ```Deploy``` folder to a zip file
 
@@ -19,7 +21,15 @@ clear | clears command line
 unzip (zipped folder) | Unzips folder
 ctrl + c | cancel current process
 pwd | show current directory
+```
 
+* Check what's taking up space, then remove everything: 
+```sh
+docker ps -a 
+docker logs <name>
+docker system df
+docker system prune --all --force
+docker system prune --all --force --volumes
 ```
 
 * log in to the ```EC2``` machine:
@@ -49,10 +59,10 @@ chmod +x /server/server/Rabies_ANGD/Binaries/Linux/Rabies_ANGDServer
 
 * build the services:
 ```sh
-docker compose build
+docker-compose build
 ```
 
 * launch the coordinator:
 ```sh
-docker compose up coordinator
+docker-compose up coordinator
 ```

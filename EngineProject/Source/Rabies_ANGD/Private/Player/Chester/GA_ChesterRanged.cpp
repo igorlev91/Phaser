@@ -53,7 +53,17 @@ void UGA_ChesterRanged::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		Player->ChesterBall->SetActiveState(false);
 	}
 
-	UAbilityTask_PlayMontageAndWait* playTargettingMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, ShootingMontage);
+	bool bFound = false;
+	float attackCooldown = Player->GetAbilitySystemComponent()->GetGameplayAttributeValue(URAttributeSet::GetRangedAttackCooldownReductionAttribute(), bFound);
+	float attackSpeed = 1.0f;
+
+	if (bFound == true)
+	{
+		attackSpeed = 2.8f - 2.0f * (attackCooldown - 0.1f) / (1.0f - 0.1f);
+		//UE_LOG(LogTemp, Error, TEXT("Attack Speed: %f"), attackSpeed);
+	}
+
+	UAbilityTask_PlayMontageAndWait* playTargettingMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, ShootingMontage, attackSpeed);
 	playTargettingMontageTask->OnBlendOut.AddDynamic(this, &UGA_ChesterRanged::K2_EndAbility);
 	playTargettingMontageTask->OnInterrupted.AddDynamic(this, &UGA_ChesterRanged::K2_EndAbility);
 	playTargettingMontageTask->OnCompleted.AddDynamic(this, &UGA_ChesterRanged::K2_EndAbility);

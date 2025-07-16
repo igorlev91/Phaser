@@ -21,6 +21,9 @@ private:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	void TryPickUpTeammates();
+
+	bool bHasTeammatePickedup;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<class UGameplayEffect> FlyingSpeedClass;
@@ -69,6 +72,9 @@ private:
 
 	UPROPERTY()
 	class ARPlayerBase* Player;
+
+	UPROPERTY()
+	class ARPlayerBase* YoinkedPlayer;
 
 	FActiveGameplayEffectHandle FlyingSpeedEffectHandle;
 	FActiveGameplayEffectHandle GravityFallEffectHandle;

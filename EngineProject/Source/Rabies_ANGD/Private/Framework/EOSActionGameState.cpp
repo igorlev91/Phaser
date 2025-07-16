@@ -7,6 +7,7 @@
 #include "Actors/ItemChest.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/RPlayerBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "DisplayDebugHelpers.h"
 #include "Actors/EscapeToWin.h"
 #include "Actors/ItemPickup.h"
@@ -65,8 +66,8 @@ void AEOSActionGameState::ChooseDifficulty(ESettingsType settingsType)
 
     case ESettingsType::Medium:
         IncreasedPower = 0;
-        enemyInitalSpawnRate = 7;
-        enemySpawnRateChange = 3;
+        enemyInitalSpawnRate = 6;
+        enemySpawnRateChange = 2;
         enemyMax = 30;
         WaveSpawnCap = 6;
         break;
@@ -176,7 +177,7 @@ void AEOSActionGameState::STARTGAME()
     TArray<AActor*> enemySpawnLocations;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemySpawnLocation::StaticClass(), enemySpawnLocations);
 
-    WaveSpawnCap = FMath::Clamp(WaveSpawnCap, 1, enemySpawnLocations.Num());
+    WaveSpawnCap = FMathf::Clamp(WaveSpawnCap, 1, enemySpawnLocations.Num());
 
     WaveLevel = IncreasedPower;
     WaveTime = enemyInitalSpawnRate;
@@ -332,7 +333,7 @@ void AEOSActionGameState::LeaveLevel_Implementation()
 {
     if (HasAuthority())
     {
-        if (GameSettings == ESettingsType::Medium || GameSettings == ESettingsType::Hard || GameSettings == ESettingsType::Lunitic)
+        if (GameSettings == ESettingsType::Hard || GameSettings == ESettingsType::Lunitic)
         {
             for (APlayerState* playerState : PlayerArray)
             {
@@ -396,7 +397,7 @@ void AEOSActionGameState::SpawnEnemyWave(int powerLevel)
         return;
 
     WaveTime += enemySpawnRateChange;
-    WaveTime = FMath::Clamp(WaveTime, 2, 20);
+    WaveTime = FMathf::Clamp(WaveTime, 2, 20);
 
     TArray<AActor*> spawnLocations;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemySpawnLocation::StaticClass(), spawnLocations);
@@ -984,6 +985,9 @@ void AEOSActionGameState::Multicast_PlayerFullyDies_Implementation(ARPlayerBase*
     deadPlayer->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     deadPlayer->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
     deadPlayer->GetMesh()->SetGenerateOverlapEvents(false);
+
+    deadPlayer->GetCapsuleComponent()->SetSimulatePhysics(false);
+    deadPlayer->GetCapsuleComponent()->SetEnableGravity(false);
     deadPlayer->GetMesh()->SetSimulatePhysics(false);
     deadPlayer->GetMesh()->SetEnableGravity(false);
 
@@ -1034,6 +1038,56 @@ void AEOSActionGameState::Multicast_PlayerFullyDies_Implementation(ARPlayerBase*
     }
 }
 
+void AEOSActionGameState::Multicast_StickPlayerOnDot_Implementation(ARPlayerBase* stickingPlayer, ARPlayerBase* dot, bool bStick)
+{
+    if (stickingPlayer == nullptr || dot == nullptr)
+        return;
+
+    AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>();
+    if (GameState == nullptr)
+        return;
+
+
+    for (APlayerState* playerState : GameState->PlayerArray)
+    {
+        ARPlayerBase* character = Cast<ARPlayerBase>(playerState->GetPawn());
+        if (character == nullptr)
+            continue;
+
+        if (character == stickingPlayer)
+        {
+            AEOSPlayerState* RabiesPlayerState = Cast<AEOSPlayerState>(playerState);
+            if (RabiesPlayerState)
+            {
+                RabiesPlayerState->SetStickDot(bStick, dot);
+            }
+        }
+
+        ECollisionResponse response = (bStick) ? ECR_Ignore : ECR_Block;
+        stickingPlayer->SetReplicateMovement(!bStick);
+        stickingPlayer->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, response);
+        stickingPlayer->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, response);
+        stickingPlayer->GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, response);
+
+        FVector FootLocation = dot->GetActorLocation();//dot->GetMesh()->GetSocketLocation("grabPoint");
+
+        stickingPlayer->NetMulticast_SetDotHijack((bStick) ? dot : nullptr);
+        stickingPlayer->SetActorLocation(FootLocation /*FTransform::Identity*/);
+    }
+}
+
+void AEOSActionGameState::Multicast_CenterOnDot_Implementation(ARPlayerBase* stickingPlayer, ARPlayerBase* dot)
+{
+    if (stickingPlayer == nullptr || dot == nullptr)
+        return;
+
+    AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>();
+    if (GameState == nullptr)
+        return;
+
+    FVector FootLocation = dot->GetActorLocation();//dot->GetMesh()->GetSocketLocation("grabPoint");
+    stickingPlayer->SetActorLocation(FootLocation);
+}
 
 
 void AEOSActionGameState::Multicast_AdjustIceOnCharacter_Implementation(UNiagaraSystem* SystemToSpawn, ARCharacterBase* characterAttached, FVector SpawnLocation, FVector Direction, float otherValue)

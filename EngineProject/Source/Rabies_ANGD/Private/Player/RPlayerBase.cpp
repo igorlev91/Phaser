@@ -120,6 +120,11 @@ void ARPlayerBase::Tick(float DeltaTime)
 	
 	if (EOSPlayerState)// && IsLocallyControlled())
 	{
+		if (dotHijack)
+		{
+			EOSPlayerState->Server_UpdateDotCenterLocation(dotHijack->GetActorLocation()); //dotHijack->GetMesh()->GetSocketLocation("grabPoint"));
+		}
+
 		//UE_LOG(LogTemp, Error, TEXT(""), *GetName());
 		SetAllyHealthBars();
 		//viewPivot->SetRelativeLocation(GetActorLocation()); // centers the pivot on the player without getting the players rotation
@@ -650,13 +655,13 @@ void ARPlayerBase::Pause()
 void ARPlayerBase::LoadDebug()
 {
 	return;
-	/* 
+
 	UWorld* World = GetWorld();
 	
 	if (World)
 	{
 		UGameplayStatics::OpenLevel(World, TEXT("EndGameTestRoom"));
-	}*/
+	}
 }
 
 FVector ARPlayerBase::GetMoveFwdDir() const
@@ -747,7 +752,7 @@ void ARPlayerBase::GroundCheckCompOverlapped(UPrimitiveComponent* OverlappedComp
 {
 	if (OtherActor != this && GetCharacterMovement()->IsFalling())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Grounded"));
+		//UE_LOG(LogTemp, Warning, TEXT("Grounded"));
 		
 		if (AudioComp && LandAudio)
 		{
@@ -1097,7 +1102,7 @@ void ARPlayerBase::CheckChesterHeal()
 					if (bFound == false)
 						return;
 
-					float healthRegen = FMath::Clamp(healing, 0, level);
+					float healthRegen = FMathf::Clamp(healing, 0, level);
 
 					if (gameState && ChesterHealParticle && healthRegen > 0)
 					{
@@ -1134,6 +1139,11 @@ void ARPlayerBase::FrameDelayItemPickup(AItemPickup* newItem)
 	newItem->PlayerPickupRequest(this);
 }
 
+
+void ARPlayerBase::NetMulticast_SetDotHijack_Implementation(ARPlayerBase* dot)
+{
+	dotHijack = dot;
+}
 
 void ARPlayerBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

@@ -179,6 +179,28 @@ void UGameplayUI::NativeConstruct()
 	{
 		GameOverUI->SetVisibility(ESlateVisibility::Collapsed);// do collasped instead of hidden
 	}
+
+	TimerTickHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGameplayUI::TickTimer));
+}
+
+
+void UGameplayUI::TickTimer()
+{
+	if (TimerElaspedText == nullptr)
+		return;
+
+	timeElasped += GetWorld()->GetDeltaSeconds();
+
+	int32 TotalSeconds = FMath::CeilToInt(timeElasped);
+	int32 Hours = TotalSeconds / 3600;
+	int32 Minutes = (TotalSeconds % 3600) / 60;
+	int32 Seconds = TotalSeconds % 60;
+
+	FString TimeString = FString::Printf(TEXT("%02d:%02d:%02d"), Hours, Minutes, Seconds);
+	TimerElaspedText->SetText(FText::FromString(TimeString));
+
+	TimerTickHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGameplayUI::TickTimer));
+
 }
 
 void UGameplayUI::OpenToyBox(AItemPickup* itemToChange, FString itemSelection)

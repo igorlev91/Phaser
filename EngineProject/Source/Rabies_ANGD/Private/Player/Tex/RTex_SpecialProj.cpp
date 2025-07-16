@@ -78,7 +78,7 @@ void ARTex_SpecialProj::HitCharacter(ARCharacterBase* usingCharacter, ARCharacte
 						return;
 
 					float NewTime = remainingTime - 2.5f;
-					NewTime = FMath::Clamp(NewTime, 0.01f, NewTime);
+					NewTime = FMathf::Clamp(NewTime, 0.01f, NewTime);
 
 					usingCharacter->GetAbilitySystemComponent()->RemoveActiveGameplayEffect(Handle);
 

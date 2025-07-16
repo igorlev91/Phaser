@@ -128,6 +128,9 @@ public:
 	void Server_UpdateHoldingUltimate(bool state);
 
 	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_UpdateDotCenterLocation(FVector newLocation);
+
+	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_WonTheGame(const FString& characterName);
 
 	UFUNCTION(Client, Reliable)
@@ -162,6 +165,9 @@ public:
 	void SetFullyDead(bool state, ARPlayerBase* player);
 
 	UFUNCTION()
+	void SetStickDot(bool state, ARPlayerBase* dot);
+
+	UFUNCTION()
 	FVector GetRangedLocation() { return Ranged_SocketLocation; }
 
 	UFUNCTION()
@@ -169,6 +175,8 @@ public:
 
 	
 private:
+	FTimerHandle DotHandle;
+
 	UPROPERTY(Replicated)
 	class ARPlayerBase* Player;
 
@@ -216,6 +224,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_FullyDead();
+
+	UPROPERTY(replicatedUsing = OnRep_DotCenterLocation)
+	FVector DotCenterLocation;
+
+	UFUNCTION()
+	void OnRep_DotCenterLocation();
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray< class FLifetimeProperty >& OutLifetimeProps) const override;

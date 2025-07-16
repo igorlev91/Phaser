@@ -93,6 +93,12 @@ public:
 	void Multicast_PlayerFullyDies(ARPlayerBase* deadPlayer);
 
 	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_StickPlayerOnDot(ARPlayerBase* stickingPlayer, ARPlayerBase* dot, bool bStick);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_CenterOnDot(ARPlayerBase* stickingPlayer, ARPlayerBase* dot);
+
+	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_RequestPlayAudio(USoundBase* Sound, FVector Location, FRotator Rotation, float VolumeMultiplier = 1.f, float PitchMultiplier = 1.f, float StartTime = 0.f, class USoundAttenuation* AttenuationSettings = nullptr);
 	
 	UFUNCTION(Server, Reliable, WithValidation)

@@ -64,6 +64,19 @@ public:
 
 	UFUNCTION()
 	void GameOver();
+
+private:
+	// stats
+
+	void TickTimer();
+
+	FTimerHandle TimerTickHandle;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* TimerElaspedText;
+
+	float timeElasped;
+
 private:
 
 	FVector colorSaturation;

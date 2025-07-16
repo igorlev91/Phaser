@@ -40,14 +40,14 @@ void UConnectOnlineMenu::NativeConstruct()
 	FindSessionsBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
 	JoinLobbyBtn->RabiesButton->OnHovered.AddDynamic(this, &UConnectOnlineMenu::PlayHoverAudio);
 
-	CreateSessionBtn->RabiesButton->SetIsEnabled(false);
+	CreateSessionBtn->RabiesButton->SetIsEnabled(true);
 
 	GameInst->SearchCompleted.AddUObject(this, &UConnectOnlineMenu::SessionSearchCompleted);
 }
 
 void UConnectOnlineMenu::SessionNameTextChanged(const FText& NewText)
 {
-	CreateSessionBtn->RabiesButton->SetIsEnabled(!NewText.IsEmpty());
+	//CreateSessionBtn->RabiesButton->SetIsEnabled(!NewText.IsEmpty());
 }
 
 void UConnectOnlineMenu::CreateSessionButtonClicked()
@@ -67,6 +67,8 @@ void UConnectOnlineMenu::CreateSessionButtonClicked()
 
 		// Combine them
 		FString lobbyName = NameTable1[Index1] + TEXT("_") + NameTable2[Index2];
+
+		//UE_LOG(LogTemp, Warning, TEXT("LobbyName: %s"), *lobbyName);
 
 		//GameInst->CreateSession(FName{ SessionNameText->GetText().ToString() });
 		GameInst->CreateSession(FName{ lobbyName });

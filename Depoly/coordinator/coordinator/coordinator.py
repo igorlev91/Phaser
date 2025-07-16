@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import subprocess
 
-# Remote Server IP: 3.142.197.224
+# Remote Server IP: 
 class UnrealServerRequestHandler(BaseHTTPRequestHandler):
     nextAvaliablePort = 7777
     def do_POST(self):
@@ -24,13 +24,13 @@ class UnrealServerRequestHandler(BaseHTTPRequestHandler):
         # EngineExcutable = "C:/UnrealEngine_Source/UnrealEngine/Engine/Binaries/Win64/UnrealEditor.exe"
         # ProjectPath = "C:/P4Dev/2025_ANGD_4440/Rabies/EngineProject/Rabies_ANGD.uproject"
 
-        subprocess.Popen(["docker", "run", 
-                          "--rm", 
-                          "-d", # need to run this in detach mode
-                          "-p", f"{port}:{port}/tcp",
-                          "-p", f"{port}:{port}/udp",
-                          "server",
-                          "-server", "-log", "-epicapp=" "ServerClient", "-SESSION_NAME=", serverName, "-SESSION_GUID=", serverId, "-PORT=",  f"{port}"])
+        subprocess.Popen(["docker", "run",
+                  "--rm",
+                  "-d", # need to run this in detach mode
+                  "-p", f"{port}:{port}/tcp",
+                  "-p", f"{port}:{port}/udp",
+                  "server",
+                  "-server", "-log", "-epicapp=ServerClient", f"-SESSION_NAME={serverName}", f"-SESSION_GUID={serverId}", f"-PORT={port}"])
 
 
 class UnrealSessionCoordinator:

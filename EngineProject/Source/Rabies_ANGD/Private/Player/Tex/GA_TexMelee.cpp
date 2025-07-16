@@ -128,7 +128,7 @@ void UGA_TexMelee::HandleDamage(FGameplayEventData Payload)
 						return;
 
 					float NewTime = remainingTime - 10.0f;
-					NewTime = FMath::Clamp(NewTime, 0.01f, NewTime);
+					NewTime = FMathf::Clamp(NewTime, 0.01f, NewTime);
 
 					Player->GetAbilitySystemComponent()->RemoveActiveGameplayEffect(Handle);
 

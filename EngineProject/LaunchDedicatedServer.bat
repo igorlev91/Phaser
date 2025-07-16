@@ -1,1 +1,1 @@
-"C:/UnrealEngine_Source/UnrealEngine/Engine/Binaries/Win64/UnrealEditor.exe" "C:/P4Dev/2025_ANGD_4440/Rabies/EngineProject/Rabies_ANGD.uproject" -server -log -epicapp=ServerClient -SESSION_NAME="TestSessionName" -SESSION_GUID="sdfsdfwe34sdffasdfsdfsdafweirsdhf"
+"C:\UnrealEngine\UE_5.3_Source\Engine\Binaries\Win64\UnrealEditor.exe" "C:\UE_Projects\Rabies\EngineProject\Rabies_ANGD.uproject" -server -log -epicapp=ServerClient -SESSION_NAME="TestSessionName" -SESSION_GUID="DebugMESSAGEDebugMESSAGEDebugMESSAGEDebugMESSAGEDebugMESSAGE"
