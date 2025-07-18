@@ -28,6 +28,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	TArray<USoundBase*> AbilitySoundEfx;
 
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	TArray<USoundBase*> AbilitySoundEfx2;
+
 	UFUNCTION()
 	void DelayEnd();
 

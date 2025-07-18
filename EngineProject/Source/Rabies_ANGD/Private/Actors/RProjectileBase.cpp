@@ -102,7 +102,7 @@ void ARProjectileBase::OnBounce(const FHitResult& ImpactResult, const FVector& I
 		AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
 		if (gameState && HitAudio)
 		{
-			gameState->Multicast_RequestPlayAudio(HitAudio, GetActorLocation(), GetActorRotation(), 1, 1, 0, HitSoundAttenuationSettings);
+			gameState->Multicast_RequestPlayAudio(nullptr, HitAudio, GetActorLocation(), GetActorRotation(), 1, 1, 0, HitSoundAttenuationSettings);
 		}
 	}
 }

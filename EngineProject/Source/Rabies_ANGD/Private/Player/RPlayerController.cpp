@@ -207,6 +207,8 @@ void ARPlayerController::CreateGameplayUI()
 	GameplayUI = CreateWidget<UGameplayUI>(this, GameplayUIClass);
 	if (GameplayUI)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("ADDING TO VIEWPORT GAMEPLAY"));
+
 		GameplayUI->AddToViewport();
 		GameplayUI->OnToyboxDecision.AddUObject(this, &ARPlayerController::CloseToyBox);
 		GameplayUI->OnFullyDead.AddUObject(this, &ARPlayerController::FullyDead);
@@ -454,10 +456,10 @@ bool ARPlayerController::ManualDeathStatusUpdate(bool state)
 	return state;
 }
 
-void ARPlayerController::Server_RequestRevive_Implementation(AEOSPlayerState* TargetPlayerState)
+void ARPlayerController::Server_RequestRevive_Implementation(AEOSPlayerState* TargetPlayerState, bool bSelfRevive)
 {
 	if (TargetPlayerState)
 	{
-		TargetPlayerState->Server_RevivePlayer();
+		TargetPlayerState->Server_RevivePlayer(bSelfRevive);
 	}
 }

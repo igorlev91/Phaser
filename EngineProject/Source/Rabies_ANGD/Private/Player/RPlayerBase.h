@@ -26,6 +26,9 @@ public:
 
 public:
 
+	UPROPERTY()
+	class ARBoltHead_Actor* BoltHead;
+
 	FOnPlayerInteraction PlayerInteraction;
 
 	// Called every frame
@@ -100,11 +103,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	TArray<USoundBase*> RevivingFriendSound;
 
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	TArray<USoundBase*> FreeRevive;
+
 	UPROPERTY()
 	float Sensitvitiy;
 
 private:
 
+	void CheckDeathVoiceLine();
 
 	UFUNCTION()
 	void FocusGame();

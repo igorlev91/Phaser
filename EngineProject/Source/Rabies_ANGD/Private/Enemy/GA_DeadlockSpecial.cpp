@@ -118,7 +118,7 @@ void UGA_DeadlockSpecial::DoLaunch()
 				FRotator Rotation = FRotator::ZeroRotator;
 				USoundAttenuation* Attenuation = nullptr;
 
-				GameState->Multicast_RequestPlayAudio(SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+				GameState->Multicast_RequestPlayAudio(Enemy, SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ void UGA_DeadlockSpecial::LandingExplosion()
 	if (gameState && ExplosionParticle)
 	{
 		gameState->Multicast_RequestSpawnVFX(ExplosionParticle, spawnPos, FVector::UpVector, 0);
-		gameState->Multicast_RequestPlayAudio(ExplosionAudio, spawnPos, Enemy->GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
+		gameState->Multicast_RequestPlayAudio(Enemy, ExplosionAudio, spawnPos, Enemy->GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
 	}
 
 	TArray<FOverlapResult> OverlappingResults;

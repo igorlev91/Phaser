@@ -18,7 +18,6 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 
-#include "Player/RPlayerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 UGA_BoltHead_Melee::UGA_BoltHead_Melee()

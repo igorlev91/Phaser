@@ -489,7 +489,7 @@ void AEOSActionGameState::StartBossFight_Implementation(int enemyID)
             USoundAttenuation* Attenuation = nullptr;
 
 
-            Multicast_RequestPlayAudio(DeadlockSpawnAudio, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+            Multicast_RequestPlayAudio(nullptr, DeadlockSpawnAudio, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
         }
     }
 
@@ -907,13 +907,21 @@ void AEOSActionGameState::Multicast_RobotGiblets_Implementation(FVector SpawnLoc
     }
 }
 
-void AEOSActionGameState::Multicast_RequestPlayAudio_Implementation(USoundBase* Sound, FVector Location, FRotator Rotation, float VolumeMultiplier, float PitchMultiplier, float StartTime, USoundAttenuation* AttenuationSettings)
+void AEOSActionGameState::Multicast_RequestPlayAudio_Implementation(ARCharacterBase* characterToAttach, USoundBase* Sound, FVector Location, FRotator Rotation, float VolumeMultiplier, float PitchMultiplier, float StartTime, USoundAttenuation* AttenuationSettings)
 {
     if (AttenuationSettings == nullptr && VoiceAttenuationSettings != nullptr)
         AttenuationSettings = VoiceAttenuationSettings;
 
-    UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, Location, Rotation, VolumeMultiplier, PitchMultiplier, StartTime, AttenuationSettings);
+    if (characterToAttach != nullptr)
+    {
+        UGameplayStatics::SpawnSoundAttached(Sound, characterToAttach->GetMesh(), NAME_None, Location, EAttachLocation::KeepRelativeOffset, true, 1, 1, 0, VoiceAttenuationSettings);
+    }
+    else
+    {
+        UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, Location, Rotation, VolumeMultiplier, PitchMultiplier, StartTime, AttenuationSettings);
+    }
 }
+
 
 void AEOSActionGameState::Multicast_RequestPlayAudioComponentRolling_Implementation(USoundBase* Sound, ARCharacterBase* characterToAttach, FVector Location, FRotator Rotation, float VolumeMultiplier, float PitchMultiplier, float StartTime, USoundAttenuation* AttenuationSettings)
 {

@@ -27,6 +27,11 @@ ARRightButton::ARRightButton()
 	AudioComp->bAutoActivate = false;
 }
 
+void ARRightButton::ReEnableNextButton()
+{
+	EnableClick();
+}
+
 void ARRightButton::OnActorClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (AudioComp && SelectAudio && bPlaySound)
@@ -39,14 +44,19 @@ void ARRightButton::OnActorClicked(AActor* TouchedActor, FKey ButtonPressed)
 
 	if (GEngine && bPressDelay == false)
 	{
-		GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(this));
+		GameState = Cast<AEOSGameState>(UGameplayStatics::GetGameState(GetWorld()));
 		if (GameState)
 		{
 			// Successfully got the game mode
 			SetLight(false);
 			bPressDelay = true;
 
-			CharacterSelectController = Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController());
+			if (CharacterSelectController == nullptr)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No character select controller"));
+				CharacterSelectController = Cast<ARCharacterSelectController>(GetWorld()->GetFirstPlayerController());
+			}
+
 			if (CharacterSelectController != nullptr)
 			{
 				CharacterSelectController->NextCharacter(this);
@@ -70,6 +80,12 @@ void ARRightButton::NotifyActorOnClicked(FKey ButtonPressed)
 void ARRightButton::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetLight(false);
+	bPressDelay = true;
+
+	FTimerHandle TimerClickHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerClickHandle, this, &ARRightButton::ReEnableNextButton, 1.2f, false);
 
 	TArray<AActor*> FoundActors;
 

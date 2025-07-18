@@ -256,6 +256,7 @@ void ARCharacterSelectController::NextCharacter(class ARRightButton* rightButton
 		}
 		return;
 	}
+
 	ServerRequestNextClick(MyPlayerState);
 
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), GameState->GetDefinationFromIndex(MyPlayerState->HoveredCharacterIndex)->PickedSoundEffect, FVector(-2865, 833, 761), FRotator::ZeroRotator, 1.0f, 1.0f, 0.0f, nullptr);

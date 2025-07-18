@@ -86,7 +86,7 @@ void UGA_ArmadillioHeadbutt::TryCommitAttack(FGameplayEventData Payload)
 					FRotator Rotation = FRotator::ZeroRotator;
 					USoundAttenuation* Attenuation = nullptr;
 
-					GameState->Multicast_RequestPlayAudio(SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+					GameState->Multicast_RequestPlayAudio(nullptr, SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 				}
 			}
 
@@ -116,7 +116,7 @@ void UGA_ArmadillioHeadbutt::Lunge(FGameplayEventData Payload)
 			FRotator Rotation = FRotator::ZeroRotator;
 			USoundAttenuation* Attenuation = nullptr;
 
-			GameState->Multicast_RequestPlayAudio(AbilitySoundEfx[0], Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+			GameState->Multicast_RequestPlayAudio(nullptr, AbilitySoundEfx[0], Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 		}
 
 		FVector LaunchVelocity = Enemy->GetActorForwardVector() * (700.f);  // Adjust strength as needed

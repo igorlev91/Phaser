@@ -55,6 +55,19 @@ void UMainMenu::NativeConstruct()
 
 	GameInst = GetGameInstance<UEOSGameInstance>();
 
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
+	{
+
+	}
+	else
+	{
+		URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
+		if (NewSave)
+		{
+			UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
+		}
+	}
+
 	USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
 	URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
 	

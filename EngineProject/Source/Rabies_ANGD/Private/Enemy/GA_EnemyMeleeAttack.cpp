@@ -79,7 +79,7 @@ void UGA_EnemyMeleeAttack::TryCommitAttack(FGameplayEventData Payload)
 					FRotator Rotation = FRotator::ZeroRotator;
 					USoundAttenuation* Attenuation = nullptr;
 
-					GameState->Multicast_RequestPlayAudio(SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+					GameState->Multicast_RequestPlayAudio(nullptr, SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 				}
 			}
 

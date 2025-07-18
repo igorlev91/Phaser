@@ -119,7 +119,7 @@ void UGA_Revive::Hold(float timeRemaining)
 					{
 						playerBase->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 						playerBase->SetPlayerReviveState(false);
-						Player->playerController->Server_RequestRevive(EOSPlayeState);
+						Player->playerController->Server_RequestRevive(EOSPlayeState, false);
 						Player->ServerPlayAnimMontage(Player->RevivingBuddy);
 						UE_LOG(LogTemp, Error, TEXT("%s Reviving"), *player->GetName());
 					}

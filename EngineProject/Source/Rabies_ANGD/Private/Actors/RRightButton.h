@@ -24,6 +24,8 @@ private:
 	class AEOSGameState* GameState;
 
 	class AClipboard* Clipboard;
+
+	void ReEnableNextButton();
 	
 public:
 	void OnActorClicked(AActor* TouchedActor, FKey ButtonPressed);

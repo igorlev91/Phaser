@@ -53,4 +53,6 @@ private:
 	void GoHome();
 
 	bool bBusy;
+
+	bool bAlreadyVoiceLined;
 };

@@ -128,7 +128,7 @@ void AEOSPlayerState::Server_ChangeHoveredCharacterPick_Implementation()
 {
 	if (bHasReceivedChallengeFlags)
 	{
-		ApplyHoverChangeWithChallengeCheck(); // a new function we’ll write
+		ApplyHoverChangeWithChallengeCheck();
 	}
 	else
 	{
@@ -301,7 +301,7 @@ void AEOSPlayerState::Client_DelayLoad()
 
 
 
-void AEOSPlayerState::Server_RevivePlayer_Implementation()
+void AEOSPlayerState::Server_RevivePlayer_Implementation(bool bSelfRevive)
 {
 	//if (Player == nullptr)
 		//return;
@@ -311,7 +311,10 @@ void AEOSPlayerState::Server_RevivePlayer_Implementation()
 
 	Player->SetPlayerReviveState(false);
 
-	Player->PlayVoiceLine(Player->ReviveSound, 100);
+	if (bSelfRevive == false)
+	{
+		Player->PlayVoiceLine(Player->ReviveSound, 100);
+	}
 }
 
 

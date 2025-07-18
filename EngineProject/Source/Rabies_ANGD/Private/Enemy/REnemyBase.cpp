@@ -237,7 +237,7 @@ void AREnemyBase::DeadStatusUpdated(bool bIsDead)
 				FRotator Rotation = FRotator::ZeroRotator;
 				USoundAttenuation* Attenuation = nullptr;
 
-				GameState->Multicast_RequestPlayAudio(DeathSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+				GameState->Multicast_RequestPlayAudio(this, DeathSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 			}
 		}
 	}

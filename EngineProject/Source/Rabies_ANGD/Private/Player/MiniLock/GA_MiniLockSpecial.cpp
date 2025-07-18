@@ -111,7 +111,7 @@ void UGA_MiniLockSpecial::CheckGround()
 			if (gameState && ExplosionParticle)
 			{
 				gameState->Multicast_RequestSpawnVFX(ExplosionParticle, spawnPos, FVector::UpVector, 0);
-				gameState->Multicast_RequestPlayAudio(ExplosionAudio, spawnPos, Player->GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
+				gameState->Multicast_RequestPlayAudio(Player, ExplosionAudio, spawnPos, Player->GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
 			}
 
 			if (EndMontage)

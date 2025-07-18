@@ -79,6 +79,14 @@ void UGA_BoltHead_Special::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	GetWorld()->GetTimerManager().ClearTimer(PunchHandle);
 	CurrentHoldDuration = 0.0f;
 
+	if (K2_HasAuthority())
+	{
+		if (AbilitySoundEfx.Num() > 0)
+		{
+			Player->PlayVoiceLine(AbilitySoundEfx, 60);
+		}
+	}
+
 	PunchHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Special::Hold, CurrentHoldDuration));
 
 }
@@ -113,6 +121,14 @@ void UGA_BoltHead_Special::TargetAquired(const FGameplayAbilityTargetDataHandle&
 		}
 	}
 
+	if (K2_HasAuthority())
+	{
+		if (AbilitySoundEfx.Num() > 0)
+		{
+			Player->PlayVoiceLine(AbilitySoundEfx2, 60);
+		}
+	}
+
 	GetWorld()->GetTimerManager().ClearTimer(PunchHandle);
 
 	FVector viewLoc;
@@ -127,6 +143,7 @@ void UGA_BoltHead_Special::TargetAquired(const FGameplayAbilityTargetDataHandle&
 	GetWorld()->GetTimerManager().SetTimer(DelayEndHandle, this, &UGA_BoltHead_Special::DelayEnd, 1.0f, false);
 
 	Player->ServerPlay_Torso_AnimMontage(CastingMontage, 1.0f);
+
 }
 
 void UGA_BoltHead_Special::HandleDamage(FGameplayEventData Payload)

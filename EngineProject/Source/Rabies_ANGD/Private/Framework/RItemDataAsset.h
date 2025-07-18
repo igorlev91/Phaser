@@ -24,6 +24,7 @@ class URItemDataAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
+
 	UPROPERTY(EditDefaultsOnly, Category = "Info")
 	FName ItemName;
 

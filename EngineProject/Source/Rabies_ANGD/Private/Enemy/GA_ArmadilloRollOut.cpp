@@ -323,7 +323,7 @@ void UGA_ArmadilloRollOut::PlayAudioLine(USoundBase* soundEffect, bool bIsRollin
 			}
 			else
 			{
-				GameState->Multicast_RequestPlayAudio(soundEffect, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+				GameState->Multicast_RequestPlayAudio(nullptr, soundEffect, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 			}
 
 		}

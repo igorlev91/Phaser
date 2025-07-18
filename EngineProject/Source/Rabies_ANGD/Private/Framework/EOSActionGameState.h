@@ -99,7 +99,7 @@ public:
 	void Multicast_CenterOnDot(ARPlayerBase* stickingPlayer, ARPlayerBase* dot);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_RequestPlayAudio(USoundBase* Sound, FVector Location, FRotator Rotation, float VolumeMultiplier = 1.f, float PitchMultiplier = 1.f, float StartTime = 0.f, class USoundAttenuation* AttenuationSettings = nullptr);
+	void Multicast_RequestPlayAudio(ARCharacterBase* characterToAttach = nullptr, USoundBase* Sound = nullptr, FVector Location = FVector(0,0,0), FRotator Rotation = FRotator(0,0,0), float VolumeMultiplier = 1.f, float PitchMultiplier = 1.f, float StartTime = 0.f, class USoundAttenuation* AttenuationSettings = nullptr);
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_RequestPlayAudioComponentRolling(USoundBase* Sound, ARCharacterBase* characterToAttach, FVector Location, FRotator Rotation, float VolumeMultiplier = 1.f, float PitchMultiplier = 1.f, float StartTime = 0.f, class USoundAttenuation* AttenuationSettings = nullptr);

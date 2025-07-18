@@ -86,7 +86,7 @@ void AREnemyMissileProj::Explosion(ARCharacterBase* usingCharacter)
 	{
 		FVector spawnPos = GetActorLocation();
 		gameState->Multicast_RequestSpawnVFX(HitExplosion, spawnPos, FVector::UpVector, 0);
-		gameState->Multicast_RequestPlayAudio(ExplosionAudio, GetActorLocation(), GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
+		gameState->Multicast_RequestPlayAudio(nullptr, ExplosionAudio, GetActorLocation(), GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
 	}
 
 	TArray<FOverlapResult> OverlappingResults;

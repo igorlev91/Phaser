@@ -76,7 +76,7 @@ public:
 
 
 	UFUNCTION(Server, Reliable)
-	void Server_RequestRevive(AEOSPlayerState* TargetPlayerState);
+	void Server_RequestRevive(AEOSPlayerState* TargetPlayerState, bool bSelfRevive);
 
 	UFUNCTION()
 	void AddBossEnemy(int level, class AREnemyBase* bossEnemy);

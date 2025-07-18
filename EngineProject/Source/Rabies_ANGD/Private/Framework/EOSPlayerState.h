@@ -145,7 +145,7 @@ public:
 	void Server_SendChallengeFlags(bool Chester, bool Toni, bool Tex, bool Dot, bool Secret);
 
 	UFUNCTION(Client, Reliable)
-	void Server_RevivePlayer();
+	void Server_RevivePlayer(bool bSelfRevive);
 
 	UFUNCTION(Client, Reliable, WithValidation)
 	void Client_Load();

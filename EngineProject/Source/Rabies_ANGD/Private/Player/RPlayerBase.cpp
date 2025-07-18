@@ -900,11 +900,21 @@ void ARPlayerBase::PlayVoiceLine(TArray<USoundBase*> soundEffects, int activatio
 		AEOSActionGameState* GameState = GetWorld()->GetGameState<AEOSActionGameState>();
 		if (GameState)
 		{
+			ARCharacterBase* characterSpawnTo = this;
 			FVector Location = GetActorLocation();
 			FRotator Rotation = FRotator::ZeroRotator;
 			USoundAttenuation* Attenuation = nullptr;
 
-			GameState->Multicast_RequestPlayAudio(SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+			if (activationChance == 123)
+			{
+				if (BoltHead)
+				{
+					characterSpawnTo = nullptr;
+					Location = BoltHead->GetActorLocation();
+				}
+			}
+
+			GameState->Multicast_RequestPlayAudio(characterSpawnTo, SelectedSound, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 		}
 	}
 	else
@@ -922,7 +932,7 @@ void ARPlayerBase::Server_PlayVoiceLine_Implementation(USoundBase* soundEffect)
 		FRotator Rotation = FRotator::ZeroRotator;
 		USoundAttenuation* Attenuation = nullptr;
 
-		GameState->Multicast_RequestPlayAudio(soundEffect, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
+		GameState->Multicast_RequestPlayAudio(this, soundEffect, Location, Rotation, 1.0f, 1.0f, 0.0f, Attenuation);
 	}
 }
 
@@ -970,7 +980,8 @@ void ARPlayerBase::DeadStatusUpdated(bool bIsDead)
 	{
 		if (EOSPlayerState)
 		{
-			PlayVoiceLine(DeathSound, 100);
+			FTimerHandle checkHandle;
+			GetWorldTimerManager().SetTimer(checkHandle, this, &ARPlayerBase::CheckDeathVoiceLine, 0.05f, false);
 			StartCameraShake(15.0f, 0.15f);
 		}
 
@@ -979,6 +990,21 @@ void ARPlayerBase::DeadStatusUpdated(bool bIsDead)
 	else
 	{
 
+	}
+}
+
+void ARPlayerBase::CheckDeathVoiceLine()
+{
+	if (EOSPlayerState)
+	{
+		if (GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()))
+		{
+			PlayVoiceLine(DeathSound, 100);
+		}
+		else
+		{
+			PlayVoiceLine(FreeRevive, 100);
+		}
 	}
 }
 

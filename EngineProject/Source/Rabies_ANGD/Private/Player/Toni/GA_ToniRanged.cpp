@@ -159,7 +159,7 @@ void UGA_ToniRanged::ExplosionHehe(FVector HitPos)
 	if (gameState && ExplosionParticle)
 	{
 		gameState->Multicast_RequestSpawnVFX(ExplosionParticle, HitPos, FVector::UpVector, 0);
-		gameState->Multicast_RequestPlayAudio(ExplosionAudio, HitPos, Player->GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
+		gameState->Multicast_RequestPlayAudio(nullptr, ExplosionAudio, HitPos, Player->GetActorRotation(), 1, 1, 0, ExplosionSoundAttenuationSettings);
 	}
 
 	TArray<FOverlapResult> OverlappingResults;

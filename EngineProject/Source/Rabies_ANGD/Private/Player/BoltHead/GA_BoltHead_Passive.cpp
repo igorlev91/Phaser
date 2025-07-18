@@ -47,14 +47,6 @@ void UGA_BoltHead_Passive::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	if (Player == nullptr)
 		return;
 
-	if (K2_HasAuthority())
-	{
-		if (AbilitySoundEfx.Num() > 0)
-		{
-			Player->PlayVoiceLine(AbilitySoundEfx, 60);
-		}
-	}
-
 	bReboot = true;
 
 	TArray<AActor*> AttachedActors;
@@ -71,6 +63,7 @@ void UGA_BoltHead_Passive::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 				BoltHead->owningPlayer = Player;
 
 				bBusy = false;
+				bAlreadyVoiceLined = false;
 				DeathCheckerHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::Checker));
 
 				/*if(BoltHead->GetAnimInstance())
@@ -120,7 +113,7 @@ void UGA_BoltHead_Passive::Checker()
 					bReboot = false;
 					Player->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 					Player->SetPlayerReviveState(false);
-					Player->playerController->Server_RequestRevive(Player->GetPlayerBaseState());
+					Player->playerController->Server_RequestRevive(Player->GetPlayerBaseState(), true);
 
 					AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
 					if (gameState)
@@ -168,6 +161,19 @@ void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer, float reviveProgr
 
 		if (Distance <= StopThreshold)
 		{
+			if (bAlreadyVoiceLined == false)
+			{
+				if (K2_HasAuthority())
+				{
+					if (AbilitySoundEfx.Num() > 0)
+					{
+						Player->BoltHead = BoltHead;
+						Player->PlayVoiceLine(AbilitySoundEfx, 123);
+						bAlreadyVoiceLined = true;
+					}
+				}
+			}
+
 			reviveProgress += GetWorld()->GetDeltaSeconds() * reviveSpeed;
 			BoltHead->ServerPlay_Head_AnimMontage(healingMontage, reviveSpeed);
 			AEOSActionGameState* gameState = GetWorld()->GetGameState<AEOSActionGameState>();
@@ -183,7 +189,7 @@ void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer, float reviveProgr
 				{
 					damagedPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 					damagedPlayer->SetPlayerReviveState(false);
-					Player->playerController->Server_RequestRevive(EOSPlayeState);
+					Player->playerController->Server_RequestRevive(EOSPlayeState, false);
 				} // send it home
 				bBusy = false;
 				GoHomeHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UGA_BoltHead_Passive::GoHome));
@@ -194,6 +200,8 @@ void UGA_BoltHead_Passive::WeeWoo(ARPlayerBase* damagedPlayer, float reviveProgr
 		{
 			FVector NewLocation = FMath::VInterpTo(BoltHead->GetActorLocation(), damagedPlayer->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.0005f));
 			BoltHead->SetActorLocation(NewLocation);
+
+			bAlreadyVoiceLined = false;
 
 			FRotator TargetRotation = (damagedPlayer->GetActorLocation() - NewLocation).Rotation();
 			TargetRotation.Yaw -= 90.0f;

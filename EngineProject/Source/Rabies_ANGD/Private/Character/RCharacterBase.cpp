@@ -202,13 +202,13 @@ void ARCharacterBase::BeginPlay()
 				}
 			}
 
-			if (ballMesh == nullptr)
-				return;
-
-			DynamicOtherMaterialInstance = UMaterialInstanceDynamic::Create(MyOtherMaterial, GetMesh());
-			if (DynamicOtherMaterialInstance)
+			if (ballMesh != nullptr)
 			{
-				ballMesh->SetMaterial(0, DynamicOtherMaterialInstance);
+				DynamicOtherMaterialInstance = UMaterialInstanceDynamic::Create(MyOtherMaterial, GetMesh());
+				if (DynamicOtherMaterialInstance)
+				{
+					ballMesh->SetMaterial(0, DynamicOtherMaterialInstance);
+				}
 			}
 		}
 	}
@@ -1008,7 +1008,16 @@ void ARCharacterBase::CheckRadiationDamage()
 					AbilitySystemComponent->AddLooseGameplayTag(URAbilityGenericTags::GetRadiationTag());
 
 					alreadyDamagedEnemies.Add(enemy);
-					RadiationDelayTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ARCharacterBase::CheckRadiationDelay, enemy));
+					//////////////////// doing this to try and prevent crash
+					FTimerDelegate RadiationDelegate;
+					RadiationDelegate = FTimerDelegate::CreateUObject(this, &ARCharacterBase::CheckRadiationDelay, enemy);
+
+					float randomTimeDelay = FMath::RandRange(1, 15);
+					randomTimeDelay *= 0.1f; // remapes it from 1 - 30 to 0.1f to 1.5f
+					GetWorldTimerManager().SetTimer(RadiationDelayTimer, RadiationDelegate, randomTimeDelay, false);
+
+					//RadiationDelayTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ARCharacterBase::CheckRadiationDelay, enemy));
+					/////////////////////////
 					enemy->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*spec);
 				}
 			}
