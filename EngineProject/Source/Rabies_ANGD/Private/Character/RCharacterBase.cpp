@@ -439,7 +439,7 @@ void ARCharacterBase::SetHealthBarFromAllyPerspective(FVector viewingLocation)
 		//UE_LOG(LogTemp, Warning, TEXT("Value is: %f"), Distance);
 		float BaseSize = 400.f; // Default UI size
 		float SizeFactor = BaseSize / Distance;
-		SizeFactor = FMathf::Clamp(SizeFactor, SizeFactor, 0.6f);
+		SizeFactor = FMath::Clamp(SizeFactor, SizeFactor, 0.6f);
 		HealthBar->SetRenderScale(FVector2D(SizeFactor, SizeFactor));
 
 	}

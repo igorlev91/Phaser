@@ -673,10 +673,8 @@ void ARPlayerBase::Pause()
 
 void ARPlayerBase::LoadDebug()
 {
-	return;
-
 	UWorld* World = GetWorld();
-	
+
 	if (World)
 	{
 		UGameplayStatics::OpenLevel(World, TEXT("EndGameTestRoom"));
@@ -1147,7 +1145,7 @@ void ARPlayerBase::CheckChesterHeal()
 					if (bFound == false)
 						return;
 
-					float healthRegen = FMathf::Clamp(healing, 0, level);
+					float healthRegen = FMath::Clamp(healing, 0, level);
 
 					if (gameState && ChesterHealParticle && healthRegen > 0)
 					{
