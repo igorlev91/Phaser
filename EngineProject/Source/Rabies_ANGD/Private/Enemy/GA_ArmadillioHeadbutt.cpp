@@ -48,7 +48,7 @@ void UGA_ArmadillioHeadbutt::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	WaitForActivation->EventReceived.AddDynamic(this, &UGA_ArmadillioHeadbutt::TryCommitAttack);
 	WaitForActivation->ReadyForActivation();
 
-	UAbilityTask_WaitGameplayEvent* WaitForLungeActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetShowRollerTag());
+	UAbilityTask_WaitGameplayEvent* WaitForLungeActivation = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, URAbilityGenericTags::GetUltimateAttackActivationTag());
 	WaitForLungeActivation->EventReceived.AddDynamic(this, &UGA_ArmadillioHeadbutt::Lunge);
 	WaitForLungeActivation->ReadyForActivation();
 

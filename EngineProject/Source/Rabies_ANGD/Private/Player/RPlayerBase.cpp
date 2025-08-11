@@ -673,8 +673,10 @@ void ARPlayerBase::Pause()
 
 void ARPlayerBase::LoadDebug()
 {
-	UWorld* World = GetWorld();
+	return;
 
+	UWorld* World = GetWorld();
+	
 	if (World)
 	{
 		UGameplayStatics::OpenLevel(World, TEXT("EndGameTestRoom"));

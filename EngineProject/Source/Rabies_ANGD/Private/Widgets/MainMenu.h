@@ -53,6 +53,15 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class USlider* SensitivitySlider;
 
+	UPROPERTY(meta = (BindWidget))
+	class UEditableTextBox* IPSettings;
+
+	UFUNCTION()
+	void OnTextBoxChanged(const FText& Text);
+
+	UFUNCTION()
+	void IPSettingsChanged(const FText& Text, ETextCommit::Type CommitMethod);
+
 	UFUNCTION()
 	void ItemSuggestionsChange(bool state);
 

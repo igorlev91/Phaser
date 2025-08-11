@@ -60,4 +60,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Achivements")
 	bool bSecretChallenge = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Settings")
+	FString ServerIP = "";
 };

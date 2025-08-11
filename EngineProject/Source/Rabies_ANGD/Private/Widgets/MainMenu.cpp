@@ -9,6 +9,10 @@
 #include "Components/Slider.h"
 #include "Components/ProgressBar.h"
 
+#include "Components/ComboBoxString.h"
+#include "Components/EditableTextBox.h"
+
+
 #include "Widgets/ConnectOnlineMenu.h"
 #include "Widgets/RButton.h"
 #include "Components/TextBlock.h"
@@ -71,6 +75,16 @@ void UMainMenu::NativeConstruct()
 	USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
 	URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
 	
+	if (IPSettings)
+	{
+		IPSettings->OnTextChanged.AddDynamic(this, &UMainMenu::OnTextBoxChanged);
+		IPSettings->OnTextCommitted.AddDynamic(this, &UMainMenu::IPSettingsChanged);
+		if (LoadedGame)
+		{
+			IPSettings->SetText(FText::FromString(LoadedGame->ServerIP));
+		}
+	}
+
 	if (ItemSuggestionsCheckBox)
 	{
 		ItemSuggestionsCheckBox->OnCheckStateChanged.AddDynamic(this, &UMainMenu::ItemSuggestionsChange);
@@ -118,6 +132,56 @@ void UMainMenu::SensChange(float newValue)
 		if (NewSave)
 		{
 			NewSave->Sensitivity = newValue;
+
+			UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
+		}
+	}
+}
+
+void UMainMenu::OnTextBoxChanged(const FText& Text)
+{
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
+	{
+		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+		URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+		if (LoadedGame)
+		{
+			LoadedGame->ServerIP = Text.ToString();
+
+			UGameplayStatics::SaveGameToSlot(LoadedGame, TEXT("RabiesSaveData"), 0);
+		}
+	}
+	else
+	{
+		URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
+		if (NewSave)
+		{
+			NewSave->ServerIP = Text.ToString();
+
+			UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
+		}
+	}
+}
+
+void UMainMenu::IPSettingsChanged(const FText& Text, ETextCommit::Type CommitMethod)
+{
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("RabiesSaveData"), 0))
+	{
+		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+		URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave);
+		if (LoadedGame)
+		{
+			LoadedGame->ServerIP = Text.ToString();
+
+			UGameplayStatics::SaveGameToSlot(LoadedGame, TEXT("RabiesSaveData"), 0);
+		}
+	}
+	else
+	{
+		URSaveGame* NewSave = Cast<URSaveGame>(UGameplayStatics::CreateSaveGameObject(URSaveGame::StaticClass()));
+		if (NewSave)
+		{
+			NewSave->ServerIP = Text.ToString();
 
 			UGameplayStatics::SaveGameToSlot(NewSave, TEXT("RabiesSaveData"), 0);
 		}

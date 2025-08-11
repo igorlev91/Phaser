@@ -12,6 +12,7 @@
 #include "Player/RMainMenuController.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Framework/RSaveGame.h"
 
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
@@ -424,7 +425,7 @@ void UEOSGameInstance::JoinCreatedSessionCompleted(FName sessionName, EOnJoinSes
 		if (IsLocalTesting())
 		{
 			//Url.Host = "127.0.0.1";
-			Url.Host = "192.168.1.252";
+			Url.Host = "192.168.1.45";
 		}
 
 		GetFirstLocalPlayerController(GetWorld())->ClientTravel(Url.ToString(), TRAVEL_Absolute);
@@ -579,11 +580,33 @@ FString UEOSGameInstance::GetCoordinatorURLStr() const
 	FString CoordiantorURL = "";
 	FParse::Value(FCommandLine::Get(), *FString::Printf(TEXT("%s="), *GetCoordinatorURLStrKey().ToString()), CoordiantorURL);
 	UE_LOG(LogTemp, Warning, TEXT("Found Coordinator URL: %s"), *(CoordiantorURL));
+	
 	if (CoordiantorURL == "")
-		return "18.220.228.236";
+	{
+		USaveGame* baseSave = UGameplayStatics::LoadGameFromSlot(TEXT("RabiesSaveData"), 0);
+		if (baseSave)
+		{
+			if (URSaveGame* LoadedGame = Cast<URSaveGame>(baseSave))
+			{
+				if (LoadedGame->ServerIP == "")
+					return "3.12.247.245";
+
+				return LoadedGame->ServerIP;
+			}
+			else
+			{
+				return "3.12.247.245";
+			}
+		}
+		else
+		{
+			return "3.12.247.245";
+		}
+
+	}
 
 	return CoordiantorURL;
-	//return "18.220.228.236";
+	//return "3.12.247.245";
 }
 
 void UEOSGameInstance::SesssionCreationRequestCompleted(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bProcessdSuccessfully, FGuid SessionUniqueId)
