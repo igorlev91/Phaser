@@ -361,9 +361,9 @@ void UGA_BoltHead_Ultimate::UltimateLerp(float value, float desiredValue, float 
 	{
 		if (UltimateModeMat != nullptr)
 		{
-			float vignetteIntensity = FMathf::Lerp(PostProcessVolume->Settings.VignetteIntensity, (desiredValue == 1) ? 0.4f : 1, 3 * GetWorld()->GetDeltaSeconds());
-			float sceneFringeIntensity = FMathf::Lerp(PostProcessVolume->Settings.SceneFringeIntensity, (desiredValue == 1) ? 0.0f : 2, 3 * GetWorld()->GetDeltaSeconds());
-			float sceneLensFlare = FMathf::Lerp(PostProcessVolume->Settings.LensFlareIntensity, (desiredValue == 1) ? 0.0f : 0.01f, 3 * GetWorld()->GetDeltaSeconds());
+			float vignetteIntensity = FMath::Lerp(PostProcessVolume->Settings.VignetteIntensity, (desiredValue == 1) ? 0.4f : 1, 3 * GetWorld()->GetDeltaSeconds());
+			float sceneFringeIntensity = FMath::Lerp(PostProcessVolume->Settings.SceneFringeIntensity, (desiredValue == 1) ? 0.0f : 2, 3 * GetWorld()->GetDeltaSeconds());
+			float sceneLensFlare = FMath::Lerp(PostProcessVolume->Settings.LensFlareIntensity, (desiredValue == 1) ? 0.0f : 0.01f, 3 * GetWorld()->GetDeltaSeconds());
 			PostProcessVolume->Settings.VignetteIntensity = vignetteIntensity;
 			PostProcessVolume->Settings.bOverride_SceneFringeIntensity = true;
 			PostProcessVolume->Settings.SceneFringeIntensity = sceneFringeIntensity;

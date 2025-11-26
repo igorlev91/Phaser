@@ -186,7 +186,7 @@ void AEOSPlayerState::CopyProperties(APlayerState* PlayerState)
 AEOSPlayerState::AEOSPlayerState()
 {
 	bReplicates = true;
-	NetUpdateFrequency = 100.0f;
+	//NetUpdateFrequency = 100.0f;
 
 }
 

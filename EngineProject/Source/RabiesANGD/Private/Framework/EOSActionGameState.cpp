@@ -177,7 +177,7 @@ void AEOSActionGameState::STARTGAME()
     TArray<AActor*> enemySpawnLocations;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemySpawnLocation::StaticClass(), enemySpawnLocations);
 
-    WaveSpawnCap = FMathf::Clamp(WaveSpawnCap, 1, enemySpawnLocations.Num());
+    WaveSpawnCap = FMath::Clamp(WaveSpawnCap, 1, enemySpawnLocations.Num());
 
     WaveLevel = IncreasedPower;
     WaveTime = enemyInitalSpawnRate;
@@ -397,7 +397,7 @@ void AEOSActionGameState::SpawnEnemyWave(int powerLevel)
         return;
 
     WaveTime += enemySpawnRateChange;
-    WaveTime = FMathf::Clamp(WaveTime, 2, 20);
+    WaveTime = FMath::Clamp(WaveTime, 2, 20);
 
     TArray<AActor*> spawnLocations;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemySpawnLocation::StaticClass(), spawnLocations);

@@ -674,13 +674,13 @@ void ARPlayerBase::Pause()
 void ARPlayerBase::LoadDebug()
 {
 	return;
+	/*UWorld* World = GetWorld();
 
-	UWorld* World = GetWorld();
-	
 	if (World)
 	{
+		// This code will now be executed, opening the specified level.
 		UGameplayStatics::OpenLevel(World, TEXT("EndGameTestRoom"));
-	}
+	}*/
 }
 
 FVector ARPlayerBase::GetMoveFwdDir() const
@@ -1147,7 +1147,7 @@ void ARPlayerBase::CheckChesterHeal()
 					if (bFound == false)
 						return;
 
-					float healthRegen = FMathf::Clamp(healing, 0, level);
+					float healthRegen = FMath::Clamp(healing, 0, level);
 
 					if (gameState && ChesterHealParticle && healthRegen > 0)
 					{

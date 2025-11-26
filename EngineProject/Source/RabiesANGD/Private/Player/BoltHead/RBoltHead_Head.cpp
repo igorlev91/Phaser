@@ -26,20 +26,22 @@ URBoltHead_Head::URBoltHead_Head()
 
 void URBoltHead_Head::WeeWoo(ARPlayerBase* damagedPlayer, float movementSpeed, float ReviveSpeed)
 {
-	return;
+    // The original logic: return if NOT dead
+    if (damagedPlayer->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == false)
+    {
+        return; // Code below is unreachable if this executes
+    }
 
-	if (damagedPlayer->GetAbilitySystemComponent()->HasMatchingGameplayTag(URAbilityGenericTags::GetDeadTag()) == false)
-	{
-		return;
-	}
+    // If we reach here, the player IS dead.
+    DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
-	DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+    FVector CurrentLocation = GetComponentLocation();
 
-	FVector CurrentLocation = GetComponentLocation();
-
-	FVector NewLocation = FMath::VInterpTo(CurrentLocation, damagedPlayer->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.01f));
-	SetWorldLocation(NewLocation);
+    FVector NewLocation = FMath::VInterpTo(CurrentLocation, damagedPlayer->GetActorLocation(), GetWorld()->GetDeltaSeconds(), (movementSpeed * 0.01f));
+    SetWorldLocation(NewLocation);
 
 
-	FinishedHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &URBoltHead_Head::WeeWoo, damagedPlayer, movementSpeed, ReviveSpeed));
+    FinishedHandle = GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &URBoltHead_Head::WeeWoo, damagedPlayer, movementSpeed, ReviveSpeed));
+ 
+    return;
 }
